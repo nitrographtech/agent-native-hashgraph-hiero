@@ -6,4 +6,4 @@ state.mainClassNameOverride,                   com.hedera.services.ServicesMain
 event.preconsensus.allowUnsignedPcesEvents,     true
 event.preconsensus.forceIgnorePcesSignatures,     true
 event.preconsensus.copyRecentStreamToStateSnapshots,     false
-state.saveStatePeriod,                    43200
+state.saveStatePeriod,                    14400
