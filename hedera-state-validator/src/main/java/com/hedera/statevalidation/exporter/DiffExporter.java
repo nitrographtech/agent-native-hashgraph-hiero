@@ -108,7 +108,7 @@ public class DiffExporter {
         createOutputFile(state2Entries, STATE_2_DIFF_JSON);
 
         System.out.printf("Diff time: %d seconds%n", (System.currentTimeMillis() - startTimestamp) / 1000);
-        if(state1Entries.isEmpty() && state2Entries.isEmpty()) {
+        if (state1Entries.isEmpty() && state2Entries.isEmpty()) {
             System.exit(0);
         } else {
             System.exit(1);

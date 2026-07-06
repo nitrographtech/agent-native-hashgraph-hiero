@@ -2,17 +2,19 @@
 package com.hedera.statevalidation;
 
 import static com.hedera.statevalidation.blockstream.BlocksToPcesWorkflow.convert;
+import static com.hedera.statevalidation.blockstream.BlocksToPcesWorkflow.roundSpan;
 import static com.hedera.statevalidation.gcp.GcpPathHelper.blockFileName;
 
+import com.hedera.hapi.block.stream.Block;
+import com.hedera.node.app.hapi.utils.blocks.BlockStreamAccess;
 import com.hedera.statevalidation.gcp.BlockRangeResolver;
 import com.hedera.statevalidation.gcp.GcpPathHelper;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hiero.consensus.pcli.utility.ParameterizedClass;
@@ -174,8 +176,11 @@ public class BlocksToPcesCommand extends ParameterizedClass implements Runnable 
                 // out of order — then fall through to re-run conversion, which will regenerate them.
                 final List<Path> pcesFiles = collectPcesFilesSorted(pcesDir);
                 if (!pcesFiles.isEmpty() && isContiguous(pcesFiles)) {
-                    log.info("PCES output directory already exists with {} contiguous .pces files, skipping "
-                            + "conversion: {}", pcesFiles.size(), pcesDir);
+                    log.info(
+                            "PCES output directory already exists with {} contiguous .pces files, skipping "
+                                    + "conversion: {}",
+                            pcesFiles.size(),
+                            pcesDir);
                     return;
                 }
                 if (pcesFiles.isEmpty()) {
@@ -280,6 +285,30 @@ public class BlocksToPcesCommand extends ParameterizedClass implements Runnable 
                     trailingBlock);
         }
 
+        // Fail-fast guard: verify the resolved left block actually covers the requested left search round.
+        // If the stream does not reach back far enough, the resolver returns the first available block rather
+        // than the block containing leftSearchRound — the extracted PCES then starts too late and replay fails
+        // downstream with a cryptic "insufficient data ... requested lower bound" from PcesFileTracker. Catch
+        // it here with an actionable message instead. The left block is guaranteed on disk at this point.
+        final Block leftBlock = BlockStreamAccess.blockFrom(tempBlockDir.resolve(blockFileName(range.leftBlock())));
+        final long[] leftSpan = roundSpan(leftBlock, -1);
+        final long leftBlockMinRound = leftSpan[0];
+        if (leftBlockMinRound > leftSearchRound) {
+            throw new IOException(String.format(
+                    "Block stream does not reach back far enough for the requested origin. The earliest available "
+                            + "block (%d) starts at round %d, but the extraction requires rounds from %d "
+                            + "(origin %d minus roundsNonAncient %d). The origin round and its non-ancient parent "
+                            + "tail are not present in the stream at %s. Choose an origin round whose covered range "
+                            + "(including %d rounds before it) is fully within the available stream.",
+                    range.leftBlock(),
+                    leftBlockMinRound,
+                    leftSearchRound,
+                    originRound,
+                    roundsNonAncient,
+                    gcpBlockStreamPath,
+                    roundsNonAncient));
+        }
+
         return tempBlockDir;
     }
 
@@ -292,8 +321,7 @@ public class BlocksToPcesCommand extends ParameterizedClass implements Runnable 
      */
     private static List<Path> collectPcesFilesSorted(@NonNull final Path pcesDir) throws IOException {
         try (var walk = Files.walk(pcesDir)) {
-            return walk
-                    .filter(p -> p.toString().endsWith(".pces"))
+            return walk.filter(p -> p.toString().endsWith(".pces"))
                     .sorted(java.util.Comparator.comparingLong(BlocksToPcesCommand::extractSeqNumber))
                     .collect(java.util.stream.Collectors.toList());
         }
@@ -314,8 +342,12 @@ public class BlocksToPcesCommand extends ParameterizedClass implements Runnable 
             final long actual = extractSeqNumber(sortedPcesFiles.get(i));
             if (actual != expectedSeq) {
                 // Gap detected at index i. Delete this file and everything after it.
-                log.info("PCES contiguity gap: expected seq{} but found seq{} at {}. Deleting {} file(s) from gap onward.",
-                        expectedSeq, actual, sortedPcesFiles.get(i), sortedPcesFiles.size() - i);
+                log.info(
+                        "PCES contiguity gap: expected seq{} but found seq{} at {}. Deleting {} file(s) from gap onward.",
+                        expectedSeq,
+                        actual,
+                        sortedPcesFiles.get(i),
+                        sortedPcesFiles.size() - i);
                 for (int j = i; j < sortedPcesFiles.size(); j++) {
                     Files.deleteIfExists(sortedPcesFiles.get(j));
                 }
@@ -349,10 +381,12 @@ public class BlocksToPcesCommand extends ParameterizedClass implements Runnable 
     /** Recursively deletes a directory and all its contents. */
     private static void deleteRecursive(@NonNull final Path dir) throws IOException {
         try (var walk = Files.walk(dir)) {
-            walk.sorted(java.util.Comparator.reverseOrder())
-                    .forEach(p -> {
-                        try { Files.deleteIfExists(p); } catch (final IOException ignored) { }
-                    });
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try {
+                    Files.deleteIfExists(p);
+                } catch (final IOException ignored) {
+                }
+            });
         }
     }
 }

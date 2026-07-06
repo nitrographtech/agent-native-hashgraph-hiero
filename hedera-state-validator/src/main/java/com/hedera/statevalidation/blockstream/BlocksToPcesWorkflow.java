@@ -354,6 +354,27 @@ public final class BlocksToPcesWorkflow {
             selected.add(orderedFiles.get(lastInWindow + 1));
         }
 
+        // Coverage guard: the first selected block must actually reach back to leftRound. If the stream
+        // starts later than leftRound, the origin round and its non-ancient parent tail are absent, and
+        // replay fails downstream with a cryptic PcesFileTracker "insufficient data ... requested lower
+        // bound" error. Fail here with an actionable message instead. (This mirrors the guard in
+        // BlocksToPcesCommand.resolveGcpBlockStream for the GCS path.)
+        if (selected.isEmpty()) {
+            throw new IllegalArgumentException(String.format(
+                    "No block files fall within round window [%d, %d]. The block stream does not cover the "
+                            + "requested rounds.",
+                    leftRound, targetRound));
+        }
+        final long firstSelectedMinRound = roundSpan(selected.get(0))[0];
+        if (firstSelectedMinRound > leftRound) {
+            throw new IllegalArgumentException(String.format(
+                    "Block stream does not reach back far enough: the earliest available block starts at round %d, "
+                            + "but the extraction requires rounds from %d. The origin round and its non-ancient "
+                            + "parent tail are not present in the stream. Choose an origin round whose covered range "
+                            + "(including the roundsNonAncient rounds before it) is fully within the available stream.",
+                    firstSelectedMinRound, leftRound));
+        }
+
         return selected;
     }
 
@@ -364,6 +385,10 @@ public final class BlocksToPcesWorkflow {
     private static long[] roundSpan(@NonNull final Path file) {
         final Block block = BlockStreamAccess.blockFrom(file);
         long minRound = -1;
+        return roundSpan(block, minRound);
+    }
+
+    public static long[] roundSpan(Block block, long minRound) {
         long maxRound = -1;
         for (final var item : block.items()) {
             if (item.hasRoundHeader()) {
@@ -376,7 +401,7 @@ public final class BlocksToPcesWorkflow {
                 }
             }
         }
-        return new long[]{minRound, maxRound};
+        return new long[] {minRound, maxRound};
     }
 
     /**
