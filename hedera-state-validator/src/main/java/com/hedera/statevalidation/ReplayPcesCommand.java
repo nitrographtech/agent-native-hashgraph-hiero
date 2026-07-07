@@ -106,6 +106,8 @@ public class ReplayPcesCommand implements Callable<Integer> {
             System.setProperty("tss.forceMockSignatures", "true");
         }
         System.setProperty("pces.forceIgnorePcesSignatures", "true");
+        System.setProperty("event.preconsensus.copyRecentStreamToStateSnapshots", "false");
+        System.setProperty("state.saveStatePeriod", "14400");
 
         final NodeId selfId = NodeId.of(selfIdValue);
 
