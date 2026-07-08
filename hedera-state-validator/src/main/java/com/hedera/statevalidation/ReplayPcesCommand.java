@@ -107,7 +107,8 @@ public class ReplayPcesCommand implements Callable<Integer> {
         }
         System.setProperty("pces.forceIgnorePcesSignatures", "true");
         System.setProperty("event.preconsensus.copyRecentStreamToStateSnapshots", "false");
-        System.setProperty("state.saveStatePeriod", "14400");
+        System.setProperty("state.saveStatePeriod", "3600");
+        System.setProperty("blockStream.writerMode", "FILE");
 
         final NodeId selfId = NodeId.of(selfIdValue);
 
