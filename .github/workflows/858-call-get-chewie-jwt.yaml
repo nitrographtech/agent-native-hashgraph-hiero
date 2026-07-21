@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: Apache-2.0
+name: "858: [CALL] Get Chewie JWT"
+
+on:
+  workflow_call:
+    secrets:
+      chewie-key:
+        required: true
+        description: "The Chewie API key for the repository."
+      chewie-host:
+        required: true
+        description: "The Chewie host for the repository."
+    outputs:
+      jwt:
+        description: "The Chewie JWT for the repository."
+        value: ${{ jobs.get-chewie-jwt.outputs.chewie-jwt }}
+      expiration:
+        description: "The Chewie JWT expiration for the repository."
+        value: ${{ jobs.get-chewie-jwt.outputs.chewie-expiration }}
+
+permissions:
+  contents: read
+
+jobs:
+  get-chewie-jwt:
+    name: Get Chewie JWT
+    runs-on: hl-cn-chewie-lin-sm
+    outputs:
+      chewie-jwt: ${{ steps.get-chewie-jwt.outputs.chewie-jwt }}
+      chewie-expiration: ${{ steps.get-chewie-jwt.outputs.chewie-expiration }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: Get Chewie JWT
+        id: get-chewie-jwt
+        env:
+          HOST: "https://chewie.lat.ope.eng.hashgraph.io"
+        run: |
+          b64_key=$(echo -n "${{ secrets.chewie-key }}" | base64 -w 0)
+          api_path="api/v1/auth/token"
+
+          response=$(curl -s -X POST "${HOST}/${api_path}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${b64_key}")
+
+          chewie_jwt=$(echo "$response" | jq -r '.token')
+          chewie_expiration=$(echo "$response" | jq -r '.expires_at')
+          echo "chewie-jwt=${chewie_jwt}" >> "${GITHUB_OUTPUT}"
+          echo "chewie-expiration=${chewie_expiration}" >> "${GITHUB_OUTPUT}"

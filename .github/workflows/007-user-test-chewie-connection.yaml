@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: Apache-2.0
+name: "007: [USER] Test Chewie Connection"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  call-chewie-response:
+    needs: run-app-test
+    uses: ./.github/workflows/801-read-chewie-response.yaml
+    with:
+      ref: ${{ github.ref }}
+      test-type: "sdpt"
+      test-asset: "AdHocSD9"
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  output-chewie-response:
+    needs: call-chewie-response
+    runs-on: hl-cn-chewie-lin-sm
+    steps:
+      - name: Output Chewie response
+        run: |
+          echo "Namespace: ${{ needs.call-chewie-response.outputs.namespace }}"
+          echo "FQDN: ${{ needs.call-chewie-response.outputs.fqdn }}"
+          echo "CN Quantity: ${{ needs.call-chewie-response.outputs.cn-quantity }}"
+          echo "Aux Quantity: ${{ needs.call-chewie-response.outputs.aux-quantity }}"
+          echo "CN Tolerations: ${{ needs.call-chewie-response.outputs.cn-tolerations }}"
+          echo "Aux Tolerations: ${{ needs.call-chewie-response.outputs.aux-tolerations }}"
+          echo "CN Role: ${{ needs.call-chewie-response.outputs.cn-role }}"
+          echo "Aux Role: ${{ needs.call-chewie-response.outputs.aux-role }}"
+          echo "Network ID: ${{ needs.call-chewie-response.outputs.network-id }}"
+          echo "Owner: ${{ needs.call-chewie-response.outputs.owner }}"
+
+  get-chewie-jwt:
+    uses: ./.github/workflows/858-call-chewie-jwt.yaml
+    secrets:
+      chewie-key: ${{ secrets.CHEWIE_REPO_IDENTITY_KEY }}
+      chewie-host: ${{ secrets.CHEWIE_HOST }}
+
+  validate-jwt:
+    needs: get-chewie-jwt
+    runs-on: hl-cn-chewie-lin-sm
+    steps:
+      - name: Validate content exists
+        env:
+          CHEWIE_JWT: ${{ needs.get-chewie-jwt.outputs.jwt }}
+          CHEWIE_EXPIRATION: ${{ needs.get-chewie-jwt.outputs.expiration }}
+        run: |
+          if [[ -z "${CHEWIE_JWT}" ]]; then
+            echo "::error::Chewie JWT is empty. Please check the Chewie key and host."
+            exit 1
+          fi
+
+          if [[ -z "${CHEWIE_EXPIRATION}" ]]; then
+            echo "::error::Chewie JWT expiration is empty. Please check the Chewie key and host."
+            exit 1
+          fi
+
+          echo "Chewie JWT (len): ${#CHEWIE_JWT}"
+          echo "Chewie JWT Expiration: ${CHEWIE_EXPIRATION}"
+
+  call-chewie-prod:
+    needs:
+      - validate-jwt
+      - get-chewie-jwt
+    uses: ./.github/workflows/859-call-create-chewie-request.yaml
+    with:
+      ref: ${{ github.ref }}
+      instances-qty: 1
+      instance-cpu: 10
+      instance-memory-mb: 1024
+      duration-minutes: 60
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      chewie-token: ${{ needs.get-chewie-jwt.outputs.jwt }}
+      chewie-host: ${{ secrets.CHEWIE_HOST }}
+
+  output-chewie-prod-response:
+    needs: call-chewie-prod
+    runs-on: hl-cn-chewie-lin-sm
+    steps:
+      - name: Output Chewie response
+        run: |
+          echo "Namespace: ${{ needs.call-chewie-prod.outputs.namespace }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "FQDN: ${{ needs.call-chewie-prod.outputs.fqdn }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "CN Quantity: ${{ needs.call-chewie-prod.outputs.cn-quantity }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "Aux Quantity: ${{ needs.call-chewie-prod.outputs.aux-quantity }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "CN Tolerations: ${{ needs.call-chewie-prod.outputs.cn-tolerations }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "Aux Tolerations: ${{ needs.call-chewie-prod.outputs.aux-tolerations }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "CN Role: ${{ needs.call-chewie-prod.outputs.cn-role }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "Aux Role: ${{ needs.call-chewie-prod.outputs.aux-role }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "Network ID: ${{ needs.call-chewie-prod.outputs.network-id }}" | tee -a "${GITHUB_STEP_SUMMARY}"
+          echo "Owner: ${{ needs.call-chewie-prod.outputs.owner }}" | tee -a "${GITHUB_STEP_SUMMARY}"

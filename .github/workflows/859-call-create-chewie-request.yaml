@@ -1,0 +1,239 @@
+# SPDX-License-Identifier: Apache-2.0
+name: "859: [CALL] Create Chewie Request"
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        description: "The git ref used for tests (branch, tag, or commit)."
+        type: string
+      instances-qty:
+        required: true
+        description: "The number of instances to request."
+        type: number
+      instance-cpu:
+        required: true
+        description: "The number of CPUs per instance."
+        type: number
+      instance-memory-mb:
+        required: true
+        description: "The amount of memory (in MB) per instance."
+        type: number
+      duration-minutes:
+        required: true
+        description: "The duration (in minutes) for the allocation."
+        type: number
+      token-expiry:
+        required: false
+        description: "The expiration time (in seconds) for the Chewie token. Optional."
+        type: number
+      request-timeout:
+        required: false
+        description: "How long (in seconds) to poll for an approved allocation before giving up. Defaults to 3600."
+        type: number
+    secrets:
+      github-token:
+        required: true
+        description: "GitHub Authorization Token for the workflow"
+      chewie-token:
+        required: true
+        description: "The Chewie API key for the repository."
+      chewie-host:
+        required: true
+        description: "The Chewie host for the repository."
+    outputs:
+      namespace:
+        value: ${{ jobs.create-allocation-request.outputs.namespace }}
+      fqdn:
+        value: ${{ jobs.create-allocation-request.outputs.fqdn }}
+      cn-quantity:
+        value: ${{ jobs.create-allocation-request.outputs.cn-quantity }}
+      aux-quantity:
+        value: ${{ jobs.create-allocation-request.outputs.aux-quantity }}
+      cn-tolerations:
+        value: ${{ jobs.create-allocation-request.outputs.cn-tolerations }}
+      aux-tolerations:
+        value: ${{ jobs.create-allocation-request.outputs.aux-tolerations }}
+      cn-role:
+        value: ${{ jobs.create-allocation-request.outputs.cn-role }}
+      aux-role:
+        value: ${{ jobs.create-allocation-request.outputs.aux-role }}
+      network-id:
+        value: ${{ jobs.create-allocation-request.outputs.network-id }}
+      owner:
+        value: ${{ jobs.create-allocation-request.outputs.owner }}
+
+permissions:
+  contents: read
+
+env:
+  HOST: "https://chewie.lat.ope.eng.hashgraph.io"
+  API_EP_COMPUTE_ALLOCATION: "api/v1/compute/allocation"
+  INSTANCES_QTY: ${{ inputs.instances-qty }}
+  INSTANCE_CPU: ${{ inputs.instance-cpu }}
+  INSTANCE_MEMORY_MB: ${{ inputs.instance-memory-mb }}
+  DURATION_MINUTES: ${{ inputs.duration-minutes }}
+  REQUEST_TIMEOUT: ${{ inputs.request-timeout }}
+
+jobs:
+  create-allocation-request:
+    name: Create Chewie Allocation Request
+    runs-on: hl-cn-chewie-lin-sm
+    outputs:
+      namespace: ${{ steps.read-chewie-response.outputs.namespace }}
+      fqdn: ${{ steps.read-chewie-response.outputs.kubernetes-fqdn }}
+      cn-quantity: ${{ steps.read-chewie-response.outputs.cn-quantity }}
+      aux-quantity: ${{ steps.read-chewie-response.outputs.aux-quantity }}
+      cn-tolerations: ${{ steps.read-chewie-response.outputs.cn-tolerations }}
+      aux-tolerations: ${{ steps.read-chewie-response.outputs.aux-tolerations }}
+      cn-role: ${{ steps.read-chewie-response.outputs.cn-role }}
+      aux-role: ${{ steps.read-chewie-response.outputs.aux-role }}
+      network-id: ${{ steps.read-chewie-response.outputs.network-id }}
+      owner: ${{ steps.read-chewie-response.outputs.owner }}
+    steps:
+      - name: Initialize Github Job
+        uses: pandaswhocode/initialize-github-job@c96d9edf7816b4f333b558f2e07fe81ebf1e822d # v1.3.0
+        with:
+          checkout: "true"
+          checkout-token: ${{ secrets.github-token }}
+          checkout-ref: ${{ inputs.ref }}
+
+      - name: Create Chewie Allocation Request
+        id: create-allocation-request
+        env:
+          REPO_JWT: ${{ secrets.chewie-token }}
+          REF: ${{ inputs.ref }}
+          JWT_EXPIRY: ${{ inputs.token-expiry }}
+        run: |
+          request_body=$(.github/workflows/support/scripts/build-compute-request.sh \
+            -q "${INSTANCES_QTY}" \
+            -c "${INSTANCE_CPU}" \
+            -m "${INSTANCE_MEMORY_MB}" \
+            -d "${DURATION_MINUTES}" \
+            -i "${{ github.run_id }}" \
+            -n "${{ github.run_number }}" \
+            -a "${{ github.run_attempt }}" \
+            -o "${{ github.repository_owner }}" \
+            -r "${{ github.repository }}" \
+            -j "${{ github.job }}"
+          )
+
+          response_and_code=$(curl -sS -X POST "${HOST}/${API_EP_COMPUTE_ALLOCATION}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${REPO_JWT}" \
+            -d "${request_body}" \
+            -w '\n%{http_code}')
+
+          status_code="${response_and_code##*$'\n'}"
+          response_body="${response_and_code%$'\n'*}"
+
+          # Valid Responses from Chewie:
+          # pending (200): Request accepted, awaiting scheduling/approval (the initial state on create)
+          # approved (202): Allocation granted; full detail (namespace, cluster_fqdn, instances, expires_at) is populated
+          # denied (410): Request was rejected
+          # canceled (410): Request cancelled before approval
+          # released (410): Was approved, now released (freed)
+          # expired (410): Was approved, now past its expiry
+
+          if [[ "${status_code}" != "200" && "${status_code}" != "202" ]]; then
+            echo "Chewie allocation request failed. Status code: ${status_code}"
+            echo "Response: ${response_body}"
+            exit 1
+          fi
+
+          # Get the ID for the allocation request from the response.
+          allocation_id=$(echo "${response_body}" | jq -r '.id')
+          if [[ -z "${allocation_id}" || "${allocation_id}" == "null" ]]; then
+            echo "Chewie allocation response missing allocation id."
+            echo "Response: ${response_body}"
+            exit 1
+          fi
+          echo "allocation-id=${allocation_id}" >> "${GITHUB_OUTPUT}"
+
+      - name: Poll for Request Ready
+        id: poll-request-ready
+        env:
+          REPO_JWT: ${{ secrets.chewie-token }}
+          ALLOCATION_ID: ${{ steps.create-allocation-request.outputs.allocation-id }}
+        run: |
+          sleep_interval=2 # seconds
+          timeout_seconds="${REQUEST_TIMEOUT:-3600}"
+          start_time=$(date +%s)
+          status_code="200"
+          while [[ "${status_code}" == "200" ]]; do
+            response_and_code=$(curl -k -sS -X GET "${HOST}/api/v1/compute/allocation/${ALLOCATION_ID}" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${REPO_JWT}" \
+              -w '\n%{http_code}')
+
+            status_code="${response_and_code##*$'\n'}"
+            response="${response_and_code%$'\n'*}"
+
+            if [[ "${status_code}" == "202" ]]; then
+              echo "Chewie allocation request approved."
+              echo "chewie-response=${response}" >> "${GITHUB_OUTPUT}"
+              # break the loop since we got an approved response
+              break
+            elif [[ "${status_code}" == "200" ]]; then
+              elapsed=$(( $(date +%s) - start_time ))
+              echo "Chewie allocation request pending. Elapsed: ${elapsed}s / ${timeout_seconds}s. Retrying in ${sleep_interval}s..."
+              if [[ "${elapsed}" -ge "${timeout_seconds}" ]]; then
+                echo "Chewie allocation request timed out after ${timeout_seconds}s."
+                exit 1
+              fi
+              sleep "${sleep_interval}"
+            else
+              echo "Chewie allocation request failed. Status code: ${status_code}"
+              echo "Response: ${response}"
+              exit 1
+            fi
+          done
+
+          echo "continue=true" >> "${GITHUB_OUTPUT}"
+
+      - name: Output Chewie Response
+        id: read-chewie-response
+        env:
+          REQUEST_ID: ${{ steps.create-allocation-request.outputs.allocation-id }}
+          CHEWIE_JWT: ${{ secrets.chewie-token }}
+        run: |
+          response_and_code=$(curl -k -sS -X GET "${HOST}/${API_EP_COMPUTE_ALLOCATION}/${REQUEST_ID}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${CHEWIE_JWT}" \
+            -w '\n%{http_code}')
+
+          status_code="${response_and_code##*$'\n'}"
+          response="${response_and_code%$'\n'*}"
+
+          if [[ "${status_code}" != "200" && "${status_code}" != "202" ]]; then
+            echo "Failed to retrieve Chewie allocation. Status code: ${status_code}"
+            echo "Response: ${response}"
+            exit 1
+          fi
+
+          # Parse the response to extract the necessary information
+          NAMESPACE=$(echo "${response}" | jq -r '.namespace')
+          CLUSTER_FQDN=$(echo "${response}" | jq -r '.cluster_fqdn')
+          CN_QTY=$(echo "${response}" | jq -r ".instances[] | select(.group==\"cn-nodes\") | .spec.quantity")
+          CN_TOLERATIONS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"cn-nodes\") | .tolerations")
+          CN_LABELS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"cn-nodes\") | .labels")
+          CN_ROLE="$(jq -r '."solo.hashgraph.io/role"' <<< "${CN_LABELS}")"
+          AUX_QTY=$(echo "${response}" | jq -r ".instances[] | select(.group==\"aux-nodes\") | .spec.quantity")
+          AUX_TOLERATIONS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"aux-nodes\") | .tolerations")
+          AUX_LABELS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"aux-nodes\") | .labels")
+          AUX_ROLE="$(jq -r '."solo.hashgraph.io/role"' <<< "${AUX_LABELS}")"
+          NETWORK_ID="$(jq -r '."solo.hashgraph.io/network-id"' <<< "${CN_LABELS}")"
+          OWNER="$(jq -r '."solo.hashgraph.io/owner"' <<< "${CN_LABELS}")"
+
+          # Set outputs
+          echo "namespace=${NAMESPACE}" >> "${GITHUB_OUTPUT}"
+          echo "kubernetes-fqdn=${CLUSTER_FQDN}" >> "${GITHUB_OUTPUT}"
+          echo "cn-quantity=${CN_QTY}" >> "${GITHUB_OUTPUT}"
+          echo "cn-tolerations=${CN_TOLERATIONS}" >> "${GITHUB_OUTPUT}"
+          echo "cn-role=${CN_ROLE}" >> "${GITHUB_OUTPUT}"
+          echo "aux-quantity=${AUX_QTY}" >> "${GITHUB_OUTPUT}"
+          echo "aux-tolerations=${AUX_TOLERATIONS}" >> "${GITHUB_OUTPUT}"
+          echo "aux-role=${AUX_ROLE}" >> "${GITHUB_OUTPUT}"
+          echo "network-id=${NETWORK_ID}" >> "${GITHUB_OUTPUT}"
+          echo "owner=${OWNER}" >> "${GITHUB_OUTPUT}"
