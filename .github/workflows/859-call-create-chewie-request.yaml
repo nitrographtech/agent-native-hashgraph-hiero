@@ -141,11 +141,15 @@ jobs:
           JWT_EXPIRY: ${{ inputs.token-expiry }}
         run: |
           CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
+          if [[ "${CHEWIE_JWT}" == Error* ]]; then
+            echo "Failed to decode Chewie JWT: ${CHEWIE_JWT}"
+            exit 1
+          fi
 
           request_body=$(.github/workflows/support/chewie/build-compute-request.sh \
             -q "${INSTANCES_CN_QTY}" \
-            -c "${INSTANCE_CN_CPU}" \
-            -m "${INSTANCE_CN_MEMORY_MB}" \
+            -c "${INSTANCES_CN_CPU}" \
+            -m "${INSTANCES_CN_MEMORY_MB}" \
             -g "${INSTANCES_CN_GROUP_NAME}" \
             -a "${INSTANCES_AUX_QTY}" \
             -p "${INSTANCES_AUX_CPU}" \

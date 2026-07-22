@@ -63,6 +63,11 @@ jobs:
             exit 1
           fi
 
+          if [[ "${CHEWIE_JWT}" == Error* ]]; then
+            echo "Failed to decode Chewie JWT: ${CHEWIE_JWT}"
+            exit 1
+          fi
+
           echo "Chewie JWT (len): ${#CHEWIE_JWT}"
           echo "Chewie JWT Expiration: ${CHEWIE_EXPIRATION}"
 

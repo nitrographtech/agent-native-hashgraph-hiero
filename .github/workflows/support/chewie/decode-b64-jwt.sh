@@ -6,7 +6,6 @@ decode_jwt() {
 
   if [[ -z "${b64}" ]]; then
     echo "Error: No base64-encoded JWT provided." >&2
-    exit 1
   fi
 
   local jwt
@@ -15,7 +14,6 @@ decode_jwt() {
 
   if [[ -z "${jwt}" ]]; then
     echo "Error: Decoded JWT is empty. Please check the Chewie token." >&2
-    exit 1
   fi
 
   echo -n "${jwt}"
