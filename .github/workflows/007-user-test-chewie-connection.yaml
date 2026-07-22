@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   call-chewie-response:
-    uses: ./.github/workflows/801-read-chewie-response.yaml
+    uses: ./.github/workflows/834-call-read-chewie-response.yaml
     with:
       ref: ${{ github.ref }}
       test-type: "sdpt"
