@@ -267,7 +267,7 @@ jobs:
           status_code="${response_and_code##*$'\n'}"
           response="${response_and_code%$'\n'*}"
 
-          if [[ "${status_code}" != "200" && "${status_code}" != "202" ]]; then
+          if [[ "${status_code}" != "200" ]]; then
             echo "Failed to retrieve Chewie allocation. Status code: ${status_code}"
             echo "Response: ${response}"
             exit 1
