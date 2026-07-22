@@ -44,6 +44,13 @@ jobs:
     needs: get-chewie-jwt
     runs-on: hl-cn-chewie-lin-sm
     steps:
+      - name: Initialize GitHub Job
+        uses: pandaswhocode/initialize-github-job@c96d9edf7816b4f333b558f2e07fe81ebf1e822d # v1.3.0
+        with:
+          checkout: "true"
+          checkout-token: ${{ secrets.github-token }}
+          checkout-ref: ${{ inputs.ref }}
+
       - name: Validate content exists
         env:
           CHEWIE_JWT_B64: ${{ needs.get-chewie-jwt.outputs.jwt }}

@@ -10,7 +10,8 @@ decode_jwt() {
   fi
 
   local jwt
-  jwt=$(echo -n "${b64}" | base64 -d)
+  jwt_b64=$(echo -n "${b64}" | base64 -d)
+  jwt=$(echo -n "${jwt_b64}" | base64 -d)
 
   if [[ -z "${jwt}" ]]; then
     echo "Error: Decoded JWT is empty. Please check the Chewie token." >&2
