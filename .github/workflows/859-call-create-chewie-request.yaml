@@ -177,8 +177,8 @@ jobs:
           response_body="${response_and_code%$'\n'*}"
 
           # Valid Responses from Chewie:
-          # pending (200): Request accepted, awaiting scheduling/approval (the initial state on create)
-          # approved (202): Allocation granted; full detail (namespace, cluster_fqdn, instances, expires_at) is populated
+          # accepted (200): Allocation granted; full detail (namespace, cluster_fqdn, instances, expires_at) is populated
+          # pending (202): Request accepted, awaiting scheduling/approval (the initial state on create)
           # denied (410): Request was rejected
           # canceled (410): Request cancelled before approval
           # released (410): Was approved, now released (freed)
@@ -211,8 +211,8 @@ jobs:
           sleep_interval=2 # seconds
           timeout_seconds="${REQUEST_TIMEOUT}"
           start_time=$(date +%s)
-          status_code="200"
-          while [[ "${status_code}" == "200" ]]; do
+          status_code="202"
+          while [[ "${status_code}" == "202" ]]; do
             response_and_code=$(curl -k -sS -X GET "${HOST}/api/v1/compute/allocation/${ALLOCATION_ID}" \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer ${CHEWIE_JWT}" \
@@ -221,12 +221,12 @@ jobs:
             status_code="${response_and_code##*$'\n'}"
             response="${response_and_code%$'\n'*}"
 
-            if [[ "${status_code}" == "202" ]]; then
-              echo "Chewie allocation request approved."
+            if [[ "${status_code}" == "200" ]]; then
+              echo "Chewie allocation request accepted."
               echo "chewie-response=${response}" >> "${GITHUB_OUTPUT}"
-              # break the loop since we got an approved response
+              # break the loop since we got an accepted response
               break
-            elif [[ "${status_code}" == "200" ]]; then
+            elif [[ "${status_code}" == "202" ]]; then
               elapsed=$(( $(date +%s) - start_time ))
               echo "Chewie allocation request pending. Elapsed: ${elapsed}s / ${timeout_seconds}s. Retrying in ${sleep_interval}s..."
               if [[ "${elapsed}" -ge "${timeout_seconds}" ]]; then
@@ -283,7 +283,7 @@ jobs:
           echo "namespace=${NAMESPACE}" >> "${GITHUB_OUTPUT}"
           echo "kubernetes-fqdn=${CLUSTER_FQDN}" >> "${GITHUB_OUTPUT}"
           echo "cn-group-name=${INSTANCES_CN_GROUP_NAME}" >> "${GITHUB_OUTPUT}"
-          echo "aux-group-name=${INSTANCES_AUX_GROUP_NAME}" >> "${GITHUB_OUTPUT
+          echo "aux-group-name=${INSTANCES_AUX_GROUP_NAME}" >> "${GITHUB_OUTPUT}"
           echo "cn-quantity=${CN_QTY}" >> "${GITHUB_OUTPUT}"
           echo "cn-tolerations=${CN_TOLERATIONS}" >> "${GITHUB_OUTPUT}"
           echo "cn-role=${CN_ROLE}" >> "${GITHUB_OUTPUT}"
