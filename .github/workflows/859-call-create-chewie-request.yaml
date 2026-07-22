@@ -8,18 +8,40 @@ on:
         required: true
         description: "The git ref used for tests (branch, tag, or commit)."
         type: string
-      instances-qty:
+      instances-cn-qty:
         required: true
-        description: "The number of instances to request."
+        description: "The number of consensus node instances to request."
         type: number
-      instance-cpu:
+      instances-cn-cpu:
         required: true
-        description: "The number of CPUs per instance."
+        description: "The number of CPUs per consensus node instance."
         type: number
-      instance-memory-mb:
+      instances-cn-memory-mb:
         required: true
-        description: "The amount of memory (in MB) per instance."
+        description: "The amount of memory (in MB) per consensus node instance."
         type: number
+      instances-cn-group-name:
+        required: false
+        description: "The group name for the consensus node instances. Optional."
+        type: string
+        default: "cn-nodes"
+      instances-aux-qty:
+        required: true
+        description: "The number of auxiliary node instances to request."
+        type: number
+      instances-aux-cpu:
+        required: true
+        description: "The number of CPUs per auxiliary node instance."
+        type: number
+      instances-aux-memory-mb:
+        required: true
+        description: "The amount of memory (in MB) per auxiliary node instance."
+        type: number
+      instances-aux-group-name:
+        required: false
+        description: "The group name for the auxiliary node instances. Optional."
+        type: string
+        default: "aux-nodes"
       duration-minutes:
         required: true
         description: "The duration (in minutes) for the allocation."
@@ -47,6 +69,10 @@ on:
         value: ${{ jobs.create-allocation-request.outputs.namespace }}
       fqdn:
         value: ${{ jobs.create-allocation-request.outputs.fqdn }}
+      cn-group-name:
+        value: ${{ jobs.create-allocation-request.outputs.cn-group-name }}
+      aux-group-name:
+        value: ${{ jobs.create-allocation-request.outputs.aux-group-name }}
       cn-quantity:
         value: ${{ jobs.create-allocation-request.outputs.cn-quantity }}
       aux-quantity:
@@ -70,10 +96,16 @@ permissions:
 env:
   HOST: "https://chewie.lat.ope.eng.hashgraph.io"
   API_EP_COMPUTE_ALLOCATION: "api/v1/compute/allocation"
-  INSTANCES_QTY: ${{ inputs.instances-qty }}
-  INSTANCE_CPU: ${{ inputs.instance-cpu }}
-  INSTANCE_MEMORY_MB: ${{ inputs.instance-memory-mb }}
+  INSTANCES_CN_QTY: ${{ inputs.instances-cn-qty }}
+  INSTANCES_CN_CPU: ${{ inputs.instances-cn-cpu }}
+  INSTANCES_CN_MEMORY_MB: ${{ inputs.instances-cn-memory-mb }}
+  INSTANCES_CN_GROUP_NAME: ${{ inputs.instances-cn-group-name }}
+  INSTANCES_AUX_QTY: ${{ inputs.instances-aux-qty }}
+  INSTANCES_AUX_CPU: ${{ inputs.instances-aux-cpu }}
+  INSTANCES_AUX_MEMORY_MB: ${{ inputs.instances-aux-memory-mb }}
+  INSTANCES_AUX_GROUP_NAME: ${{ inputs.instances-aux-group-name }}
   DURATION_MINUTES: ${{ inputs.duration-minutes }}
+  DURATION_SECONDS: $(( ${{ inputs.duration-minutes }} * 60 ))
   REQUEST_TIMEOUT: ${{ inputs.request-timeout }}
 
 jobs:
@@ -83,6 +115,8 @@ jobs:
     outputs:
       namespace: ${{ steps.read-chewie-response.outputs.namespace }}
       fqdn: ${{ steps.read-chewie-response.outputs.kubernetes-fqdn }}
+      cn-group-name: ${{ steps.read-chewie-response.outputs.cn-group-name }}
+      aux-group-name: ${{ steps.read-chewie-response.outputs.aux-group-name }}
       cn-quantity: ${{ steps.read-chewie-response.outputs.cn-quantity }}
       aux-quantity: ${{ steps.read-chewie-response.outputs.aux-quantity }}
       cn-tolerations: ${{ steps.read-chewie-response.outputs.cn-tolerations }}
@@ -109,10 +143,15 @@ jobs:
           CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
 
           request_body=$(.github/workflows/support/chewie/build-compute-request.sh \
-            -q "${INSTANCES_QTY}" \
-            -c "${INSTANCE_CPU}" \
-            -m "${INSTANCE_MEMORY_MB}" \
-            -d "${DURATION_MINUTES}" \
+            -q "${INSTANCES_CN_QTY}" \
+            -c "${INSTANCE_CN_CPU}" \
+            -m "${INSTANCE_CN_MEMORY_MB}" \
+            -g "${INSTANCES_CN_GROUP_NAME}" \
+            -a "${INSTANCES_AUX_QTY}" \
+            -p "${INSTANCES_AUX_CPU}" \
+            -w "${INSTANCES_AUX_MEMORY_MB}" \
+            -x "${INSTANCES_AUX_GROUP_NAME}" \
+            -d "${DURATION_SECONDS}" \
             -i "${{ github.run_id }}" \
             -n "${{ github.run_number }}" \
             -a "${{ github.run_attempt }}" \
@@ -221,13 +260,13 @@ jobs:
           # Parse the response to extract the necessary information
           NAMESPACE=$(echo "${response}" | jq -r '.namespace')
           CLUSTER_FQDN=$(echo "${response}" | jq -r '.cluster_fqdn')
-          CN_QTY=$(echo "${response}" | jq -r ".instances[] | select(.group==\"cn-nodes\") | .spec.quantity")
-          CN_TOLERATIONS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"cn-nodes\") | .tolerations")
-          CN_LABELS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"cn-nodes\") | .labels")
+          CN_QTY=$(echo "${response}" | jq -r ".instances[] | select(.group==\"${INSTANCES_CN_GROUP_NAME}\") | .spec.quantity")
+          CN_TOLERATIONS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"${INSTANCES_CN_GROUP_NAME}\") | .tolerations")
+          CN_LABELS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"${INSTANCES_CN_GROUP_NAME}\") | .labels")
           CN_ROLE="$(jq -r '."solo.hashgraph.io/role"' <<< "${CN_LABELS}")"
-          AUX_QTY=$(echo "${response}" | jq -r ".instances[] | select(.group==\"aux-nodes\") | .spec.quantity")
-          AUX_TOLERATIONS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"aux-nodes\") | .tolerations")
-          AUX_LABELS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"aux-nodes\") | .labels")
+          AUX_QTY=$(echo "${response}" | jq -r ".instances[] | select(.group==\"${INSTANCES_AUX_GROUP_NAME}\") | .spec.quantity")
+          AUX_TOLERATIONS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"${INSTANCES_AUX_GROUP_NAME}\") | .tolerations")
+          AUX_LABELS=$(echo "${response}" | jq -c ".instances[] | select(.group==\"${INSTANCES_AUX_GROUP_NAME}\") | .labels")
           AUX_ROLE="$(jq -r '."solo.hashgraph.io/role"' <<< "${AUX_LABELS}")"
           NETWORK_ID="$(jq -r '."solo.hashgraph.io/network-id"' <<< "${CN_LABELS}")"
           OWNER="$(jq -r '."solo.hashgraph.io/owner"' <<< "${CN_LABELS}")"
@@ -235,6 +274,8 @@ jobs:
           # Set outputs
           echo "namespace=${NAMESPACE}" >> "${GITHUB_OUTPUT}"
           echo "kubernetes-fqdn=${CLUSTER_FQDN}" >> "${GITHUB_OUTPUT}"
+          echo "cn-group-name=${INSTANCES_CN_GROUP_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "aux-group-name=${INSTANCES_AUX_GROUP_NAME}" >> "${GITHUB_OUTPUT
           echo "cn-quantity=${CN_QTY}" >> "${GITHUB_OUTPUT}"
           echo "cn-tolerations=${CN_TOLERATIONS}" >> "${GITHUB_OUTPUT}"
           echo "cn-role=${CN_ROLE}" >> "${GITHUB_OUTPUT}"
