@@ -147,18 +147,18 @@ jobs:
           fi
 
           request_body=$(.github/workflows/support/chewie/build-compute-request.sh \
-            -d "${DURATION_SECONDS}" \
-            -q "${INSTANCES_CN_QTY}" \
-            -c "${INSTANCES_CN_CPU}" \
-            -m "${INSTANCES_CN_MEMORY_MB}" \
+            -d ${DURATION_SECONDS} \
+            -q ${INSTANCES_CN_QTY} \
+            -c ${INSTANCES_CN_CPU} \
+            -m ${INSTANCES_CN_MEMORY_MB} \
             -g "${INSTANCES_CN_GROUP_NAME}" \
-            -a "${INSTANCES_AUX_QTY}" \
-            -p "${INSTANCES_AUX_CPU}" \
-            -w "${INSTANCES_AUX_MEMORY_MB}" \
+            -a ${INSTANCES_AUX_QTY} \
+            -p ${INSTANCES_AUX_CPU} \
+            -w ${INSTANCES_AUX_MEMORY_MB} \
             -x "${INSTANCES_AUX_GROUP_NAME}" \
-            -i "${{ github.run_id }}" \
-            -n "${{ github.run_number }}" \
-            -t "${{ github.run_attempt }}" \
+            -i ${{ github.run_id }} \
+            -n ${{ github.run_number }} \
+            -t ${{ github.run_attempt }} \
             -o "${{ github.repository_owner }}" \
             -r "${{ github.repository }}" \
             -j "${{ github.job }}"
