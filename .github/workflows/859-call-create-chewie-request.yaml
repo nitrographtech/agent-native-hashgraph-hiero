@@ -272,6 +272,10 @@ jobs:
             echo "Response: ${response}"
             exit 1
           fi
+          
+          echo "::group::Chewie Allocation Response"
+          echo "${response}"
+          echo "::endgroup::"
 
           # Parse the response to extract the necessary information
           NAMESPACE=$(echo "${response}" | jq -r '.namespace')
