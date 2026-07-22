@@ -77,7 +77,6 @@ jobs:
       - get-chewie-jwt
     uses: ./.github/workflows/859-call-create-chewie-request.yaml
     with:
-      ref: ${{ github.ref }}
       instances-cn-qty: 7
       instances-cn-cpu: 22
       instances-cn-memory-mb: 262144

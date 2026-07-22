@@ -1,5 +1,4 @@
- #!/usr/bin/env bash
- set -euo pipefail
+#!/usr/bin/env bash
 
 build_compute_request() {
   local CONSENSUS_GROUP_NAME=""

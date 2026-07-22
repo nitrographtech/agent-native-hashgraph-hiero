@@ -4,10 +4,6 @@ name: "859: [CALL] Create Chewie Request"
 on:
   workflow_call:
     inputs:
-      ref:
-        required: true
-        description: "The git ref used for tests (branch, tag, or commit)."
-        type: string
       instances-cn-qty:
         required: true
         description: "The number of consensus node instances to request."
@@ -131,13 +127,13 @@ jobs:
         with:
           checkout: "true"
           checkout-token: ${{ secrets.github-token }}
-          checkout-ref: ${{ inputs.ref }}
+          checkout-ref: ${{ github.ref }}
 
       - name: Create Chewie Allocation Request
         id: create-allocation-request
         env:
           CHEWIE_JWT_B64: ${{ secrets.chewie-token }}
-          REF: ${{ inputs.ref }}
+          REF: ${{ github.ref }}
           JWT_EXPIRY: ${{ inputs.token-expiry }}
         run: |
           CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
