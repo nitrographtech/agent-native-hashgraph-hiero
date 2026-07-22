@@ -84,6 +84,7 @@ jobs:
       instances-aux-cpu: 8
       instances-aux-memory-mb: 32768
       duration-minutes: 60
+      request-timeout:
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       chewie-token: ${{ needs.get-chewie-jwt.outputs.jwt }}

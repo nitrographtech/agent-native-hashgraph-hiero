@@ -50,6 +50,7 @@ on:
         required: false
         description: "How long (in seconds) to poll for an approved allocation before giving up. Defaults to 3600."
         type: number
+        default: 3600
     secrets:
       github-token:
         required: true
@@ -197,6 +198,7 @@ jobs:
             exit 1
           fi
           echo "allocation-id=${allocation_id}" >> "${GITHUB_OUTPUT}"
+          echo "Allocation ID: ${allocation_id}" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Poll for Request Ready
         id: poll-request-ready
@@ -207,7 +209,7 @@ jobs:
           CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
 
           sleep_interval=2 # seconds
-          timeout_seconds="${REQUEST_TIMEOUT:-3600}"
+          timeout_seconds="${REQUEST_TIMEOUT}"
           start_time=$(date +%s)
           status_code="200"
           while [[ "${status_code}" == "200" ]]; do
