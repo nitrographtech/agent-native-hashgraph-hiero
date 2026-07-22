@@ -207,6 +207,10 @@ jobs:
           ALLOCATION_ID: ${{ steps.create-allocation-request.outputs.allocation-id }}
         run: |
           CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
+          if [[ "${CHEWIE_JWT}" == Error* ]]; then
+            echo "Failed to decode Chewie JWT: ${CHEWIE_JWT}"
+            exit 1
+          fi
 
           sleep_interval=2 # seconds
           timeout_seconds="${REQUEST_TIMEOUT}"
@@ -250,6 +254,10 @@ jobs:
           CHEWIE_JWT_B64: ${{ secrets.chewie-token }}
         run: |
           CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
+          if [[ "${CHEWIE_JWT}" == Error* ]]; then
+            echo "Failed to decode Chewie JWT: ${CHEWIE_JWT}"
+            exit 1
+          fi
 
           response_and_code=$(curl -k -sS -X GET "${HOST}/${API_EP_COMPUTE_ALLOCATION}/${REQUEST_ID}" \
             -H "Content-Type: application/json" \
