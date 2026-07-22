@@ -35,7 +35,7 @@ jobs:
           echo "Owner: ${{ needs.call-chewie-response.outputs.owner }}"
 
   get-chewie-jwt:
-    uses: ./.github/workflows/858-call-chewie-jwt.yaml
+    uses: ./.github/workflows/858-call-get-chewie-jwt.yaml
     secrets:
       chewie-key: ${{ secrets.CHEWIE_REPO_IDENTITY_KEY }}
       chewie-host: ${{ secrets.CHEWIE_HOST }}
