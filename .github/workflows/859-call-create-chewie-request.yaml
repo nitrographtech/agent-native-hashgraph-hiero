@@ -101,7 +101,6 @@ env:
   INSTANCES_AUX_MEMORY_MB: ${{ inputs.instances-aux-memory-mb }}
   INSTANCES_AUX_GROUP_NAME: ${{ inputs.instances-aux-group-name }}
   DURATION_MINUTES: ${{ inputs.duration-minutes }}
-  DURATION_SECONDS: $(( ${{ inputs.duration-minutes }} * 60 ))
   REQUEST_TIMEOUT: ${{ inputs.request-timeout }}
 
 jobs:
@@ -141,6 +140,8 @@ jobs:
             echo "Failed to decode Chewie JWT: ${CHEWIE_JWT}"
             exit 1
           fi
+
+          DURATION_SECONDS=$(( DURATION_MINUTES * 60 ))
 
           request_body=$(.github/workflows/support/chewie/build-compute-request.sh \
             -d ${DURATION_SECONDS} \

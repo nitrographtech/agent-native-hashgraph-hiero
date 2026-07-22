@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 build_compute_request() {
   local CONSENSUS_GROUP_NAME=""
