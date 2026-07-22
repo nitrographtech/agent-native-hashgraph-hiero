@@ -80,7 +80,7 @@ jobs:
       instances-cn-qty: 7
       instances-cn-cpu: 22
       instances-cn-memory-mb: 262144
-      instances-aux-qty: 2
+      instances-aux-qty: 1
       instances-aux-cpu: 8
       instances-aux-memory-mb: 32768
       duration-minutes: 60
