@@ -48,7 +48,7 @@ jobs:
         uses: pandaswhocode/initialize-github-job@c96d9edf7816b4f333b558f2e07fe81ebf1e822d # v1.3.0
         with:
           checkout: "true"
-          checkout-token: ${{ secrets.github-token }}
+          checkout-token: ${{ secrets.GITHUB_TOKEN }}
           checkout-ref: ${{ inputs.ref }}
 
       - name: Validate content exists
