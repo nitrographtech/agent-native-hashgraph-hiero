@@ -73,9 +73,12 @@ jobs:
     uses: ./.github/workflows/859-call-create-chewie-request.yaml
     with:
       ref: ${{ github.ref }}
-      instances-qty: 1
-      instance-cpu: 10
-      instance-memory-mb: 1024
+      instances-cn-qty: 7
+      instances-cn-cpu: 22
+      instances-cn-memory-mb: 262144
+      instances-aux-qty: 2
+      instances-aux-cpu: 8
+      instances-aux-memory-mb: 32768
       duration-minutes: 60
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
