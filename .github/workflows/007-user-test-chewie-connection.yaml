@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   call-chewie-response:
-    needs: run-app-test
     uses: ./.github/workflows/801-read-chewie-response.yaml
     with:
       ref: ${{ github.ref }}
