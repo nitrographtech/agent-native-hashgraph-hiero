@@ -17,7 +17,7 @@ build_compute_request() {
   local OWNER=""
   local REPOSITORY=""
   local JOB=""
-  while getopts "d:q:c:m:g:a:p:w:x:i:n:t:o:r:j:h" arg; do
+  while getopts "d:q:c:m:g:a:p:w:x:i:n:t:o:r:j:" arg; do
     case $arg in
       d) DURATION=${OPTARG} ;;
       q) CN_QUANTITY=${OPTARG} ;;
@@ -34,13 +34,9 @@ build_compute_request() {
       o) OWNER="${OPTARG}" ;;
       r) REPOSITORY="${OPTARG}" ;;
       j) JOB="${OPTARG}" ;;
-      h)
-        echo "Usage: ${0} -q <cn_quantity> -c <cn_cpu> -m <cn_memory> -d <duration> -g <consensus-group-name> -a <aux_quantity> -p <aux_cpu> -w <aux_memory> -x <auxiliary-group-name> -i <run_id> -n <run_number> -t <run_attempt> -o <owner> -r <repository> -j <job>"
-        exit 0
-        ;;
       *)
         echo "Error: Invalid option"
-        exit 1
+        echo "Usage: ${0} -q <cn_quantity> -c <cn_cpu> -m <cn_memory> -d <duration> -g <consensus-group-name> -a <aux_quantity> -p <aux_cpu> -w <aux_memory> -x <auxiliary-group-name> -i <run_id> -n <run_number> -t <run_attempt> -o <owner> -r <repository> -j <job>"
         ;;
     esac
   done
@@ -52,7 +48,6 @@ build_compute_request() {
      [[ "$RUN_ATTEMPT" == "0" ]] || [[ -z "$OWNER" ]] || \
      [[ -z "$REPOSITORY" ]] || [[ -z "$JOB" ]]; then
     echo "Error: Missing required options"
-    exit 1
   fi
 
   if [[ "${CONSENSUS_GROUP_NAME:-}" == "" ]]; then

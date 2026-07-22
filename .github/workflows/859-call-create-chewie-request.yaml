@@ -147,6 +147,7 @@ jobs:
           fi
 
           request_body=$(.github/workflows/support/chewie/build-compute-request.sh \
+            -d "${DURATION_SECONDS}" \
             -q "${INSTANCES_CN_QTY}" \
             -c "${INSTANCES_CN_CPU}" \
             -m "${INSTANCES_CN_MEMORY_MB}" \
@@ -155,14 +156,18 @@ jobs:
             -p "${INSTANCES_AUX_CPU}" \
             -w "${INSTANCES_AUX_MEMORY_MB}" \
             -x "${INSTANCES_AUX_GROUP_NAME}" \
-            -d "${DURATION_SECONDS}" \
             -i "${{ github.run_id }}" \
             -n "${{ github.run_number }}" \
-            -a "${{ github.run_attempt }}" \
+            -t "${{ github.run_attempt }}" \
             -o "${{ github.repository_owner }}" \
             -r "${{ github.repository }}" \
             -j "${{ github.job }}"
           )
+
+          if [[ -z "${request_body}" || "${request_body}" == Error* ]]; then
+            echo "Failed to build Chewie allocation request body."
+            exit 1
+          fi
 
           response_and_code=$(curl -sS -X POST "${HOST}/${API_EP_COMPUTE_ALLOCATION}" \
             -H "Content-Type: application/json" \
