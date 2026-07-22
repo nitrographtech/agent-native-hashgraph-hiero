@@ -102,10 +102,12 @@ jobs:
       - name: Create Chewie Allocation Request
         id: create-allocation-request
         env:
-          REPO_JWT: ${{ secrets.chewie-token }}
+          CHEWIE_JWT_B64: ${{ secrets.chewie-token }}
           REF: ${{ inputs.ref }}
           JWT_EXPIRY: ${{ inputs.token-expiry }}
         run: |
+          CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
+
           request_body=$(.github/workflows/support/chewie/build-compute-request.sh \
             -q "${INSTANCES_QTY}" \
             -c "${INSTANCE_CPU}" \
@@ -121,7 +123,7 @@ jobs:
 
           response_and_code=$(curl -sS -X POST "${HOST}/${API_EP_COMPUTE_ALLOCATION}" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${REPO_JWT}" \
+            -H "Authorization: Bearer ${CHEWIE_JWT}" \
             -d "${request_body}" \
             -w '\n%{http_code}')
 
@@ -154,9 +156,11 @@ jobs:
       - name: Poll for Request Ready
         id: poll-request-ready
         env:
-          REPO_JWT: ${{ secrets.chewie-token }}
+          CHEWIE_JWT_B64: ${{ secrets.chewie-token }}
           ALLOCATION_ID: ${{ steps.create-allocation-request.outputs.allocation-id }}
         run: |
+          CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
+
           sleep_interval=2 # seconds
           timeout_seconds="${REQUEST_TIMEOUT:-3600}"
           start_time=$(date +%s)
@@ -164,7 +168,7 @@ jobs:
           while [[ "${status_code}" == "200" ]]; do
             response_and_code=$(curl -k -sS -X GET "${HOST}/api/v1/compute/allocation/${ALLOCATION_ID}" \
               -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${REPO_JWT}" \
+              -H "Authorization: Bearer ${CHEWIE_JWT}" \
               -w '\n%{http_code}')
 
             status_code="${response_and_code##*$'\n'}"
@@ -196,8 +200,10 @@ jobs:
         id: read-chewie-response
         env:
           REQUEST_ID: ${{ steps.create-allocation-request.outputs.allocation-id }}
-          CHEWIE_JWT: ${{ secrets.chewie-token }}
+          CHEWIE_JWT_B64: ${{ secrets.chewie-token }}
         run: |
+          CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
+
           response_and_code=$(curl -k -sS -X GET "${HOST}/${API_EP_COMPUTE_ALLOCATION}/${REQUEST_ID}" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${CHEWIE_JWT}" \

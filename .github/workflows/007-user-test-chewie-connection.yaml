@@ -46,13 +46,10 @@ jobs:
     steps:
       - name: Validate content exists
         env:
-          CHEWIE_JWT: ${{ needs.get-chewie-jwt.outputs.jwt }}
+          CHEWIE_JWT_B64: ${{ needs.get-chewie-jwt.outputs.jwt }}
           CHEWIE_EXPIRATION: ${{ needs.get-chewie-jwt.outputs.expiration }}
         run: |
-          if [[ -z "${CHEWIE_JWT}" ]]; then
-            echo "::error::Chewie JWT is empty. Please check the Chewie key and host."
-            exit 1
-          fi
+          CHEWIE_JWT=$(.github/workflows/support/chewie/decode-b64-jwt.sh "${CHEWIE_JWT_B64}")
 
           if [[ -z "${CHEWIE_EXPIRATION}" ]]; then
             echo "::error::Chewie JWT expiration is empty. Please check the Chewie key and host."
