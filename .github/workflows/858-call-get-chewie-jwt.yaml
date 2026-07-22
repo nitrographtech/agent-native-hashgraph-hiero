@@ -43,7 +43,7 @@ jobs:
 
           response=$(curl -s -X POST "${HOST}/${api_path}" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.chewie-key }}")
+            -H "Authorization: ${{ secrets.chewie-key }}")
 
           echo "::group::Chewie JWT Response"
           echo "${response}"
