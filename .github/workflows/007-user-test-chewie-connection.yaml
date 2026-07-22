@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 name: "007: [USER] Test Chewie Connection"
-INTENTIONAL BREAK
+
 on:
   workflow_dispatch:
 
@@ -81,7 +81,7 @@ jobs:
 
   output-chewie-prod-response:
     needs: call-chewie-prod
-    runs-on: hl-cn-chewie-lin-sm
+    runs-on: ubuntu-latest
     steps:
       - name: Output Chewie response
         run: |
