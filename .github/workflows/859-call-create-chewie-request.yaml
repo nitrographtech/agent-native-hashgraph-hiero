@@ -106,7 +106,7 @@ jobs:
           REF: ${{ inputs.ref }}
           JWT_EXPIRY: ${{ inputs.token-expiry }}
         run: |
-          request_body=$(.github/workflows/support/scripts/build-compute-request.sh \
+          request_body=$(.github/workflows/support/chewie/build-compute-request.sh \
             -q "${INSTANCES_QTY}" \
             -c "${INSTANCE_CPU}" \
             -m "${INSTANCE_MEMORY_MB}" \
