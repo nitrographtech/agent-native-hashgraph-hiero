@@ -176,16 +176,16 @@ jobs:
           status_code="${response_and_code##*$'\n'}"
           response_body="${response_and_code%$'\n'*}"
 
-          # Valid Responses from Chewie:
-          # accepted (200): Allocation granted; full detail (namespace, cluster_fqdn, instances, expires_at) is populated
-          # pending (202): Request accepted, awaiting scheduling/approval (the initial state on create)
-          # denied (410): Request was rejected
-          # canceled (410): Request cancelled before approval
-          # released (410): Was approved, now released (freed)
-          # expired (410): Was approved, now past its expiry
+          # Valid status values from Chewie:
+          # pending:   Request accepted, awaiting scheduling/approval (the initial state on create)
+          # approved:  Allocation granted; full detail (namespace, cluster_fqdn, instances, expires_at) is populated
+          # denied:    Request was rejected
+          # cancelled: Request cancelled before approval
+          # released:  Was approved, now released (freed)
+          # expired:   Was approved, now past its expiry
 
           if [[ "${status_code}" != "200" && "${status_code}" != "202" ]]; then
-            echo "Chewie allocation request failed. Status code: ${status_code}"
+            echo "Chewie allocation request failed. HTTP status: ${status_code}"
             echo "Response: ${response_body}"
             exit 1
           fi
@@ -215,22 +215,29 @@ jobs:
           sleep_interval=2 # seconds
           timeout_seconds="${REQUEST_TIMEOUT}"
           start_time=$(date +%s)
-          status_code="202"
-          while [[ "${status_code}" == "202" ]]; do
+
+          while true; do
             response_and_code=$(curl -k -sS -X GET "${HOST}/api/v1/compute/allocation/${ALLOCATION_ID}" \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer ${CHEWIE_JWT}" \
               -w '\n%{http_code}')
 
-            status_code="${response_and_code##*$'\n'}"
+            http_code="${response_and_code##*$'\n'}"
             response="${response_and_code%$'\n'*}"
 
-            if [[ "${status_code}" == "200" ]]; then
-              echo "Chewie allocation request accepted."
+            if [[ "${http_code}" != "200" && "${http_code}" != "202" ]]; then
+              echo "Chewie allocation request failed. HTTP status: ${http_code}"
+              echo "Response: ${response}"
+              exit 1
+            fi
+
+            status=$(echo "${response}" | jq -r '.status')
+
+            if [[ "${status}" == "approved" ]]; then
+              echo "Chewie allocation request approved."
               echo "chewie-response=${response}" >> "${GITHUB_OUTPUT}"
-              # break the loop since we got an accepted response
               break
-            elif [[ "${status_code}" == "202" ]]; then
+            elif [[ "${status}" == "pending" ]]; then
               elapsed=$(( $(date +%s) - start_time ))
               echo "Chewie allocation request pending. Elapsed: ${elapsed}s / ${timeout_seconds}s. Retrying in ${sleep_interval}s..."
               if [[ "${elapsed}" -ge "${timeout_seconds}" ]]; then
@@ -239,7 +246,7 @@ jobs:
               fi
               sleep "${sleep_interval}"
             else
-              echo "Chewie allocation request failed. Status code: ${status_code}"
+              echo "Chewie allocation request failed with status: ${status}"
               echo "Response: ${response}"
               exit 1
             fi
@@ -272,7 +279,7 @@ jobs:
             echo "Response: ${response}"
             exit 1
           fi
-          
+
           echo "::group::Chewie Allocation Response"
           echo "${response}"
           echo "::endgroup::"
