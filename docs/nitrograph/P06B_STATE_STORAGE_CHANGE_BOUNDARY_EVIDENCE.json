@@ -1,0 +1,142 @@
+{
+  "schema": "nitrograph-p06b-state-storage-change-boundary-evidence-v1",
+  "status": "MERGE_READY",
+  "base": "agent-native@1e6971f82fa20b0f4de538891f92e48ba92fa018",
+  "implementation_commit": "b47371c90c354044b7c85a2d884ce75acd8c9f61",
+  "boundary": {
+    "full_runtime_producer": "Besu/Tuweni world-state tracking -> StorageAccesses -> contract-implementation ConversionUtils -> PBJ",
+    "shared_record_path": "PBJ ContractStateChanges -> HistoricalContractStateChanges -> PBJ state-change sidecar",
+    "shared_block_path": "PBJ ContractSlotUsage -> Besu/Tuweni-free BlockStreamBuilder indexing -> PBJ EvmTraceData",
+    "neutral_types": [
+      "HistoricalContractStateChanges",
+      "HistoricalContractStateChange",
+      "HistoricalStorageChange"
+    ],
+    "shared_besu_imports": 0,
+    "shared_tuweni_imports": 0,
+    "shared_world_state_types": 0,
+    "adapter": "No shared Besu adapter; executable objects are converted to PBJ inside hedera-smart-contract-service-impl."
+  },
+  "golden_output": {
+    "path": "docs/nitrograph/P06B_STATE_STORAGE_CHANGE_GOLDEN_OUTPUT.json",
+    "sha256": "3e9e000dd44d9d80fe395043fd54f5bce1e77f4c2f9ef2d25da669b84f430d92",
+    "authenticated_contract": "11.12.1002",
+    "state_change_records": 2,
+    "storage_change_records": 2,
+    "insertion_fingerprint_sha256": "1cc08c488b786211a78b40ac85fc793c12c12f050f2ead3801b388ce04cf1ee8",
+    "update_fingerprint_sha256": "29168f370ef7b03d5c426d01b5141dd62f34fa98acebf856323a1d2f33067d69",
+    "semantic_fingerprint_sha256": "5af1ff4cd774f2106e4867e7b775a27caf4403fe4e3367afcecef08e1872712d",
+    "post_change_semantics": "PASS: official importer persisted the same two state-change rows; map representative remained 424242",
+    "shutdown_tail_policy": "Only complete, signed, manifest-backed ranges were compared."
+  },
+  "focused_validation": {
+    "app_tests": {
+      "passed": 27,
+      "failed": 0,
+      "coverage": "neutral state/storage values, historical log/result/action values, stream builder, and block builder"
+    },
+    "contract_producer_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "distribution_full": "PASS",
+    "distribution_native_agent": "PASS"
+  },
+  "ci_equivalent_validation": {
+    "workflow": ".github/workflows/anhn-native-agent-ci.yml",
+    "focused_app_tests_passed": 26,
+    "service_contract_tests": "PASS",
+    "distribution_full": "PASS",
+    "distribution_native_agent": "PASS",
+    "protected_platform_sdk_diff": 0
+  },
+  "reconnect_and_synchronization": {
+    "topology": "four node public-fixture-identity network",
+    "real_reconnect": "PASS",
+    "state_synchronization": "PASS",
+    "post_reconnect_coordination_message": "PASS",
+    "test_count": {
+      "passed": 1,
+      "failed": 0
+    },
+    "test_xml_sha256": "b6eed033c2c9320591cfde8ea2862ab10ef137f380cd08598b5053dd0200c701",
+    "elapsed": "4m55s",
+    "peak_rss_kib": 1559908,
+    "swap_events": 0,
+    "instrumented_attempt": {
+      "result": "ENVIRONMENTAL_TIMEOUT",
+      "detail": "The recovering node remained CHECKING until the harness timeout while high-volume JVM class-load logging was enabled; no semantic assertion failed. The identical real reconnect passed when rerun without the high-volume logger.",
+      "elapsed": "8m21s",
+      "peak_rss_kib": 1434248,
+      "swap_events": 0
+    }
+  },
+  "historical_map_integrity": {
+    "pre_round": 162,
+    "post_round": 2470,
+    "map_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "STORAGE": {
+      "result": "UNCHANGED",
+      "cardinality": 1,
+      "value_inventory_sha256": "2437fc8d8c6bdfefa9a9bd01d589250c54cc6765935591aa81fe17ab2d012064",
+      "representative_decoded_value": 424242
+    },
+    "BYTECODE": {
+      "result": "UNCHANGED",
+      "cardinality": 2,
+      "value_inventory_sha256": "12e0d9d7f83e2d4501c049deb7ceb39aa3c9a6d4e0b9423db2a8b7ecdc708101"
+    },
+    "EVM_HOOK_STATES": {
+      "result": "UNCHANGED",
+      "cardinality": 1,
+      "value_inventory_sha256": "1788434d8dd715103097b09ae6bafca864fc775905979a08210a81ab18918cd9"
+    },
+    "LAMBDA_STORAGE": {
+      "result": "UNCHANGED",
+      "cardinality": 1,
+      "value_inventory_sha256": "aca7fb92db8d0629b9b1348e52a7794f60f07fc1b34c472073bf07d45540121d"
+    }
+  },
+  "mirror": {
+    "repository": "hiero-ledger/hiero-mirror-node",
+    "commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "source_changes": 0,
+    "record_files": 34,
+    "transactions": 862,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "contract_actions": 3,
+    "contract_state_changes": 2,
+    "sidecar_records": 7,
+    "block_files": 130,
+    "block_files_persisted": 130,
+    "record_sidecar_result": "PASS",
+    "block_stream_result": "PASS",
+    "state_change_rows_unchanged": true,
+    "false_post_activation_state_changes": 0,
+    "test_xml_sha256": "3211006720bd70c08e87f53251779b3fcd1bdb3ed14863165af9930422cf99dd",
+    "elapsed": "43.76s",
+    "peak_rss_kib": 1369536,
+    "swap_events": 0
+  },
+  "runtime_safety": {
+    "historical_provider_selected": true,
+    "executable_provider_resolved": false,
+    "legacy_rejections": "5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+    "prohibited_evm_engine_classes_loaded_in_native_mode": 0,
+    "besu_tuweni_classes_loaded_in_native_mode": 0,
+    "note": "The P06B-3 exact-process class-load proof remains authoritative; P06B-4 adds no runtime dependency or executable code and static shared-boundary scans remain zero."
+  },
+  "scope": {
+    "remaining_dependency_map_sha256": "b896a8e4c5cc655e8b8de38475f7afd71256aff84a7e8b1d755213e0be50280b",
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "protobuf_changes": 0,
+    "persisted_key_changes": 0,
+    "state_id_changes": 0,
+    "codec_changes": 0,
+    "schema_version_changes": 0,
+    "bytecode_sidecar_changes": 0,
+    "physical_evm_besu_removal": false
+  }
+}

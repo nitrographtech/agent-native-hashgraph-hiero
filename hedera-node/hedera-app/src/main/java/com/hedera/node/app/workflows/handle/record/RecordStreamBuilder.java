@@ -48,6 +48,7 @@ import com.hedera.hapi.streams.ContractStateChanges;
 import com.hedera.hapi.streams.TransactionSidecarRecord;
 import com.hedera.hapi.util.HapiUtils;
 import com.hedera.node.app.blocks.historical.HistoricalContractAction;
+import com.hedera.node.app.blocks.historical.HistoricalContractStateChanges;
 import com.hedera.node.app.service.addressbook.impl.records.NodeCreateStreamBuilder;
 import com.hedera.node.app.service.addressbook.impl.records.RegisteredNodeCreateStreamBuilder;
 import com.hedera.node.app.service.consensus.impl.records.ConsensusCreateTopicStreamBuilder;
@@ -179,7 +180,7 @@ public class RecordStreamBuilder
     private final TransactionReceipt.Builder transactionReceiptBuilder = TransactionReceipt.newBuilder();
     // Sidecar data, booleans are the migration flag
     @Nullable
-    private List<AbstractMap.SimpleEntry<ContractStateChanges, Boolean>> contractStateChanges;
+    private List<AbstractMap.SimpleEntry<HistoricalContractStateChanges, Boolean>> contractStateChanges;
 
     private List<AbstractMap.SimpleEntry<List<HistoricalContractAction>, Boolean>> contractActions = new LinkedList<>();
     private List<AbstractMap.SimpleEntry<ContractBytecode, Boolean>> contractBytecodes = new LinkedList<>();
@@ -344,19 +345,8 @@ public class RecordStreamBuilder
             if (contractStateChanges != null) {
                 if (status == REVERTED_SUCCESS) {
                     contractStateChanges = contractStateChanges.stream()
-                            .map(entry -> {
-                                final var changes =
-                                        new ContractStateChanges(entry.getKey().contractStateChanges().stream()
-                                                .map(change -> change.copyBuilder()
-                                                        .storageChanges(change.storageChanges().stream()
-                                                                .map(sc -> sc.copyBuilder()
-                                                                        .valueWritten(null)
-                                                                        .build())
-                                                                .toList())
-                                                        .build())
-                                                .toList());
-                                return new AbstractMap.SimpleEntry<>(changes, entry.getValue());
-                            })
+                            .map(entry -> new AbstractMap.SimpleEntry<>(
+                                    entry.getKey().withoutWrittenValues(), entry.getValue()))
                             .toList();
                 }
                 contractStateChanges.stream()
@@ -364,7 +354,8 @@ public class RecordStreamBuilder
                                 transactionRecord.consensusTimestamp(),
                                 pair.getValue(),
                                 new OneOf<>(
-                                        TransactionSidecarRecord.SidecarRecordsOneOfType.STATE_CHANGES, pair.getKey())))
+                                        TransactionSidecarRecord.SidecarRecordsOneOfType.STATE_CHANGES,
+                                        pair.getKey().toPbj())))
                         .forEach(transactionSidecarRecords::add);
             }
             contractActions.stream()
@@ -1242,7 +1233,10 @@ public class RecordStreamBuilder
     public RecordStreamBuilder contractStateChanges(
             @NonNull final List<AbstractMap.SimpleEntry<ContractStateChanges, Boolean>> contractStateChanges) {
         requireNonNull(contractStateChanges, "contractStateChanges must not be null");
-        this.contractStateChanges = contractStateChanges;
+        this.contractStateChanges = contractStateChanges.stream()
+                .map(entry -> new AbstractMap.SimpleEntry<>(
+                        HistoricalContractStateChanges.fromPbj(entry.getKey()), entry.getValue()))
+                .toList();
         return this;
     }
 
@@ -1268,7 +1262,8 @@ public class RecordStreamBuilder
         if (this.contractStateChanges == null) {
             this.contractStateChanges = new LinkedList<>();
         }
-        this.contractStateChanges.add(new AbstractMap.SimpleEntry<>(contractStateChanges, isMigration));
+        this.contractStateChanges.add(new AbstractMap.SimpleEntry<>(
+                HistoricalContractStateChanges.fromPbj(contractStateChanges), isMigration));
         return this;
     }
 

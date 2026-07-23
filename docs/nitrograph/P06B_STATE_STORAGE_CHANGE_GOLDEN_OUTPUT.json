@@ -1,0 +1,81 @@
+{
+  "schema": "nitrograph-p06b-state-storage-change-golden-output-v1",
+  "baseline": {
+    "source_lineage": "agent-native@1e6971f82fa20b0f4de538891f92e48ba92fa018",
+    "published_fixture_release": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "published_fixture_state_change_records": 0,
+    "published_fixture_coverage": "The authenticated single-node fixture covers contract result, log, action, and bytecode sidecars but contains no state-change sidecar.",
+    "non_empty_storage_fixture": "four-node public-identity reconnect corpus generated from genesis",
+    "fixture_contract": "11.12.1002",
+    "state_change_records": 2,
+    "contract_groups": 2,
+    "storage_changes": 2,
+    "slot_order": [
+      ""
+    ],
+    "variants": [
+      {
+        "kind": "INSERT",
+        "slot_minimal_hex": "",
+        "value_read_minimal_hex": "",
+        "value_written_minimal_hex": "0f",
+        "record_fingerprint_sha256": "1cc08c488b786211a78b40ac85fc793c12c12f050f2ead3801b388ce04cf1ee8"
+      },
+      {
+        "kind": "UPDATE",
+        "slot_minimal_hex": "",
+        "value_read_minimal_hex": "0f",
+        "value_written_minimal_hex": "067932",
+        "decoded_value_written": 424242,
+        "record_fingerprint_sha256": "29168f370ef7b03d5c426d01b5141dd62f34fa98acebf856323a1d2f33067d69"
+      }
+    ],
+    "semantic_canonical_form": "contract=11.12.1002|0:slot=:read=:written=0f|1:slot=:read=0f:written=067932",
+    "semantic_fingerprint_sha256": "5af1ff4cd774f2106e4867e7b775a27caf4403fe4e3367afcecef08e1872712d",
+    "sidecar_files": [
+      {
+        "name": "2026-07-23T22_05_42.940052104Z_01.rcd.gz",
+        "sha256": "8c8169cc43e0d730a43c7a5245e26fc3cf2f1ab3a9f101ca1ca06f717f04570b"
+      },
+      {
+        "name": "2026-07-23T22_05_45.025987104Z_01.rcd.gz",
+        "sha256": "eb6707edc3a92fa5d31a6f2b84afdfa1fd7ec2147d379886fbaf2cbb7dc99e17"
+      }
+    ]
+  },
+  "ordering_and_presence": {
+    "contract_order": "PBJ list order",
+    "slot_order": "PBJ list order within each contract",
+    "slot_encoding": "0-32 byte minimal big-endian value; empty encodes numeric zero",
+    "value_encoding": "0-32 byte minimal big-endian value with leading zeros trimmed",
+    "write_presence": "null means read-only; present empty bytes means an explicit zero write"
+  },
+  "authenticated_coverage": {
+    "covered": [
+      "single-contract insertion",
+      "single-contract update",
+      "zero slot key",
+      "zero original value",
+      "non-zero original and written values",
+      "sidecar parent timestamp association",
+      "mirror state-change ingestion"
+    ],
+    "not_covered": [
+      "delete",
+      "explicit zero write",
+      "multi-slot transaction",
+      "multi-contract transaction",
+      "duplicate slot in one sidecar"
+    ],
+    "coverage_note": "Missing lifecycle variants are exercised only with synthetic PBJ/neutral unit values and are not represented as authenticated node-state evidence."
+  },
+  "mirror_baseline": {
+    "repository": "hiero-ledger/hiero-mirror-node",
+    "commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "contract_state_changes": 2,
+    "sidecar_records": 7,
+    "parent_association": "PASS",
+    "silent_loss": false
+  },
+  "shutdown_tail_policy": "Only complete, signed, manifest-backed ranges are compared. Incomplete, unsigned, zero-byte, or manifest-less tails are classified and excluded explicitly."
+}
