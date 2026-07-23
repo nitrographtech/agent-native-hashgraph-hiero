@@ -31,6 +31,7 @@ values are never classified as authenticated node state.
 | Node topology | One local node for generation; minimum controlled multi-node topology only for reconnect/state sync |
 | Network/node | Local development network, node `0`, gRPC `50211` |
 | Genesis configuration | Exact files assembled by the pinned `:app:run` Sync task |
+| Hook-state generation | After the initial clean freeze, set only `hooks.hooksEnabled=true` in the generated runtime `application.properties`, restart the same pinned full runtime from its saved state, and run `HistoricalContractStateFixtureCreation` |
 
 The pre-activation corpus is created only by actual consensus-node transaction
 processing and a clean freeze/state write. The original corpus is copied read-only
@@ -54,8 +55,11 @@ The bounded transaction sequence is:
 
 1. Run `DiverseStateCreation` to create contract accounts, deploy bytecode, invoke
    state-writing contract functions, and retain validation metadata.
-2. Run the smallest passing HIP-1195 hook-store cases that create a hook and retain
-   both a slot and mapping entry.
+2. After a clean freeze, enable hooks in the generated runtime configuration, restart
+   the same pinned node from that saved state, and run
+   `HistoricalContractStateFixtureCreation`. This creates an account allowance hook
+   and retains the slot `p06a-slot` with value `p06a-value` through real remote-node
+   transactions.
 3. Run a contract logging case with sidecar validation enabled.
 4. Run one supported Ethereum-format contract transaction.
 5. Run native crypto transfer, token, and consensus-topic transactions as continuity
@@ -125,4 +129,3 @@ artifact mechanism have been reviewed.
 8. Negative bodies do not mutate historical maps.
 9. Reconnect/state-sync evidence comes from real nodes, not mocks.
 10. Large artifacts are not uploaded without an approved durable mechanism.
-
