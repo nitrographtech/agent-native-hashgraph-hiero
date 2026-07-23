@@ -1,0 +1,69 @@
+{
+  "classification": "AUTHENTICATED_P06A_CONTRACT_ACTION_GOLDEN",
+  "baseline": {
+    "agent_native_commit": "54fbee50f55c565b98e60b039ad832fc5ea0affe",
+    "fixture_release_tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "fixture_archive_sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "sidecar_files": [
+      {
+        "file": "2026-07-23T15_33_37.017649073Z_01.rcd.gz",
+        "sha256": "58304a0f7937d974cb0cf4429107d459ab8b9e2244934e5a9e95add1ef55e8aa"
+      },
+      {
+        "file": "2026-07-23T15_34_12.371237802Z_01.rcd.gz",
+        "sha256": "0f403a8e5fb3307d020f8a08cb493ae5172cd1b09b81b04429bbb01262af0fc9"
+      }
+    ]
+  },
+  "authenticated_corpus_coverage": {
+    "action_count": 3,
+    "ordered_variants": [
+      "CREATE depth=0 caller=0.0.2 recipient=0.0.1002 operation=OP_CREATE",
+      "CREATE depth=0 caller=0.0.2 recipient=0.0.1007 operation=OP_CREATE",
+      "CALL depth=0 caller=0.0.1005 recipient=0.0.1007 operation=OP_CALL"
+    ],
+    "covered_fields": [
+      "calling account",
+      "recipient contract",
+      "gas and gas-used bit patterns",
+      "input bytes",
+      "value",
+      "empty output presence",
+      "call depth",
+      "call operation type",
+      "action order",
+      "transaction-sidecar association"
+    ],
+    "not_present_and_not_claimed": [
+      "nested action tree",
+      "sibling actions",
+      "recipient account",
+      "targeted address",
+      "revert reason",
+      "error result",
+      "precompile action",
+      "system action"
+    ]
+  },
+  "ordered_action_fingerprints": [
+    "eba19affc1b9e49c7485daaa306f0fba062e341ac6f9f8960820d5443c23913b",
+    "4e74715f69cc5cae4ae08fa1d247415717153b45d53eb7f4e99355b540569c08",
+    "65839dab675ad72a8b90275f45bc0705de0e82ac36ec2813f7b1e9b3211b856c"
+  ],
+  "parent_child_tree_fingerprint": {
+    "method": "SHA-256 over ordered PBJ ContractAction encodings; list position is action index and callDepth encodes hierarchy",
+    "sha256": "f356e3fcbf172ac25cb09cdd2a6d8e01c868e6a66587ee1513a29b9e54acd847"
+  },
+  "normalized_semantic_fingerprint": {
+    "canonical_form": "fixture=p06a-v065-round4744|actions=3|order=CREATE:0:0.0.2:0.0.1002,CREATE:0:0.0.2:0.0.1007,CALL:0:0.0.1005:0.0.1007|action_sha256=eba19affc1b9e49c7485daaa306f0fba062e341ac6f9f8960820d5443c23913b,4e74715f69cc5cae4ae08fa1d247415717153b45d53eb7f4e99355b540569c08,65839dab675ad72a8b90275f45bc0705de0e82ac36ec2813f7b1e9b3211b856c|tree=f356e3fcbf172ac25cb09cdd2a6d8e01c868e6a66587ee1513a29b9e54acd847|mirror_actions=3",
+    "sha256": "753458b2eb37c2509bd439bc128d73f3e52a96336bebcef955ad7aec04252758"
+  },
+  "official_mirror_baseline": {
+    "repository_commit": "hiero-ledger/hiero-mirror-node@834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "contract_actions": 3,
+    "record_sidecar_ingestion": "PASS",
+    "block_stream_ingestion": "PASS",
+    "false_postactivation_contract_actions": 0
+  },
+  "shutdown_tail_policy": "Only complete signed manifest-backed fixture files are fingerprinted. Incomplete or unsigned shutdown tails are classified separately and are not silently included."
+}

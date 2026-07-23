@@ -69,6 +69,7 @@ import com.hedera.hapi.streams.ContractActions;
 import com.hedera.hapi.streams.ContractBytecode;
 import com.hedera.hapi.streams.ContractStateChanges;
 import com.hedera.node.app.blocks.BlockItemsTranslator;
+import com.hedera.node.app.blocks.historical.HistoricalContractAction;
 import com.hedera.node.app.blocks.impl.contexts.AirdropOpContext;
 import com.hedera.node.app.blocks.impl.contexts.BaseOpContext;
 import com.hedera.node.app.blocks.impl.contexts.ContractOpContext;
@@ -383,7 +384,7 @@ public class BlockStreamBuilder
      * The contract actions resulting from the transaction.
      */
     @Nullable
-    private List<ContractAction> contractActions;
+    private List<HistoricalContractAction> contractActions;
 
     private int contractActionsTraceDataSize;
 
@@ -781,7 +782,9 @@ public class BlockStreamBuilder
                 }
             }
             if (contractActions != null) {
-                builder.contractActions(contractActions);
+                builder.contractActions(contractActions.stream()
+                        .map(HistoricalContractAction::toPbj)
+                        .toList());
             }
             // No reason to externalize top-level initcode because a stream consumer must be able to compute it
             if (initcode != null && !topLevel) {
@@ -1388,7 +1391,8 @@ public class BlockStreamBuilder
         final var newTraceDataSize = EvmTraceData.PROTOBUF.measureRecord(
                 EvmTraceData.newBuilder().contractActions(actions).build());
         if (traceDataSizeLimiter.tryReplace(contractActionsTraceDataSize, newTraceDataSize)) {
-            this.contractActions = actions;
+            this.contractActions =
+                    actions.stream().map(HistoricalContractAction::fromPbj).toList();
             this.contractActionsTraceDataSize = newTraceDataSize;
         } else {
             clearContractTraceData();
