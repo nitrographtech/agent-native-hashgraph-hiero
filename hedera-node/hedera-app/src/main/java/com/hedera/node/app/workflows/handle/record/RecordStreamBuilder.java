@@ -48,6 +48,7 @@ import com.hedera.hapi.streams.ContractStateChanges;
 import com.hedera.hapi.streams.TransactionSidecarRecord;
 import com.hedera.hapi.util.HapiUtils;
 import com.hedera.node.app.blocks.historical.HistoricalContractAction;
+import com.hedera.node.app.blocks.historical.HistoricalContractBytecode;
 import com.hedera.node.app.blocks.historical.HistoricalContractStateChanges;
 import com.hedera.node.app.service.addressbook.impl.records.NodeCreateStreamBuilder;
 import com.hedera.node.app.service.addressbook.impl.records.RegisteredNodeCreateStreamBuilder;
@@ -183,7 +184,7 @@ public class RecordStreamBuilder
     private List<AbstractMap.SimpleEntry<HistoricalContractStateChanges, Boolean>> contractStateChanges;
 
     private List<AbstractMap.SimpleEntry<List<HistoricalContractAction>, Boolean>> contractActions = new LinkedList<>();
-    private List<AbstractMap.SimpleEntry<ContractBytecode, Boolean>> contractBytecodes = new LinkedList<>();
+    private List<AbstractMap.SimpleEntry<HistoricalContractBytecode, Boolean>> contractBytecodes = new LinkedList<>();
     private final TraceDataSizeLimiter traceDataSizeLimiter;
     private long estimatedContractBytecodeSize;
 
@@ -374,7 +375,9 @@ public class RecordStreamBuilder
                         .map(pair -> new TransactionSidecarRecord(
                                 transactionRecord.consensusTimestamp(),
                                 pair.getValue(),
-                                new OneOf<>(TransactionSidecarRecord.SidecarRecordsOneOfType.BYTECODE, pair.getKey())))
+                                new OneOf<>(
+                                        TransactionSidecarRecord.SidecarRecordsOneOfType.BYTECODE,
+                                        pair.getKey().toPbj())))
                         .forEach(transactionSidecarRecords::add);
             }
         }
@@ -1322,7 +1325,8 @@ public class RecordStreamBuilder
         if (traceDataSizeLimiter.hasExceededTraceDataSizeLimit()) {
             return this;
         }
-        final var entry = new AbstractMap.SimpleEntry<>(contractBytecode, isMigration);
+        final var entry =
+                new AbstractMap.SimpleEntry<>(HistoricalContractBytecode.fromPbj(contractBytecode), isMigration);
         if (!contractBytecodes.contains(entry)) {
             contractBytecodes.add(entry);
             estimatedContractBytecodeSize = saturatedAdd(

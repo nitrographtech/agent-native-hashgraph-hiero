@@ -169,6 +169,37 @@ value encodings. The neutral boundary validates that upper bound without
 padding, trimming, or otherwise changing bytes. A missing written value remains
 distinct from a present empty written value.
 
+## P06B-5 bytecode-sidecar flow
+
+Executable bytecode production remains isolated from shared sidecar
+translation:
+
+Besu `MessageFrame`, `Code`, `Address`, and Tuweni bytes
+→ full-runtime `CustomContractCreationProcessor`
+→ PBJ `ContractBytecode` or block `ExecutedInitcode`
+→ neutral historical bytecode snapshot at shared record ingress
+→ PBJ bytecode sidecar
+→ official mirror importer.
+
+| Field or edge | Current source | Reachability | Classification | P06B-5 disposition |
+| --- | --- | --- | --- | --- |
+| creation frame and runtime code lookup | Besu frame, account, and code objects | full runtime only | `EXECUTABLE_RUNTIME`, `FULL_RUNTIME_ONLY`, `DEFER_TO_FULL_RUNTIME_REMOVAL` | unchanged |
+| executable byte conversion | `tuweniToPbjBytes` in `CustomContractCreationProcessor` | full runtime only | `EXECUTABLE_RUNTIME`, `DEFER_TO_HAPI_BYTE_SLICE` | retained before shared ingress |
+| failed creation initcode sidecar | PBJ `ContractBytecode` with absent ID/runtime | full producer into shared record builder | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_5` | neutral snapshot preserves empty-byte wire semantics |
+| successful creation bytecode sidecar | PBJ contract ID, initcode, and runtime bytes | shared/native historical path | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE`, `REMOVABLE_IN_P06B_5` | immutable neutral value |
+| contract association | nullable PBJ `ContractID` | shared/native historical path | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_5` | presence preserved |
+| record sidecar serialization | neutral bytecode → PBJ `ContractBytecode` | shared record builder | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE` | byte-identical wire output |
+| block creation trace | PBJ `ExecutedInitcode` | shared block builder | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE` | already Besu/Tuweni-free; unchanged |
+| persisted BYTECODE state | PBJ `Bytecode` state value | historical provider | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE` | read-only and unchanged |
+| Dagger/full provider and contract implementation | executable service graph | full runtime | `EXECUTABLE_RUNTIME`, `DEFER_TO_FINAL_PHYSICAL_REMOVAL` | unchanged |
+
+No Besu/Tuweni adapter is added to `hedera-app`. The executable producer already
+converts code to PBJ bytes inside the full contract implementation.
+`HistoricalContractBytecode` only snapshots the PBJ contract association,
+initcode, and runtime bytes. It performs no code validation, hashing, execution,
+or state lookup. The `ContractBytecode` wire model has no EVM-address field;
+historical association is by `ContractID`.
+
 ## Distribution reachability
 
 - Full distribution: retains `ContractServiceImpl`, Besu execution jars, Tuweni,
