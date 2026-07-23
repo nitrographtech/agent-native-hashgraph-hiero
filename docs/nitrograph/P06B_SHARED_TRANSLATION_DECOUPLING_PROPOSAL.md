@@ -51,3 +51,17 @@ Physical removal is permitted only after:
 
 No persisted key, state ID, codec, schema version, consensus, or platform-sdk change is
 part of P06B.
+
+## P06A handoff findings
+
+- A real four-node reconnect transferred and validated a signed state containing non-empty
+  `STORAGE`, `BYTECODE`, `EVM_HOOK_STATES`, and `LAMBDA_STORAGE`; the normalized per-map
+  content fingerprint was unchanged before and after transfer.
+- Four equal-weight nodes are the minimum local topology for isolating one node while
+  retaining the platform's greater-than-two-thirds consensus threshold.
+- Reconnect used the serialized virtual-map boundary and did not require contract execution.
+- The mirror importer remains the final external compatibility gate. Its PostgreSQL and
+  Redis Testcontainers infrastructure must be available before mirror findings can refine
+  the neutral log/result boundary.
+- P06B must retain the distinction between prohibited executable EVM classes and legacy
+  Besu/Tuweni data-model types still used by record and block translation.

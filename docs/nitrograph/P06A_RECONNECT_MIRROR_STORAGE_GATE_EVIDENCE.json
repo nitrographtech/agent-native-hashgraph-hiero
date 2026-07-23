@@ -1,0 +1,106 @@
+{
+  "classification": "P06A_IN_PROGRESS",
+  "authoritative_base": "df183ff8caceba58361849961e3d43b4b376dc1f",
+  "fixture_source_commit": "ff6490d66994da11af72e1d2f185ec7874fa383a",
+  "safety_rule": "Historical contract state remains readable and migratable but is never executable on Nitrograph.",
+  "storage_coverage": {
+    "generation": "Node-created from genesis with SimpleStorage.set(424242), the approved public fixture identity, and a clean signed freeze",
+    "preactivation_round": 1313,
+    "preactivation_state_root": "fed3255329d82c0830d723afed50c3d7ea9510c2e6d663b5ee10e66ea56c484191d9015169ab3b02cc9a02575a17c6c0",
+    "postactivation_round": 3875,
+    "postactivation_state_root": "59fcb376bcbb251c75f48a6cedb3baab860af2901373f5615967f8ff22c4ef97c8784ca1d8f8d0d1f42905ce175b8f53",
+    "storage_cardinality_before": 1,
+    "storage_cardinality_after": 1,
+    "storage_key_inventory_sha256": "dccb46d6a01b333b7fad7affd54bb263461d598e20d92fb5df90bbd904b68481",
+    "storage_value_inventory_sha256": "2437fc8d8c6bdfefa9a9bd01d589250c54cc6765935591aa81fe17ab2d012064",
+    "storage_aggregate_sha256": "ffa44bccaca5162f155ab7dc5be3f016f2860a78db9458122f4d7206da90d141",
+    "representative_value": 424242,
+    "result": "UNCHANGED",
+    "restart": "PASS",
+    "replay": "PASS",
+    "negative_execution_matrix": "5/5 INVALID_TRANSACTION_BODY"
+  },
+  "multi_node": {
+    "classification": "TRANSIENT_NODE_GENERATED_AUTHENTIC_TEST_FIXTURE_WITH_PUBLIC_TEST_IDENTITIES",
+    "network_id": 123,
+    "node_count": 4,
+    "reason_four_nodes_required": "With equal stake, three nodes cannot lose one node and retain greater than two-thirds consensus weight.",
+    "node_ids": [0, 1, 2, 3],
+    "recovering_node_id": 2,
+    "public_key_fingerprints_sha256": {
+      "node0": "ddfb1276c83a140aade7ae2f58a3fabfa6a21c38fc95be09fa6f7b4a64a7ab6b",
+      "node1": "93bd5f41a5950b4c87d9c67100f82fce8a6bf9afdd38b955b3ddc29caacb0e2c",
+      "node2": "ef3336761637ea7a06f32ba8f143f74eb6dc90d2c3d1967a9082191f8d06f1c5",
+      "node3": "38cad59b53bd2366bc941fd8b85f9785f725b3bb45bebad4e5f83ce60f9bec2a"
+    },
+    "temporary_private_pems_destroyed": true,
+    "historical_maps": ["STORAGE", "BYTECODE", "EVM_HOOK_STATES", "LAMBDA_STORAGE"],
+    "native_token_processing": "PASS",
+    "coordination_layer_publication": "PASS",
+    "signed_freeze_and_native_activation": "PASS"
+  },
+  "reconnect": {
+    "learner_node_id": 2,
+    "teacher_node_id": 3,
+    "learner_initial_round": 172,
+    "teacher_latest_round_when_fallen_behind": 2768,
+    "transferred_round": 2757,
+    "transferred_state_root": "817867e2713eb8dc87f1d393443ccc312b1100d47c03c394af720b8e6986b75c6b0d37bf5d789885d87a029e1e1b84d5",
+    "signing_weight": "3/4",
+    "teacher_finish": "PASS",
+    "learner_finish": "PASS",
+    "state_validation": "PASS",
+    "saved_reconnect_state": "PASS",
+    "synchronization_seconds": 0.078,
+    "transfer_megabytes": 0.04561805725097656,
+    "post_reconnect_native_processing": "PASS",
+    "post_reconnect_negative_execution_matrix": "5/5 INVALID_TRANSACTION_BODY",
+    "test_wall_clock": "5m01.76s",
+    "peak_rss_kib": 1638760,
+    "swap_events": 0
+  },
+  "reconnect_map_integrity": {
+    "comparison_rounds": [172, 2757],
+    "normalized_map_manifest_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "storage_cardinality": 1,
+    "bytecode_cardinality": 2,
+    "evm_hook_states_cardinality": 1,
+    "lambda_storage_cardinality": 1,
+    "result": "UNCHANGED"
+  },
+  "mirror_environment": {
+    "os": "Ubuntu 24.04.4 LTS under WSL2",
+    "architecture": "x86_64",
+    "systemd": "running",
+    "docker": "NOT_INSTALLED",
+    "podman": "NOT_INSTALLED",
+    "postgresql": "NOT_INSTALLED",
+    "redis": "NOT_INSTALLED",
+    "available_disk": "922 GiB",
+    "mirror_repository": "https://github.com/hiero-ledger/hiero-mirror-node",
+    "mirror_commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "ingestion": "BLOCKED_PENDING_PRIVILEGED_DOCKER_ENGINE_INSTALLATION"
+  },
+  "runtime_safety": {
+    "historical_provider": "HistoricalContractStateService",
+    "executable_provider_resolved": false,
+    "legacy_execution_bodies": {
+      "CONTRACT_CREATE": "INVALID_TRANSACTION_BODY",
+      "CONTRACT_CALL": "INVALID_TRANSACTION_BODY",
+      "CONTRACT_UPDATE": "INVALID_TRANSACTION_BODY",
+      "CONTRACT_DELETE": "INVALID_TRANSACTION_BODY",
+      "ETHEREUM_TRANSACTION": "INVALID_TRANSACTION_BODY"
+    },
+    "historical_contract_map_mutation": false
+  },
+  "local_evidence": {
+    "reconnect_test_xml_sha256": "4e9e92aa7bdf033b49f0d0a8828e826cab8658665a37d270749c509a86ec27ce",
+    "reconnect_excerpt_sha256": "363b83cf69b55bcca1956ca1ccfa759aa92daf471972d49927c21aeaae9cfbc7",
+    "node0_swirlds_log_sha256": "593be78f27e10adfceb6a1b0c0f80006604af27f14a09e20f6a2669bf862a6fb",
+    "node1_swirlds_log_sha256": "9981d954f52a318949812f101ad681f36483cb057800003a4ff14ee83e1c55a4",
+    "node2_swirlds_log_sha256": "4e1bd02d4a276699044d66f144d3a4943217ac6a121c3a2a7cff6c9d469ab234",
+    "node3_swirlds_log_sha256": "26287a3e549347ec81dca920a8beb357e072c27bb5ba2fcdd3179b54ec29266f",
+    "reconnect_pre_map_export_sha256": "a71ad9b40d5b0efb0f196bcf3e6f99347226fbe6db3befa86c08c3b7b9cfd91d",
+    "reconnect_post_map_export_sha256": "cfeae582279c7c8467a2ee6071f68a7e9ab3379c59dc80083576048b13987a31"
+  }
+}
