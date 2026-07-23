@@ -1,0 +1,32 @@
+{
+  "warning": "THIS IDENTITY IS PUBLIC, COMPROMISED BY DESIGN, AND MUST NEVER BE USED OUTSIDE THE P06A FIXTURE HARNESS.",
+  "descriptor": "P06A_PUBLIC_FIXTURE_IDENTITY_SEED",
+  "fixture_network_id": 123,
+  "fixture_node_id": 0,
+  "certificate_sha256": "4f6d63a2fa8e8920c3b88324dc259984e170385cbb255a433f651eedbea550e1",
+  "independent_workspace_count": 2,
+  "private_material_reproduced_identically": true,
+  "public_certificate_der_reproduced_identically": true,
+  "certificate_fingerprints_equal": true,
+  "generated_private_files_remaining_after_proof": 0,
+  "generated_private_files_tracked_by_git": 0,
+  "safeguards": [
+    "explicit enable flag required",
+    "explicit compromised-key acknowledgement required",
+    "dedicated workflow environment required",
+    "network ID must equal 123",
+    "node ID must equal 0",
+    "caller must create and specify output directory",
+    "existing key files are never overwritten",
+    "generated private PEM is mode 0600",
+    "ordinary node startup does not invoke the generator"
+  ],
+  "old_fixture": {
+    "classification": "LOCAL_ONLY_AUTHENTIC_GENERATION_EVIDENCE",
+    "published": false,
+    "archived": false,
+    "tagged": false,
+    "release_created": false,
+    "private_key_reused": false
+  }
+}
