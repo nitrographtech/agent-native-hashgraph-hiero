@@ -1,0 +1,132 @@
+{
+  "slice": "P06B-3_NEUTRAL_CONTRACT_ACTION_BOUNDARY",
+  "base": "54fbee50f55c565b98e60b039ad832fc5ea0affe",
+  "implementation_commit": "29bf9bc87d",
+  "safety_rule": "Historical contract data remains readable and translatable; shared action translation has no executable EVM runtime type.",
+  "boundary": {
+    "neutral_types": [
+      "HistoricalContractAction"
+    ],
+    "input": "PBJ ContractAction or ContractActions",
+    "outputs": [
+      "PBJ record-stream ContractActions sidecar",
+      "PBJ block-stream EvmTraceData contract actions"
+    ],
+    "besu_imports_in_shared_action_path": 0,
+    "tuweni_imports_in_shared_action_path": 0,
+    "message_frame_types_in_shared_action_path": 0,
+    "executable_action_tracer_types_in_shared_action_path": 0,
+    "besu_adapter_added": false,
+    "adapter_reason": "The executable tracer is confined to hedera-smart-contract-service-impl and already emits PBJ ContractAction values before entering the shared record/block builders.",
+    "wire_format_changes": 0,
+    "persisted_format_changes": 0,
+    "state_id_codec_or_schema_changes": 0
+  },
+  "golden_output": {
+    "fixture": "docs/nitrograph/P06B_CONTRACT_ACTION_GOLDEN_OUTPUT.json",
+    "authenticated_actions": 3,
+    "covered_variants": [
+      "CREATE",
+      "CALL"
+    ],
+    "ordered_action_sha256": [
+      "eba19affc1b9e49c7485daaa306f0fba062e341ac6f9f8960820d5443c23913b",
+      "4e74715f69cc5cae4ae08fa1d247415717153b45d53eb7f4e99355b540569c08",
+      "65839dab675ad72a8b90275f45bc0705de0e82ac36ec2813f7b1e9b3211b856c"
+    ],
+    "tree_sha256": "f356e3fcbf172ac25cb09cdd2a6d8e01c868e6a66587ee1513a29b9e54acd847",
+    "normalized_semantic_sha256": "753458b2eb37c2509bd439bc128d73f3e52a96336bebcef955ad7aec04252758",
+    "field_level_round_trip": "PASS",
+    "ordering_and_null_empty_presence": "PASS",
+    "coverage_gaps_explicitly_not_claimed": true
+  },
+  "focused_validation": {
+    "HistoricalContractActionTest": "4 PASS",
+    "BlockStreamBuilderTest_StreamBuilderTest_combined": "19 PASS",
+    "focused_total": "23 PASS",
+    "app_compile_main_and_test": "PASS",
+    "native_agent_distribution": "PASS",
+    "full_distribution": "PASS",
+    "full_app_suite": {
+      "result": "BASELINE_RESOURCE_EVENT_REPRODUCED",
+      "observed_failure": "WrappedRecordBlockHashMigrationTest.loadRecentHashesParsesLargeFileWithoutException",
+      "cause": "Java heap OOM while parsing the four-million-record fixture in the combined suite",
+      "isolated_result": "1 PASS",
+      "isolated_wall_clock": "18.16s",
+      "isolated_peak_rss_kib": 2431364,
+      "swap_events": 0,
+      "assertions_weakened": false
+    }
+  },
+  "p06a_regression": {
+    "real_four_node_reconnect": "PASS",
+    "state_synchronization": "PASS",
+    "historical_provider_selected": true,
+    "executable_provider_resolved_in_native_processes": false,
+    "negative_execution": "5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+    "native_processing_after_reconnect": "PASS",
+    "instrumented_test_time": "4m45s",
+    "instrumented_wall_clock": "5m16.68s",
+    "driver_peak_rss_kib": 1337352,
+    "swap_events": 0,
+    "test_xml_sha256": "2c24dd163a57eeb1b3d38204c2afa3f6ceeb7818132d66dcbd434d3c6e0415f1",
+    "all_class_logs_manifest_sha256": "f020329545118366174de1fa8717664aa182e97952a8801249e67e598e0c1359",
+    "native_class_logs_manifest_sha256": "619c1de39f276e461e5a040e29a7cc8d4168b1af6679e0a80ee8f73f3fef632a"
+  },
+  "historical_maps": {
+    "preactivation_round": 159,
+    "reconnected_round": 2372,
+    "STORAGE": "UNCHANGED; non-empty value remains 424242",
+    "BYTECODE": "UNCHANGED",
+    "EVM_HOOK_STATES": "UNCHANGED",
+    "LAMBDA_STORAGE": "UNCHANGED",
+    "canonical_map_fingerprint_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+  },
+  "class_loading": {
+    "all_instrumented_process_logs": 13,
+    "native_process_logs": 5,
+    "native_historical_service_loads": 5,
+    "native_historical_provider_loads": 5,
+    "native_full_provider_loads": 0,
+    "native_contract_service_impl_loads": 0,
+    "native_prohibited_evm_engine_classes": 0,
+    "native_besu_tuweni_classes": 0,
+    "preactivation_full_runtime_logs": 4,
+    "preactivation_full_runtime_excluded_from_native_claim": true
+  },
+  "mirror_regression": {
+    "repository_commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "production_source_changes": 0,
+    "postgres_redis_testcontainers": "PASS",
+    "signed_record_files": 35,
+    "transactions": 862,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "contract_actions": 3,
+    "sidecar_records": 7,
+    "complete_block_files": 130,
+    "persisted_block_record_files": 130,
+    "record_action_sidecar_result": "PASS",
+    "block_stream_result": "PASS",
+    "action_rows": [
+      "timestamp=1784844343945816104,index=0,depth=0,type=CREATE,operation=OP_CREATE",
+      "timestamp=1784844345025987104,index=0,depth=0,type=CALL,operation=OP_CALL",
+      "timestamp=1784844347065849104,index=0,depth=0,type=CREATE,operation=OP_CREATE"
+    ],
+    "false_postactivation_contract_actions": 0,
+    "test_xml_sha256": "1a6e0c6b8c95458eaa914a67e3c146f2d8c94c4d6f72f6a730bd1e6ebdf22dd2",
+    "count_note": "Only complete signed record files and complete manifest-backed block files were ingested; timing-dependent unsigned shutdown tails were not silently counted."
+  },
+  "scope": {
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "persisted_key_changes": 0,
+    "state_id_changes": 0,
+    "codec_changes": 0,
+    "schema_version_changes": 0,
+    "state_change_and_storage_sidecars": "DEFERRED",
+    "bytecode_and_remaining_sidecars": "DEFERRED",
+    "contract_service_impl_removed": false,
+    "physical_evm_besu_removal": false
+  }
+}
