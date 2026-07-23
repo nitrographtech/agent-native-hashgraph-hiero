@@ -1,0 +1,109 @@
+{
+  "slice": "P06B-2_NEUTRAL_CONTRACT_RESULT_BOUNDARY",
+  "base": "55f31cbe8592e4d732549469b9930b06694a3364",
+  "implementation_commit": "3c21f3fbac",
+  "safety_rule": "Historical contract data remains readable and translatable; shared result translation has no executable EVM runtime type.",
+  "boundary": {
+    "neutral_types": [
+      "HistoricalContractResult",
+      "HistoricalCallContext"
+    ],
+    "input": "PBJ EvmTransactionResult plus neutral translation context",
+    "output": "PBJ ContractFunctionResult",
+    "besu_imports_in_shared_result_path": 0,
+    "tuweni_imports_in_shared_result_path": 0,
+    "contract_implementation_result_utilities_called": 0,
+    "besu_adapter_added": false,
+    "adapter_reason": "The shared input is already neutral PBJ data; an executable-runtime adapter would add reachability without preserving additional semantics.",
+    "wire_format_changes": 0,
+    "persisted_format_changes": 0
+  },
+  "golden_output": {
+    "fixture": "docs/nitrograph/P06B_CONTRACT_RESULT_GOLDEN_OUTPUT.json",
+    "authenticated_contract_results": 3,
+    "authenticated_contract_logs": 1,
+    "authenticated_ethereum_results": 1,
+    "normalized_semantic_sha256": "884dc8be9f7cb3ed7c2b8c14c5800d9561d7d25ba18de7bb411916d666dd2dad",
+    "field_level_equivalence": "PASS",
+    "mirror_contract_result_count": "UNCHANGED",
+    "mirror_contract_log_count": "UNCHANGED",
+    "false_postactivation_contract_results": 0
+  },
+  "focused_validation": {
+    "BlockItemsTranslatorTest": "112 PASS",
+    "contract_service_api": "2 PASS",
+    "native_agent_distribution": "PASS",
+    "full_distribution": "PASS",
+    "full_app_suite": {
+      "result": "BASELINE_RESOURCE_EVENT",
+      "only_failure": "WrappedRecordBlockHashMigrationTest.loadRecentHashesParsesLargeFileWithoutException",
+      "cause": "Java heap OOM while parsing the four-million-record fixture in the combined suite",
+      "combined_wall_clock": "3m47.38s",
+      "combined_peak_rss_kib": 5870140,
+      "swap_events": 0,
+      "isolated_result": "1 PASS",
+      "isolated_wall_clock": "1m29.51s including clean task rebuild",
+      "isolated_test_time": "6.2s",
+      "assertions_weakened": false
+    }
+  },
+  "p06a_regression": {
+    "real_four_node_reconnect": "PASS",
+    "state_synchronization": "PASS",
+    "historical_provider_selected": true,
+    "executable_provider_resolved": false,
+    "negative_execution": "5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+    "native_processing_after_reconnect": "PASS",
+    "instrumented_test_time": "4m57s",
+    "instrumented_wall_clock": "5m06.13s",
+    "driver_peak_rss_kib": 1426520,
+    "swap_events": 0,
+    "test_xml_sha256": "ab6c74723755fc82d00a8ca7252caaf2013edc358cbcb720e0cd95803ad531f1",
+    "class_log_manifest_sha256": "f4286bf128f121e50489216a15f45c807016870721211815dc705d3852f1be25"
+  },
+  "historical_maps": {
+    "preactivation_round": 158,
+    "reconnect_round": 2191,
+    "STORAGE": "UNCHANGED; non-empty value remains 424242",
+    "BYTECODE": "UNCHANGED",
+    "EVM_HOOK_STATES": "UNCHANGED",
+    "LAMBDA_STORAGE": "UNCHANGED",
+    "canonical_map_fingerprint_sha256": "5f74ae63338c637dea48b31294ba5266a1f998660fc238f87baa0ea03a9bf45"
+  },
+  "class_loading": {
+    "native_process_logs": 5,
+    "historical_service_loads": 5,
+    "historical_provider_load_events": 10,
+    "full_provider_loads": 0,
+    "prohibited_evm_engine_classes": 0,
+    "besu_tuweni_classes": 0,
+    "preactivation_full_runtime_excluded_from_native_claim": true
+  },
+  "mirror_regression": {
+    "repository_commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "production_source_changes": 0,
+    "postgres_redis_testcontainers": "PASS",
+    "signed_record_files": 39,
+    "transactions": 859,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "sidecar_records": 7,
+    "complete_block_files": 134,
+    "persisted_block_record_files": 134,
+    "record_sidecar_result": "PASS",
+    "block_stream_result": "PASS",
+    "test_xml_sha256": "b4c27cd3b961bfa5cc3b7b03ddd929c2e6209c9eab312981504ef1823c852eec",
+    "count_note": "Native/system record and block totals vary with signed shutdown timing; authenticated historical contract result and log counts remain unchanged."
+  },
+  "scope": {
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "persisted_key_changes": 0,
+    "state_id_changes": 0,
+    "codec_changes": 0,
+    "schema_version_changes": 0,
+    "action_state_change_sidecar_decoupling": "DEFERRED",
+    "contract_service_impl_removed": false,
+    "physical_evm_besu_removal": false
+  }
+}
