@@ -49,6 +49,7 @@ import com.hedera.hapi.node.base.Transaction;
 import com.hedera.hapi.node.base.TransactionID;
 import com.hedera.hapi.node.base.TransferList;
 import com.hedera.hapi.node.contract.ContractFunctionResult;
+import com.hedera.hapi.node.contract.ContractNonceInfo;
 import com.hedera.hapi.node.contract.EvmTransactionResult;
 import com.hedera.hapi.node.contract.InternalCallContext;
 import com.hedera.hapi.node.transaction.AssessedCustomFee;
@@ -490,18 +491,85 @@ class BlockItemsTranslatorTest {
         final var actualRecordWithOutputAndLogs =
                 BLOCK_ITEMS_TRANSLATOR.translateRecord(context, TRANSACTION_RESULT, logs, 1L, output);
         final var result = actualRecordWithOutputAndLogs.contractCallResultOrThrow();
-        assertEquals(
-                2,
-                result.logInfo().size());
+        assertEquals(2, result.logInfo().size());
         assertEquals(
                 "00000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000001000000000000000000000000000000000020000000000000000000000000000000000000000000000000800000000100080000000000000000004000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000001000000000",
                 result.bloom().toHex());
         assertEquals(aContractId, result.logInfo().get(0).contractID());
-        assertEquals(List.of(HookUtils.leftPad32(Bytes.wrap("A"))), result.logInfo().get(0).topic());
+        assertEquals(
+                List.of(HookUtils.leftPad32(Bytes.wrap("A"))),
+                result.logInfo().get(0).topic());
         assertEquals(Bytes.wrap("Apple"), result.logInfo().get(0).data());
         assertEquals(bContractId, result.logInfo().get(1).contractID());
-        assertEquals(List.of(HookUtils.leftPad32(Bytes.wrap("B"))), result.logInfo().get(1).topic());
+        assertEquals(
+                List.of(HookUtils.leftPad32(Bytes.wrap("B"))),
+                result.logInfo().get(1).topic());
         assertEquals(Bytes.wrap("Banana"), result.logInfo().get(1).data());
+    }
+
+    @Test
+    void contractResultNeutralBoundaryPreservesAllHistoricalFields() {
+        final var senderId = AccountID.newBuilder().accountNum(1234).build();
+        final var resultContractId = ContractID.newBuilder().contractNum(5678).build();
+        final var firstCreatedId = ContractID.newBuilder().contractNum(7001).build();
+        final var secondCreatedId = ContractID.newBuilder().contractNum(7002).build();
+        final var lowerNonceInfo =
+                new ContractNonceInfo(ContractID.newBuilder().contractNum(8001).build(), 3);
+        final var higherNonceInfo =
+                new ContractNonceInfo(ContractID.newBuilder().contractNum(8002).build(), 4);
+        final var returnData = Bytes.fromHex("00ff80");
+        final var callData = Bytes.fromHex("010203");
+        final var evmAddress = Bytes.fromHex("11".repeat(20));
+        final var maxUnsignedBits = -1L;
+        final var detailedResult = EvmTransactionResult.newBuilder()
+                .senderId(senderId)
+                .contractId(resultContractId)
+                .resultData(returnData)
+                .errorMessage("historical error")
+                .gasUsed(maxUnsignedBits)
+                .internalCallContext(new InternalCallContext(maxUnsignedBits, maxUnsignedBits, callData))
+                .build();
+        final var output = TransactionOutput.newBuilder()
+                .contractCall(new CallContractOutput(detailedResult))
+                .build();
+        final var context = new ContractOpContext(
+                MEMO,
+                RATES,
+                TXN_ID,
+                SignedTransaction.DEFAULT,
+                CONTRACT_CALL,
+                CONTRACT_ID,
+                evmAddress,
+                List.of(higherNonceInfo, lowerNonceInfo),
+                List.of(firstCreatedId, secondCreatedId),
+                99L,
+                null,
+                Bytes.EMPTY,
+                null);
+        final var log = new EvmTransactionLog(
+                resultContractId, Bytes.fromHex("aabb"), List.of(Bytes.fromHex("01"), Bytes.fromHex("0203")));
+
+        final var translated = BLOCK_ITEMS_TRANSLATOR
+                .translateRecord(context, TRANSACTION_RESULT, List.of(log), 1L, output)
+                .contractCallResultOrThrow();
+
+        assertEquals(senderId, translated.senderId());
+        assertEquals(resultContractId, translated.contractID());
+        assertEquals(returnData, translated.contractCallResult());
+        assertEquals("historical error", translated.errorMessage());
+        assertEquals(maxUnsignedBits, translated.gasUsed());
+        assertEquals(maxUnsignedBits, translated.gas());
+        assertEquals(maxUnsignedBits, translated.amount());
+        assertEquals(callData, translated.functionParameters());
+        assertEquals(99L, translated.signerNonce());
+        assertEquals(List.of(firstCreatedId, secondCreatedId), translated.createdContractIDs());
+        assertEquals(evmAddress, translated.evmAddress());
+        assertEquals(List.of(lowerNonceInfo, higherNonceInfo), translated.contractNonces());
+        assertEquals(1, translated.logInfo().size());
+        assertEquals(
+                List.of(HookUtils.leftPad32(Bytes.fromHex("01")), HookUtils.leftPad32(Bytes.fromHex("0203"))),
+                translated.logInfo().getFirst().topic());
+        assertEquals(Bytes.fromHex("aabb"), translated.logInfo().getFirst().data());
     }
 
     @Test
