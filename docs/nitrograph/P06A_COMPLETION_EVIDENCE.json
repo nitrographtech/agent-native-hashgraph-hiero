@@ -1,0 +1,103 @@
+{
+  "status": "COMPLETE",
+  "source_lineage": {
+    "upstream_baseline": "ff6490d66994da11af72e1d2f185ec7874fa383a",
+    "p05_base": "ffdea9ae4d5508033d06801b3abffad0a3d10445",
+    "final_p06a_merge": "f7b8dc0cde6b641767ff7836e3d22d4762fcabdf",
+    "history_rewritten": false
+  },
+  "pull_requests": [
+    {
+      "number": 2,
+      "tested_head": "369a1f99ac59b46ca50b3157d9e7cdf971eceb02",
+      "ci_run": 29979019459,
+      "merge_commit": "415608b45a4c7928993cdcc9a1e19e3e75466240"
+    },
+    {
+      "number": 3,
+      "tested_head": "9ffa7f31604bfbba7ecc4e4fe0b695597122f69f",
+      "ci_run": 30023268855,
+      "merge_commit": "eb016ede9e4b5c02208566ed2319e4042086bd71"
+    },
+    {
+      "number": 4,
+      "tested_head": "808d665cddcbffbc47adbf8af22f4cee3e2ec45d",
+      "ci_run": 30025365395,
+      "merge_commit": "df183ff8caceba58361849961e3d43b4b376dc1f"
+    },
+    {
+      "number": 5,
+      "tested_head": "54f2ad2b33aab8069e6ed12ed6eb92e045908d0a",
+      "ci_run": 30037670774,
+      "merge_commit": "f7b8dc0cde6b641767ff7836e3d22d4762fcabdf"
+    }
+  ],
+  "fixture": {
+    "classification": "NODE_GENERATED_AUTHENTIC_TEST_FIXTURE_WITH_PUBLIC_TEST_IDENTITY",
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "release_id": "RE_kwDOTgyWPc4VYsvU",
+    "archive_asset_id": "RA_kwDOTgyWPc4dDHT3",
+    "manifest_asset_id": "RA_kwDOTgyWPc4dDHT1",
+    "archive": "nitrograph-p06a-preactivation-v065-ff6490d-round4744.tar.gz",
+    "archive_sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "manifest_sha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2",
+    "preactivation_round": 4744,
+    "preactivation_state_root": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485",
+    "postactivation_round": 9221,
+    "postactivation_state_root": "6c699162be610a22d0a7aeb75f21cdeabb165fad1bed5a80af49ca2d26eb20347ff79f00f0cf29afea37849ea5de125e",
+    "generated_private_pem_published": false
+  },
+  "historical_maps": {
+    "STORAGE": "UNCHANGED; cardinality 1; representative decoded value 424242",
+    "BYTECODE": "UNCHANGED",
+    "EVM_HOOK_STATES": "UNCHANGED",
+    "LAMBDA_STORAGE": "UNCHANGED"
+  },
+  "lifecycle": {
+    "activation_reopen": "PASS",
+    "native_account_processing": "PASS",
+    "native_asset_processing": "PASS",
+    "coordination_layer_publication": "PASS",
+    "save": "PASS",
+    "restart": "PASS",
+    "replay": "PASS",
+    "signed_state_load": "PASS",
+    "real_reconnect": "PASS",
+    "state_synchronization": "PASS"
+  },
+  "negative_execution": {
+    "CONTRACT_CREATE": "INVALID_TRANSACTION_BODY",
+    "CONTRACT_CALL": "INVALID_TRANSACTION_BODY",
+    "CONTRACT_UPDATE": "INVALID_TRANSACTION_BODY",
+    "CONTRACT_DELETE": "INVALID_TRANSACTION_BODY",
+    "ETHEREUM_TRANSACTION": "INVALID_TRANSACTION_BODY",
+    "historical_map_mutation": false
+  },
+  "runtime": {
+    "selected_provider": "HistoricalContractStateService",
+    "executable_provider_resolved": false,
+    "prohibited_evm_engine_class_loads": 0,
+    "besu_tuweni_class_loads_in_tested_native_processes": 0
+  },
+  "mirror": {
+    "repository_commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "record_ingestion": "PASS",
+    "sidecar_ingestion": "PASS",
+    "block_stream_ingestion": "PASS; 328/328 complete blocks",
+    "false_postactivation_contract_results": 0
+  },
+  "frozen_boundary": {
+    "historical_contract_state": "READ_ONLY_AND_NON_EXECUTABLE",
+    "physical_evm_besu_removal": "NOT_PERFORMED",
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "persisted_format_changes": 0,
+    "licensing_findings_waived": false,
+    "remaining_licensing_gate": "Licensing and binary-distribution inventories must be updated before physical removal."
+  },
+  "primary_evidence": {
+    "P06A_MIRROR_INGESTION_EVIDENCE.json": "db1de84ee0817f1cbe60abcf07a400ff7c96cf04a00428e5f5c2a041d21ce349",
+    "P06A_RECONNECT_MIRROR_STORAGE_GATE_EVIDENCE.json": "40d3952c09615b8b10651197a99744f419667321589345bd893eefa3b16f5339",
+    "P06B_SHARED_TRANSLATION_DECOUPLING_PROPOSAL.md": "7b9d38f811df3d56771560ebf30f38dcb71bc6dd64c994cd0a56112a3685e7ab"
+  }
+}
