@@ -5,9 +5,8 @@ import static com.hedera.hapi.node.base.HederaFunctionality.CONTRACT_CALL;
 import static com.hedera.hapi.node.base.HederaFunctionality.CONTRACT_CREATE;
 import static com.hedera.hapi.node.base.HederaFunctionality.ETHEREUM_TRANSACTION;
 import static com.hedera.hapi.node.base.HederaFunctionality.HOOK_DISPATCH;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asBesuLog;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.bloomFor;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.bloomForAll;
+import static com.hedera.node.app.blocks.historical.HistoricalLogBloom.forAll;
+import static com.hedera.node.app.blocks.historical.HistoricalLogBloom.forLog;
 import static com.hedera.node.app.service.token.api.ContractChangeSummary.NONCE_INFO_CONTRACT_ID_COMPARATOR;
 import static java.util.Objects.requireNonNull;
 
@@ -19,6 +18,10 @@ import com.hedera.hapi.node.contract.ContractLoginfo;
 import com.hedera.hapi.node.contract.EvmTransactionResult;
 import com.hedera.hapi.node.transaction.TransactionReceipt;
 import com.hedera.hapi.node.transaction.TransactionRecord;
+import com.hedera.node.app.blocks.historical.HistoricalEthereumAddress;
+import com.hedera.node.app.blocks.historical.HistoricalLog;
+import com.hedera.node.app.blocks.historical.HistoricalLogData;
+import com.hedera.node.app.blocks.historical.HistoricalLogTopic;
 import com.hedera.node.app.blocks.impl.TranslationContext;
 import com.hedera.node.app.blocks.impl.contexts.AirdropOpContext;
 import com.hedera.node.app.blocks.impl.contexts.ContractOpContext;
@@ -38,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.hyperledger.besu.evm.log.Log;
 
 /**
  * Translates a {@link TransactionResult} and, optionally, one or more {@link TransactionOutput}s within a given
@@ -265,21 +267,26 @@ public class BlockItemsTranslator {
     private void attachLogsTo(
             @NonNull final ContractFunctionResult.Builder builder, @Nullable final List<EvmTransactionLog> logs) {
         if (logs != null && !logs.isEmpty()) {
-            final List<Log> besuLogs = new ArrayList<>(logs.size());
+            final List<HistoricalLog> historicalLogs = new ArrayList<>(logs.size());
             final List<ContractLoginfo> verboseLogs = new ArrayList<>(logs.size());
             for (final var log : logs) {
                 final var paddedTopics =
                         log.topics().stream().map(HookUtils::leftPad32).toList();
-                final var besuLog = asBesuLog(log, paddedTopics);
-                besuLogs.add(besuLog);
+                final var historicalLog = new HistoricalLog(
+                        log.contractIdOrThrow(),
+                        HistoricalEthereumAddress.fromEntityNumber(
+                                log.contractIdOrThrow().contractNumOrThrow()),
+                        paddedTopics.stream().map(HistoricalLogTopic::new).toList(),
+                        new HistoricalLogData(log.data()));
+                historicalLogs.add(historicalLog);
                 verboseLogs.add(ContractLoginfo.newBuilder()
-                        .contractID(log.contractIdOrThrow())
+                        .contractID(historicalLog.contractId())
                         .topic(paddedTopics)
-                        .bloom(bloomFor(besuLog))
-                        .data(log.data())
+                        .bloom(forLog(historicalLog))
+                        .data(historicalLog.data().bytes())
                         .build());
             }
-            builder.bloom(bloomForAll(besuLogs)).logInfo(verboseLogs);
+            builder.bloom(forAll(historicalLogs)).logInfo(verboseLogs);
         }
     }
 

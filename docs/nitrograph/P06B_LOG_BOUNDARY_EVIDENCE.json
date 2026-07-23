@@ -1,0 +1,78 @@
+{
+  "slice": "P06B-1_NEUTRAL_HISTORICAL_LOG_BOUNDARY",
+  "base": "10dbab90172adbe63441a04679bcc442fe449991",
+  "implementation_commit": "e55fe15733926d0ac8816fb2e7248609bec9b79b",
+  "safety_rule": "Historical contract data remains readable and translatable; shared log translation has no executable EVM runtime type.",
+  "boundary": {
+    "neutral_types": [
+      "HistoricalLog",
+      "HistoricalLogTopic",
+      "HistoricalEthereumAddress",
+      "HistoricalLogData"
+    ],
+    "bloom_implementation": "HistoricalLogBloom using Keccak-256 over canonical address and topic bytes",
+    "besu_imports_in_block_items_translator": 0,
+    "tuweni_imports_in_block_items_translator": 0,
+    "besu_tuweni_imports_in_neutral_types": 0,
+    "wire_format_changes": 0,
+    "persisted_format_changes": 0
+  },
+  "golden_output": {
+    "fixture": "docs/nitrograph/P06B_LOG_GOLDEN_OUTPUT.json",
+    "address_bytes": "IDENTICAL",
+    "topic_bytes_and_order": "IDENTICAL",
+    "data_bytes": "IDENTICAL",
+    "aggregate_bloom": "BYTE_IDENTICAL",
+    "log_and_parent_order": "IDENTICAL",
+    "result": "PASS"
+  },
+  "focused_validation": {
+    "BlockItemsTranslatorTest": "111 PASS",
+    "native_agent_distribution": "PASS",
+    "full_distribution": "PASS",
+    "baseline_spotless_note": "Module-wide Spotless reports pre-existing violations outside P06B files; P06B Java import ordering was corrected and git diff check passes."
+  },
+  "p06a_regression": {
+    "real_four_node_reconnect": "PASS",
+    "state_synchronization": "PASS",
+    "historical_maps": "UNCHANGED",
+    "negative_execution": "5/5 INVALID_TRANSACTION_BODY",
+    "native_processing_after_reconnect": "PASS",
+    "test_duration": "4m49s",
+    "full_command_duration": "6m37.94s",
+    "driver_peak_rss_kib": 137664,
+    "swap_events": 0,
+    "test_xml_sha256": "d5055ae7f86dd04e8683b9ffcd8b809bea370ab73b1cd47a43339ba293ece216",
+    "class_log_manifest_sha256": "860f6e4a697dcb0f5b1cacf0d595e0c228858a46bb20ace9beea460effcd6586"
+  },
+  "class_loading": {
+    "historical_provider_selected": true,
+    "executable_provider_resolved": false,
+    "prohibited_evm_engine_classes_in_native_processes": 0,
+    "besu_tuweni_classes_in_native_processes": 0
+  },
+  "mirror_regression": {
+    "repository_commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "production_source_changes": 0,
+    "postgres_redis_testcontainers": "PASS",
+    "signed_record_files": 34,
+    "transactions": 858,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "sidecar_records": 7,
+    "complete_block_files": 129,
+    "persisted_block_record_files": 129,
+    "record_sidecar_result": "PASS",
+    "block_stream_result": "PASS",
+    "combined_test_xml_sha256": "c0af7383e14bb0dac3ad799facb9640d90d501578ab4e21129a5b3c54513c174",
+    "record_type_inventory_xml_sha256": "f5d5cbdc2bf054d6453cc0928ae7d28abc32053e4fafb769e73ff0a588d05b82",
+    "count_note": "The independently generated reconnect run contained one fewer type-14 system/native transaction than the P06A run because the signed shutdown boundary is timing-dependent. Contract result/log/sidecar counts and the byte-level log golden output are unchanged."
+  },
+  "scope": {
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "contract_service_impl_removed": false,
+    "physical_evm_besu_removal": false,
+    "result_action_state_change_sidecar_decoupling": "NOT_STARTED"
+  }
+}

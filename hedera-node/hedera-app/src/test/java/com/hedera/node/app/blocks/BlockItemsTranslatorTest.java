@@ -70,6 +70,7 @@ import com.hedera.node.app.blocks.impl.contexts.SubmitOpContext;
 import com.hedera.node.app.blocks.impl.contexts.SupplyChangeOpContext;
 import com.hedera.node.app.blocks.impl.contexts.TokenOpContext;
 import com.hedera.node.app.blocks.impl.contexts.TopicOpContext;
+import com.hedera.node.app.hapi.utils.contracts.HookUtils;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.List;
@@ -488,12 +489,19 @@ class BlockItemsTranslatorTest {
         final var logs = List.of(aLog, bLog);
         final var actualRecordWithOutputAndLogs =
                 BLOCK_ITEMS_TRANSLATOR.translateRecord(context, TRANSACTION_RESULT, logs, 1L, output);
+        final var result = actualRecordWithOutputAndLogs.contractCallResultOrThrow();
         assertEquals(
                 2,
-                actualRecordWithOutputAndLogs
-                        .contractCallResultOrThrow()
-                        .logInfo()
-                        .size());
+                result.logInfo().size());
+        assertEquals(
+                "00000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000001000000000000000000000000000000000020000000000000000000000000000000000000000000000000800000000100080000000000000000004000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000001000000000",
+                result.bloom().toHex());
+        assertEquals(aContractId, result.logInfo().get(0).contractID());
+        assertEquals(List.of(HookUtils.leftPad32(Bytes.wrap("A"))), result.logInfo().get(0).topic());
+        assertEquals(Bytes.wrap("Apple"), result.logInfo().get(0).data());
+        assertEquals(bContractId, result.logInfo().get(1).contractID());
+        assertEquals(List.of(HookUtils.leftPad32(Bytes.wrap("B"))), result.logInfo().get(1).topic());
+        assertEquals(Bytes.wrap("Banana"), result.logInfo().get(1).data());
     }
 
     @Test
