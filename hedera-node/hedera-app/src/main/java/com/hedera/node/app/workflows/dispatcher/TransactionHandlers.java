@@ -19,15 +19,6 @@ import com.hedera.node.app.service.consensus.impl.handlers.ConsensusCreateTopicH
 import com.hedera.node.app.service.consensus.impl.handlers.ConsensusDeleteTopicHandler;
 import com.hedera.node.app.service.consensus.impl.handlers.ConsensusSubmitMessageHandler;
 import com.hedera.node.app.service.consensus.impl.handlers.ConsensusUpdateTopicHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractCallHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractCreateHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractDeleteHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractSystemDeleteHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractSystemUndeleteHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractUpdateHandler;
-import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
-import com.hedera.node.app.service.contract.impl.handlers.HookDispatchHandler;
-import com.hedera.node.app.service.contract.impl.handlers.HookStoreHandler;
 import com.hedera.node.app.service.file.impl.handlers.FileAppendHandler;
 import com.hedera.node.app.service.file.impl.handlers.FileCreateHandler;
 import com.hedera.node.app.service.file.impl.handlers.FileDeleteHandler;
@@ -69,6 +60,8 @@ import com.hedera.node.app.service.token.impl.handlers.TokenUpdateHandler;
 import com.hedera.node.app.service.token.impl.handlers.TokenUpdateNftsHandler;
 import com.hedera.node.app.service.util.impl.handlers.AtomicBatchHandler;
 import com.hedera.node.app.service.util.impl.handlers.UtilPrngHandler;
+import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
+import com.hedera.node.app.spi.workflows.TransactionHandler;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
@@ -80,15 +73,15 @@ public record TransactionHandlers(
         @NonNull ConsensusUpdateTopicHandler consensusUpdateTopicHandler,
         @NonNull ConsensusDeleteTopicHandler consensusDeleteTopicHandler,
         @NonNull ConsensusSubmitMessageHandler consensusSubmitMessageHandler,
-        @NonNull ContractCreateHandler contractCreateHandler,
-        @NonNull ContractUpdateHandler contractUpdateHandler,
-        @NonNull ContractCallHandler contractCallHandler,
-        @NonNull ContractDeleteHandler contractDeleteHandler,
-        @NonNull ContractSystemDeleteHandler contractSystemDeleteHandler,
-        @NonNull ContractSystemUndeleteHandler contractSystemUndeleteHandler,
-        @NonNull EthereumTransactionHandler ethereumTransactionHandler,
-        @NonNull HookStoreHandler hookStoreHandler,
-        @NonNull HookDispatchHandler hookDispatchHandler,
+        @NonNull TransactionHandler contractCreateHandler,
+        @NonNull TransactionHandler contractUpdateHandler,
+        @NonNull TransactionHandler contractCallHandler,
+        @NonNull TransactionHandler contractDeleteHandler,
+        @NonNull TransactionHandler contractSystemDeleteHandler,
+        @NonNull TransactionHandler contractSystemUndeleteHandler,
+        @NonNull EthereumTransactionHandlerFacade ethereumTransactionHandler,
+        @NonNull TransactionHandler hookStoreHandler,
+        @NonNull TransactionHandler hookDispatchHandler,
         @NonNull CryptoCreateHandler cryptoCreateHandler,
         @NonNull CryptoUpdateHandler cryptoUpdateHandler,
         @NonNull CryptoTransferHandler cryptoTransferHandler,

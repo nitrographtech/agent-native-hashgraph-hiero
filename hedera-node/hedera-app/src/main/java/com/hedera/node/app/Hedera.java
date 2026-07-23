@@ -92,8 +92,11 @@ import com.hedera.node.app.service.schedule.impl.ScheduleServiceImpl;
 import com.hedera.node.app.service.token.impl.TokenServiceImpl;
 import com.hedera.node.app.service.util.impl.UtilServiceImpl;
 import com.hedera.node.app.services.AppContextImpl;
-import com.hedera.node.app.services.ServiceMigrator;
+import com.hedera.node.app.services.ContractRuntimeProvider;
+import com.hedera.node.app.services.FullContractRuntimeProvider;
+import com.hedera.node.app.services.HistoricalContractRuntimeProvider;
 import com.hedera.node.app.services.ServiceComposition;
+import com.hedera.node.app.services.ServiceMigrator;
 import com.hedera.node.app.services.ServicesRegistry;
 import com.hedera.node.app.signature.AppSignatureVerifier;
 import com.hedera.node.app.signature.impl.SignatureExpanderImpl;
@@ -264,7 +267,7 @@ public final class Hedera
      * The contract service singleton, kept as a field here to avoid constructing twice
      * (once in constructor to register schemas, again inside Dagger component).
      */
-    private final ContractServiceImpl contractServiceImpl;
+    private final ContractRuntimeProvider contractRuntimeProvider;
 
     /** The explicit service composition selected by this distribution. */
     private final ServiceComposition serviceComposition;
@@ -576,7 +579,9 @@ public final class Hedera
         tokenServiceImpl = new TokenServiceImpl(appContext);
         consensusServiceImpl = new ConsensusServiceImpl();
         networkServiceImpl = new NetworkServiceImpl();
-        contractServiceImpl = new ContractServiceImpl(appContext, metrics);
+        contractRuntimeProvider = serviceComposition.contractServiceEnabled()
+                ? new FullContractRuntimeProvider(new ContractServiceImpl(appContext, metrics))
+                : new HistoricalContractRuntimeProvider();
         scheduleServiceImpl = new ScheduleServiceImpl(appContext);
         final var rosterServiceImpl =
                 new RosterServiceImpl(this::canAdoptRoster, this::onAdoptRoster, this::startupNetworks);
@@ -594,10 +599,8 @@ public final class Hedera
                 instantSource);
 
         // Register all service schema RuntimeConstructable factories before platform init.
-        // The native-agent distribution deliberately omits the contract service and its state schemas.
-        if (serviceComposition.contractServiceEnabled()) {
-            servicesRegistry.register(contractServiceImpl);
-        }
+        // Both distributions preserve historical schemas; only the full distribution binds execution.
+        servicesRegistry.register(contractRuntimeProvider.stateService());
         Set.of(
                         new EntityIdServiceImpl(),
                         new ConsensusServiceImpl(),
@@ -818,15 +821,11 @@ public final class Hedera
         // Perform any service initialization that has to be postponed until Dagger is available
         // (simple boolean is usable since we're still single-threaded when `onStateInitialized` is called)
         if (!onceOnlyServiceInitializationPostDaggerHasHappened) {
-            if (serviceComposition.contractServiceEnabled()) {
-                contractServiceImpl.createMetrics();
-            }
+            contractRuntimeProvider.initializeMetrics();
             onceOnlyServiceInitializationPostDaggerHasHappened = true;
             try {
                 // Verify the native libraries
-                if (serviceComposition.contractServiceEnabled()) {
-                    contractServiceImpl.nativeLibVerifier().verifyNativeLibs();
-                }
+                contractRuntimeProvider.verifyNativeLibraries();
             } catch (final IllegalStateException e) {
                 // This block will be invoked only if the contracts.evm.nativeLibVerification.halt is enabled
                 // We should be shutting down the node if the verification fails
@@ -1371,7 +1370,7 @@ public final class Hedera
                 .configProviderImpl(configProvider)
                 .bootstrapConfigProviderImpl(bootstrapConfigProvider)
                 .fileServiceImpl(fileServiceImpl)
-                .contractServiceImpl(contractServiceImpl)
+                .contractRuntimeProvider(contractRuntimeProvider)
                 .utilServiceImpl(utilServiceImpl)
                 .networkServiceImpl(networkServiceImpl)
                 .tokenServiceImpl(tokenServiceImpl)

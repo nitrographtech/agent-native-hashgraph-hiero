@@ -4,6 +4,7 @@ package com.hedera.node.app.workflows.handle;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 import com.hedera.hapi.node.base.ServiceEndpoint;
 import com.hedera.hapi.node.state.roster.Roster;
@@ -75,6 +76,9 @@ import com.hedera.node.app.service.token.impl.handlers.TokenUnpauseHandler;
 import com.hedera.node.app.service.token.impl.handlers.TokenUpdateHandler;
 import com.hedera.node.app.service.util.impl.handlers.UtilHandlers;
 import com.hedera.node.app.service.util.impl.handlers.UtilPrngHandler;
+import com.hedera.node.app.services.ContractRuntimeHandlers;
+import com.hedera.node.app.services.ContractRuntimeProvider;
+import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.workflows.dispatcher.TransactionHandlers;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import java.util.List;
@@ -304,13 +308,6 @@ class HandleWorkflowModuleTest {
         given(consensusHandlers.consensusUpdateTopicHandler()).willReturn(consensusUpdateTopicHandler);
         given(consensusHandlers.consensusDeleteTopicHandler()).willReturn(consensusDeleteTopicHandler);
         given(consensusHandlers.consensusSubmitMessageHandler()).willReturn(consensusSubmitMessageHandler);
-        given(contractHandlers.contractCreateHandler()).willReturn(contractCreateHandler);
-        given(contractHandlers.contractUpdateHandler()).willReturn(contractUpdateHandler);
-        given(contractHandlers.contractCallHandler()).willReturn(contractCallHandler);
-        given(contractHandlers.contractDeleteHandler()).willReturn(contractDeleteHandler);
-        given(contractHandlers.contractSystemDeleteHandler()).willReturn(contractSystemDeleteHandler);
-        given(contractHandlers.contractSystemUndeleteHandler()).willReturn(contractSystemUndeleteHandler);
-        given(contractHandlers.ethereumTransactionHandler()).willReturn(etherumTransactionHandler);
         given(tokenHandlers.cryptoCreateHandler()).willReturn(cryptoCreateHandler);
         given(tokenHandlers.cryptoUpdateHandler()).willReturn(cryptoUpdateHandler);
         given(tokenHandlers.cryptoTransferHandler()).willReturn(cryptoTransferHandler);
@@ -354,11 +351,21 @@ class HandleWorkflowModuleTest {
                 hintsKeyPublicationHandler, preprocessingVoteHandler, partialSignatureHandler, crsPublicationHandler);
         final var historyHandlers =
                 new HistoryHandlers(proofSignatureHandler, proofKeyPublicationHandler, proofVoteHandler);
+        final var contractRuntime = mock(ContractRuntimeProvider.class);
+        final var runtimeHandlers = mock(ContractRuntimeHandlers.class);
+        given(contractRuntime.handlers()).willReturn(runtimeHandlers);
+        given(runtimeHandlers.contractCreateHandler()).willReturn(contractCreateHandler);
+        given(runtimeHandlers.contractUpdateHandler()).willReturn(contractUpdateHandler);
+        given(runtimeHandlers.contractCallHandler()).willReturn(contractCallHandler);
+        given(runtimeHandlers.contractDeleteHandler()).willReturn(contractDeleteHandler);
+        given(runtimeHandlers.contractSystemDeleteHandler()).willReturn(contractSystemDeleteHandler);
+        given(runtimeHandlers.contractSystemUndeleteHandler()).willReturn(contractSystemUndeleteHandler);
+        given(runtimeHandlers.ethereumTransactionHandler()).willReturn(mock(EthereumTransactionHandlerFacade.class));
         final var handlers = HandleWorkflowModule.provideTransactionHandlers(
                 networkAdminHandlers,
                 consensusHandlers,
                 fileHandlers,
-                () -> contractHandlers,
+                contractRuntime,
                 scheduleHandlers,
                 tokenHandlers,
                 utilHandlers,
