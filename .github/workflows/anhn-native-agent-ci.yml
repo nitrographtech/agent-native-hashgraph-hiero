@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: Apache-2.0
+name: ANHN Native Agent CI
+
+on:
+  pull_request:
+    branches:
+      - agent-native
+
+permissions:
+  contents: read
+
+jobs:
+  native-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Focused service-composition tests and distributions
+        run: >-
+          ./gradlew
+          :app:test
+          --tests com.hedera.node.app.services.ServiceCompositionTest
+          --tests com.hedera.node.app.workflows.dispatcher.TransactionDispatcherTest
+          --tests com.hedera.node.app.fees.congestion.UtilizationScaledThrottleMultiplierTest
+          :app:distributionFull
+          :app:distributionNativeAgent
+          --no-daemon
+          --stacktrace
+
+      - name: Verify distribution profiles
+        run: |
+          test "$(grep -Fx 'contracts.enabled=true' hedera-node/hedera-app/build/distributions/distribution-full/data/config/application.properties)" = "contracts.enabled=true"
+          test "$(grep -Fx 'contracts.enabled=false' hedera-node/hedera-app/build/distributions/distribution-native-agent/data/config/application.properties)" = "contracts.enabled=false"
+
+      - name: Enforce protected-layer boundary
+        run: |
+          test -z "$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- platform-sdk)"
