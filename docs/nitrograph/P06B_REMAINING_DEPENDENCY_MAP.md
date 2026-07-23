@@ -1,6 +1,6 @@
 # P06B Remaining Dependency Map
 
-Baseline: `agent-native@10dbab90172adbe63441a04679bcc442fe449991`
+Baseline: `agent-native@55f31cbe8592e4d732549469b9930b06694a3364`
 
 This map separates executable runtime coupling from historical data translation.
 Counts below cover production Java imports under `hedera-node`; test imports are
@@ -62,6 +62,42 @@ The P06A class-load and provider-resolution gates remain authoritative.
 | contract state changes | world updater/storage abstractions → PBJ | mixed historical/executable | later P06B |
 | sidecars | action, bytecode, and state-change translators | `HISTORICAL_DATA_MODEL` plus full-runtime producers | later P06B |
 | Ethereum-format history | transaction/result/signature utilities | mixed `SHARED_NATIVE` and `FULL_RUNTIME_ONLY` | later P06B |
+
+## P06B-2 contract-result flow
+
+The shared result path starts with neutral PBJ block values, not executable
+Besu results:
+
+`TransactionOutput` → PBJ `EvmTransactionResult` → neutral
+`HistoricalContractResult` → PBJ `ContractFunctionResult` → record/block output
+→ official mirror importer.
+
+| Field or edge | Current source | Reachability | Classification | P06B-2 disposition |
+| --- | --- | --- | --- | --- |
+| sender and receiving contract | PBJ `AccountID`, `ContractID` | shared/native | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE`, `REMOVABLE_IN_P06B_2` | snapshot in neutral result |
+| return bytes and error text | PBJ `Bytes`, `String` | shared/native | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE`, `REMOVABLE_IN_P06B_2` | preserve verbatim |
+| gas used, gas limit, amount/value | protobuf `uint64` represented by Java `long` | shared/native | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_2` | retain raw bit patterns; no economic interpretation |
+| call/function parameters | PBJ `InternalCallContext` | shared/native | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_2` | neutral `HistoricalCallContext` |
+| signer nonce and created contracts | `ContractOpContext` | shared/native | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_2` | preserve nullable presence |
+| EVM address and Ethereum hash | PBJ `Bytes` in `ContractOpContext` | shared/native | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_2` | result address is snapshotted; record-level Ethereum hash remains PBJ |
+| changed contract nonces | PBJ `ContractNonceInfo` | shared/native | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_2` | retain established contract-ID ordering |
+| logs and aggregate bloom | neutral P06B-1 values | shared/native | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE` | reused unchanged |
+| action sidecars | contract implementation tracers → PBJ | full runtime producer; historical consumer | `EXECUTABLE_RUNTIME`, `DEFER_TO_ACTION_SLICE` | unchanged |
+| state/storage changes | world updater → PBJ | full runtime producer; historical consumer | `EXECUTABLE_RUNTIME`, `DEFER_TO_STATE_CHANGE_SLICE` | unchanged |
+| bytecode/action/state-change sidecar association | PBJ stream types | shared/full | `HISTORICAL_DATA_MODEL`, `DEFER_TO_SIDECAR_SLICE` | unchanged |
+| Besu `Address`, `Hash`, `Log`, `Wei`, `Gas` | contract implementation internals | full runtime | `EXECUTABLE_RUNTIME`, `FULL_RUNTIME_ONLY`, `DEFER_TO_FINAL_REMOVAL` | no shared result import or adapter |
+| Tuweni `Bytes`/`UInt256` | contract implementation and HAPI utilities | full runtime plus unrelated shared utilities | mixed | no shared result import; later slices |
+
+`BlockItemsTranslator` calls no contract-implementation result utility. Its one
+contract utility call, `HookUtils.leftPad32`, is byte padding for historical log
+topics and remains part of the later general byte-utility cleanup. No Besu or
+Tuweni adapter is introduced because the shared input is already PBJ data.
+
+The native-agent path reaches the PBJ-to-neutral adapter and neutral-to-record
+translation. Full runtime reaches the same path after executable processing has
+produced PBJ block output. Executable result construction, Dagger bindings, and
+service providers remain confined to the contract implementation and are
+`DEFER_TO_FINAL_REMOVAL`.
 
 Record and block wire values remain PBJ types. P06B introduces no persisted state,
 wire-format, codec, state-ID, or schema change.

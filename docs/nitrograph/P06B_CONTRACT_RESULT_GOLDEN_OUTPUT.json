@@ -1,0 +1,60 @@
+{
+  "classification": "AUTHENTICATED_P06A_CONTRACT_RESULT_GOLDEN",
+  "baseline": {
+    "agent_native_commit": "55f31cbe8592e4d732549469b9930b06694a3364",
+    "fixture_release_tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "fixture_archive_sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "record_stream_aggregate_sha256": "be9fa200f9528c506a4c2c2aa3fb7204d12f63d7e089b433e833975681beba89",
+    "block_stream_aggregate_sha256": "d9d8b5c4b5acb2d0ffc6bf67ad04a147f57c26d835e6700dba12232834b08201"
+  },
+  "authenticated_corpus_coverage": {
+    "contract_results": 3,
+    "contract_logs": 1,
+    "ethereum_transaction_results": 1,
+    "contract_actions": 3,
+    "contracts": 2,
+    "sidecar_files": 2,
+    "sidecar_records": 5,
+    "covered_variants": [
+      "contract-create result",
+      "contract-call result",
+      "Ethereum-format transaction result"
+    ],
+    "not_claimed": [
+      "every possible error-message variant",
+      "every possible null-versus-empty combination",
+      "every possible unsigned uint64 bit pattern"
+    ]
+  },
+  "official_mirror_baseline": {
+    "repository_commit": "hiero-ledger/hiero-mirror-node@834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "preactivation_contract_results": 3,
+    "preactivation_contract_logs": 1,
+    "preactivation_ethereum_transactions": 1,
+    "activation_contract_results": 3,
+    "activation_contract_logs": 2,
+    "false_postactivation_contract_results": 0,
+    "record_sidecar_ingestion": "PASS",
+    "block_stream_ingestion": "PASS"
+  },
+  "normalized_semantic_fingerprint": {
+    "canonical_form": "preactivation|record_files=11|transactions=754|contract_results=3|contract_logs=1|contract_actions=3|contracts=2|ethereum_transactions=1|statuses=SUCCESS:753,INVALID_TRANSACTION_BODY:1|sidecar_files=2|sidecar_records=5|activation|contract_results=3|contract_logs=2|false_postactivation_contract_results=0",
+    "sha256": "884dc8be9f7cb3ed7c2b8c14c5800d9561d7d25ba18de7bb411916d666dd2dad"
+  },
+  "field_level_golden": {
+    "source": "BlockItemsTranslatorTest.contractResultNeutralBoundaryPreservesAllHistoricalFields",
+    "assertions": [
+      "sender and contract identifiers",
+      "return bytes and error text",
+      "uint64 gas and amount bit patterns",
+      "function parameter bytes",
+      "signer nonce",
+      "created-contract order",
+      "EVM address bytes",
+      "contract nonce canonical order",
+      "log topic order and bytes",
+      "log data bytes",
+      "aggregate bloom"
+    ]
+  }
+}

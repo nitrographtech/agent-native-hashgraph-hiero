@@ -13,11 +13,15 @@ import static java.util.Objects.requireNonNull;
 import com.hedera.hapi.block.stream.output.TransactionOutput;
 import com.hedera.hapi.block.stream.output.TransactionResult;
 import com.hedera.hapi.block.stream.trace.EvmTransactionLog;
+import com.hedera.hapi.node.base.ContractID;
 import com.hedera.hapi.node.contract.ContractFunctionResult;
 import com.hedera.hapi.node.contract.ContractLoginfo;
+import com.hedera.hapi.node.contract.ContractNonceInfo;
 import com.hedera.hapi.node.contract.EvmTransactionResult;
 import com.hedera.hapi.node.transaction.TransactionReceipt;
 import com.hedera.hapi.node.transaction.TransactionRecord;
+import com.hedera.node.app.blocks.historical.HistoricalCallContext;
+import com.hedera.node.app.blocks.historical.HistoricalContractResult;
 import com.hedera.node.app.blocks.historical.HistoricalEthereumAddress;
 import com.hedera.node.app.blocks.historical.HistoricalLog;
 import com.hedera.node.app.blocks.historical.HistoricalLogData;
@@ -35,6 +39,7 @@ import com.hedera.node.app.blocks.impl.contexts.SupplyChangeOpContext;
 import com.hedera.node.app.blocks.impl.contexts.TokenOpContext;
 import com.hedera.node.app.blocks.impl.contexts.TopicOpContext;
 import com.hedera.node.app.hapi.utils.contracts.HookUtils;
+import com.hedera.pbj.runtime.io.buffer.Bytes;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.ArrayList;
@@ -182,11 +187,11 @@ public class BlockItemsTranslator {
                     if (ethOutput != null) {
                         switch (ethOutput.transactionResult().kind()) {
                             case EVM_CALL_TRANSACTION_RESULT ->
-                                recordBuilder.contractCallResult(
-                                        legacyResultFrom(ethOutput.evmCallTransactionResultOrThrow(), context, logs));
+                                recordBuilder.contractCallResult(legacyResultFrom(historicalResultFrom(
+                                        ethOutput.evmCallTransactionResultOrThrow(), context, logs)));
                             case EVM_CREATE_TRANSACTION_RESULT ->
-                                recordBuilder.contractCreateResult(
-                                        legacyResultFrom(ethOutput.evmCreateTransactionResultOrThrow(), context, logs));
+                                recordBuilder.contractCreateResult(legacyResultFrom(historicalResultFrom(
+                                        ethOutput.evmCreateTransactionResultOrThrow(), context, logs)));
                         }
                     }
                 }
@@ -226,68 +231,109 @@ public class BlockItemsTranslator {
             @NonNull final Function<TransactionOutput, EvmTransactionResult> extractor,
             @NonNull final TranslationContext context,
             @Nullable final List<EvmTransactionLog> logs) {
-        return output -> legacyResultFrom(extractor.apply(output), context, logs);
+        return output -> legacyResultFrom(historicalResultFrom(extractor.apply(output), context, logs));
     }
 
-    private ContractFunctionResult legacyResultFrom(
-            @NonNull final EvmTransactionResult result,
-            @NonNull final TranslationContext context,
-            @Nullable final List<EvmTransactionLog> logs) {
+    private ContractFunctionResult legacyResultFrom(@NonNull final HistoricalContractResult result) {
         final var builder = ContractFunctionResult.newBuilder()
                 .senderId(result.senderId())
                 .contractID(result.contractId())
-                .contractCallResult(result.resultData())
+                .contractCallResult(result.returnData())
                 .errorMessage(result.errorMessage())
                 .gasUsed(result.gasUsed());
+        if (result.callContext() != null) {
+            builder.gas(result.callContext().gas())
+                    .amount(result.callContext().value())
+                    .functionParameters(result.callContext().callData());
+        }
+        if (result.signerNonce() != null) {
+            builder.signerNonce(result.signerNonce());
+        }
+        if (result.createdContractIds() != null) {
+            builder.createdContractIDs(result.createdContractIds());
+        }
+        if (result.evmAddress() != null) {
+            builder.evmAddress(result.evmAddress());
+        }
+        if (!result.contractNonces().isEmpty()) {
+            builder.contractNonces(result.contractNonces());
+        }
+        attachLogsTo(builder, result.logs());
+        return builder.build();
+    }
+
+    private HistoricalContractResult historicalResultFrom(
+            @NonNull final EvmTransactionResult result,
+            @NonNull final TranslationContext context,
+            @Nullable final List<EvmTransactionLog> logs) {
         final var callContext = result.hasInternalCallContext()
                 ? result.internalCallContextOrThrow()
                 : context instanceof ContractOpContext contractOpContext ? contractOpContext.ethCallContext() : null;
-        if (callContext != null) {
-            builder.gas(callContext.gas()).amount(callContext.value()).functionParameters(callContext.callData());
-        }
+        Long signerNonce = null;
+        List<ContractID> createdContractIds = null;
+        Bytes evmAddress = null;
+        List<ContractNonceInfo> contractNonces = List.of();
         if (context instanceof ContractOpContext contractContext) {
-            builder.signerNonce(contractContext.senderNonce());
-            if (contractContext.createdContractIds() != null) {
-                builder.createdContractIDs(contractContext.createdContractIds());
-            }
-            if (contractContext.evmAddress() != null) {
-                builder.evmAddress(contractContext.evmAddress());
-            }
+            signerNonce = contractContext.senderNonce();
+            createdContractIds = contractContext.createdContractIds();
+            evmAddress = contractContext.evmAddress();
             final var changedNonceInfos = contractContext.changedNonceInfos();
             if (changedNonceInfos != null && !changedNonceInfos.isEmpty()) {
                 final var infos = new ArrayList<>(changedNonceInfos);
                 infos.sort(NONCE_INFO_CONTRACT_ID_COMPARATOR);
-                builder.contractNonces(infos);
+                contractNonces = infos;
             }
-            attachLogsTo(builder, logs);
         }
-        return builder.build();
+        return new HistoricalContractResult(
+                result.senderId(),
+                result.contractId(),
+                result.resultData(),
+                result.errorMessage(),
+                result.gasUsed(),
+                callContext == null
+                        ? null
+                        : new HistoricalCallContext(callContext.gas(), callContext.value(), callContext.callData()),
+                signerNonce,
+                createdContractIds,
+                evmAddress,
+                contractNonces,
+                historicalLogsFrom(context instanceof ContractOpContext ? logs : null));
+    }
+
+    private List<HistoricalLog> historicalLogsFrom(@Nullable final List<EvmTransactionLog> logs) {
+        if (logs == null || logs.isEmpty()) {
+            return List.of();
+        }
+        final List<HistoricalLog> historicalLogs = new ArrayList<>(logs.size());
+        for (final var log : logs) {
+            final var paddedTopics =
+                    log.topics().stream().map(HookUtils::leftPad32).toList();
+            final var historicalLog = new HistoricalLog(
+                    log.contractIdOrThrow(),
+                    HistoricalEthereumAddress.fromEntityNumber(
+                            log.contractIdOrThrow().contractNumOrThrow()),
+                    paddedTopics.stream().map(HistoricalLogTopic::new).toList(),
+                    new HistoricalLogData(log.data()));
+            historicalLogs.add(historicalLog);
+        }
+        return historicalLogs;
     }
 
     private void attachLogsTo(
-            @NonNull final ContractFunctionResult.Builder builder, @Nullable final List<EvmTransactionLog> logs) {
-        if (logs != null && !logs.isEmpty()) {
-            final List<HistoricalLog> historicalLogs = new ArrayList<>(logs.size());
-            final List<ContractLoginfo> verboseLogs = new ArrayList<>(logs.size());
-            for (final var log : logs) {
-                final var paddedTopics =
-                        log.topics().stream().map(HookUtils::leftPad32).toList();
-                final var historicalLog = new HistoricalLog(
-                        log.contractIdOrThrow(),
-                        HistoricalEthereumAddress.fromEntityNumber(
-                                log.contractIdOrThrow().contractNumOrThrow()),
-                        paddedTopics.stream().map(HistoricalLogTopic::new).toList(),
-                        new HistoricalLogData(log.data()));
-                historicalLogs.add(historicalLog);
-                verboseLogs.add(ContractLoginfo.newBuilder()
-                        .contractID(historicalLog.contractId())
-                        .topic(paddedTopics)
-                        .bloom(forLog(historicalLog))
-                        .data(historicalLog.data().bytes())
-                        .build());
-            }
-            builder.bloom(forAll(historicalLogs)).logInfo(verboseLogs);
+            @NonNull final ContractFunctionResult.Builder builder, @NonNull final List<HistoricalLog> logs) {
+        if (logs.isEmpty()) {
+            return;
         }
+        final List<ContractLoginfo> verboseLogs = new ArrayList<>(logs.size());
+        for (final var log : logs) {
+            verboseLogs.add(ContractLoginfo.newBuilder()
+                    .contractID(log.contractId())
+                    .topic(log.topics().stream().map(HistoricalLogTopic::bytes).toList())
+                    .bloom(forLog(log))
+                    .data(log.data().bytes())
+                    .build());
+        }
+        builder.bloom(forAll(logs)).logInfo(verboseLogs);
     }
 
     private static <T> T outputValueIfPresent(
