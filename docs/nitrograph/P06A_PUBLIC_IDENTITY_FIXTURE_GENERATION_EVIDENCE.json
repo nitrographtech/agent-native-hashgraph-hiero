@@ -1,0 +1,83 @@
+{
+  "classification": "NODE_GENERATED_AUTHENTIC_TEST_FIXTURE_WITH_PUBLIC_TEST_IDENTITY",
+  "identity_warning": "THIS IDENTITY IS PUBLIC, COMPROMISED BY DESIGN, AND MUST NEVER BE USED OUTSIDE THE P06A FIXTURE HARNESS.",
+  "source_commit": "ff6490d66994da11af72e1d2f185ec7874fa383a",
+  "source_tree": "7f0bf298d73d386b0483282033eaccdc2268a9b8",
+  "generation_script_commit": "22fd1edd2dcae44b28eaa287a5dcb1cf89e4790e",
+  "generation_sequence": [
+    "DiverseStateCreation",
+    "HistoricalContractStateFixtureCreation",
+    "LeakyEthereumTestsSuite.legacyUnprotectedEtxBeforeEIP155",
+    "SubmitMessageSuite.messageSubmissionSimple",
+    "TokenCreateSpecs.creationYieldsExpectedToken",
+    "SimpleFreezeOnly"
+  ],
+  "schema_versions": [
+    "0.49.0",
+    "0.65.0"
+  ],
+  "expected_contract_maps": [
+    "STORAGE",
+    "BYTECODE",
+    "EVM_HOOK_STATES",
+    "LAMBDA_STORAGE"
+  ],
+  "saved_state": {
+    "round": 4744,
+    "consensus_timestamp": "2026-07-23T15:35:14.325097036Z",
+    "root": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485",
+    "freeze_state": true
+  },
+  "identity": {
+    "descriptor": "P06A_PUBLIC_FIXTURE_IDENTITY_SEED",
+    "network_id": 123,
+    "node_id": 0,
+    "certificate_sha256": "4f6d63a2fa8e8920c3b88324dc259984e170385cbb255a433f651eedbea550e1",
+    "independent_reproduction_equal": true,
+    "roster_certificate_equal": true,
+    "startup_from_replacement_fixture": "PASS",
+    "clean_state_write_after_startup": "PASS at round 5848",
+    "second_restart": "PASS",
+    "private_files_destroyed_after_test": true
+  },
+  "corpus": {
+    "file_count": 396,
+    "uncompressed_file_bytes": 274634943,
+    "record_stream_file_count": 22,
+    "sidecar_file_count": 4,
+    "block_stream_file_count": 278,
+    "checksum_manifest_sha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2"
+  },
+  "archive": {
+    "filename": "nitrograph-p06a-preactivation-v065-ff6490d-round4744.tar.gz",
+    "format": "deterministic tar plus gzip",
+    "size_bytes": 4742658,
+    "sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "second_construction_identical": true,
+    "independent_extraction_file_count": 396,
+    "independent_checksum_verification": "396/396 PASS"
+  },
+  "security_audit": {
+    "private_pem_files": 0,
+    "parseable_private_material": 0,
+    "github_tokens": 0,
+    "cloud_credentials": 0,
+    "generic_credentials": 0,
+    "developer_specific_paths": 0,
+    "archive_private_filename_entries": 0
+  },
+  "old_fixture": {
+    "classification": "LOCAL_ONLY_AUTHENTIC_GENERATION_EVIDENCE",
+    "published": false,
+    "archived": false,
+    "tagged": false,
+    "secret_key_exposed": false,
+    "secret_key_reused": false
+  },
+  "publication": {
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "release_created": false,
+    "asset_uploaded": false,
+    "post_download_verification": "PENDING"
+  }
+}

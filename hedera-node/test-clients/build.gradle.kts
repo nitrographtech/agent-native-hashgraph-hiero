@@ -69,6 +69,23 @@ tasks.register<JavaExec>("runTestClient") {
     mainClass = providers.gradleProperty("testClient")
 }
 
+tasks.register<JavaExec>("generateP06aFixtureIdentity") {
+    group = "verification"
+    description = "Generate the explicitly enabled, compromised P06A fixture identity"
+    classpath = configurations.runtimeClasspath.get().plus(files(tasks.jar))
+    mainClass.set("com.hedera.services.bdd.fixtures.p06a.P06aPublicFixtureIdentity")
+    args(
+        "--enable-public-p06a-fixture-identity",
+        "--acknowledge-compromised-test-key",
+        "--network-id",
+        providers.gradleProperty("p06aFixtureNetworkId").getOrElse(""),
+        "--node-id",
+        providers.gradleProperty("p06aFixtureNodeId").getOrElse(""),
+        "--output-directory",
+        providers.gradleProperty("p06aFixtureIdentityOutput").getOrElse(""),
+    )
+}
+
 tasks.jacocoTestReport {
     classDirectories.setFrom(files(project(":app").layout.buildDirectory.dir("classes/java/main")))
     sourceDirectories.setFrom(files(project(":app").projectDir.resolve("src/main/java")))
