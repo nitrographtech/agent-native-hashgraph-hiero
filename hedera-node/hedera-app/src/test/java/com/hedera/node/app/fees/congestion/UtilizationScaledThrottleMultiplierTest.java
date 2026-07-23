@@ -128,6 +128,8 @@ class UtilizationScaledThrottleMultiplierTest {
         given(configuration.getConfigData(FeesConfig.class)).willReturn(feesConfig);
         given(feesConfig.percentUtilizationScaleFactors()).willReturn(entityScaleFactors);
         given(configuration.getConfigData(AccountsConfig.class)).willReturn(accountsConfig);
+        given(configuration.getConfigData(ContractsConfig.class)).willReturn(contractsConfig);
+        given(contractsConfig.enabled()).willReturn(true);
         given(accountsConfig.maxNumber()).willReturn(100L);
 
         when(txnInfo.functionality()).thenReturn(CRYPTO_CREATE);
@@ -174,6 +176,46 @@ class UtilizationScaledThrottleMultiplierTest {
 
         var storeFactory = new ReadableStoreFactoryImpl(state);
         long multiplier = utilizationScaledThrottleMultiplier.currentMultiplier(txnInfo, storeFactory);
+
+        assertEquals(SOME_MULTIPLIER * ENTITY_SCALE_FACTOR, multiplier);
+    }
+
+    @Test
+    void testCurrentMultiplierCryptoCreateWithoutContractState() {
+        given(configProvider.getConfiguration()).willReturn(configuration);
+        given(configuration.getConfigData(FeesConfig.class)).willReturn(feesConfig);
+        given(feesConfig.percentUtilizationScaleFactors()).willReturn(entityScaleFactors);
+        given(configuration.getConfigData(AccountsConfig.class)).willReturn(accountsConfig);
+        given(configuration.getConfigData(ContractsConfig.class)).willReturn(contractsConfig);
+        given(contractsConfig.enabled()).willReturn(false);
+        given(accountsConfig.maxNumber()).willReturn(100L);
+        when(txnInfo.functionality()).thenReturn(CRYPTO_CREATE);
+        when(delegate.currentMultiplier()).thenReturn(SOME_MULTIPLIER);
+
+        state = new FakeState()
+                .addService(
+                        TokenService.NAME,
+                        Map.of(
+                                V0490TokenSchema.ACCOUNTS_STATE_ID,
+                                Map.of(
+                                        AccountID.newBuilder().accountNum(1L),
+                                        com.hedera.hapi.node.state.token.Account.DEFAULT),
+                                V0490TokenSchema.ALIASES_STATE_ID,
+                                new HashMap<>()))
+                .addService(
+                        EntityIdService.NAME,
+                        Map.of(
+                                V0490EntityIdSchema.ENTITY_ID_STATE_ID,
+                                new AtomicReference<>(EntityNumber.newBuilder().build()),
+                                V0590EntityIdSchema.ENTITY_COUNTS_STATE_ID,
+                                new AtomicReference<>(EntityCounts.newBuilder()
+                                        .numAccounts(1L)
+                                        .build()),
+                                V0730EntityIdSchema.HIGHEST_NODE_ID_STATE_ID,
+                                new AtomicReference<>(NodeId.DEFAULT)));
+
+        final var storeFactory = new ReadableStoreFactoryImpl(state);
+        final var multiplier = utilizationScaledThrottleMultiplier.currentMultiplier(txnInfo, storeFactory);
 
         assertEquals(SOME_MULTIPLIER * ENTITY_SCALE_FACTOR, multiplier);
     }

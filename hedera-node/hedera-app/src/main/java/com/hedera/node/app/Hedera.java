@@ -93,6 +93,7 @@ import com.hedera.node.app.service.token.impl.TokenServiceImpl;
 import com.hedera.node.app.service.util.impl.UtilServiceImpl;
 import com.hedera.node.app.services.AppContextImpl;
 import com.hedera.node.app.services.ServiceMigrator;
+import com.hedera.node.app.services.ServiceComposition;
 import com.hedera.node.app.services.ServicesRegistry;
 import com.hedera.node.app.signature.AppSignatureVerifier;
 import com.hedera.node.app.signature.impl.SignatureExpanderImpl;
@@ -264,6 +265,9 @@ public final class Hedera
      * (once in constructor to register schemas, again inside Dagger component).
      */
     private final ContractServiceImpl contractServiceImpl;
+
+    /** The explicit service composition selected by this distribution. */
+    private final ServiceComposition serviceComposition;
 
     /**
      * The schedule service singleton, kept as a field here to avoid constructing twice
@@ -524,6 +528,7 @@ public final class Hedera
                         """, HEDERA);
         bootstrapConfigProvider = new BootstrapConfigProviderImpl();
         final var bootstrapConfig = bootstrapConfigProvider.getConfiguration();
+        serviceComposition = ServiceComposition.from(bootstrapConfig);
         hapiVersion = bootstrapConfig.getConfigData(VersionConfig.class).hapiVersion();
         quiescenceEnabled =
                 bootstrapConfig.getConfigData(QuiescenceConfig.class).enabled();
@@ -588,11 +593,14 @@ public final class Hedera
                 metrics,
                 instantSource);
 
-        // Register all service schema RuntimeConstructable factories before platform init
+        // Register all service schema RuntimeConstructable factories before platform init.
+        // The native-agent distribution deliberately omits the contract service and its state schemas.
+        if (serviceComposition.contractServiceEnabled()) {
+            servicesRegistry.register(contractServiceImpl);
+        }
         Set.of(
                         new EntityIdServiceImpl(),
                         new ConsensusServiceImpl(),
-                        contractServiceImpl,
                         fileServiceImpl,
                         hintsService,
                         historyService,
@@ -810,11 +818,15 @@ public final class Hedera
         // Perform any service initialization that has to be postponed until Dagger is available
         // (simple boolean is usable since we're still single-threaded when `onStateInitialized` is called)
         if (!onceOnlyServiceInitializationPostDaggerHasHappened) {
-            contractServiceImpl.createMetrics();
+            if (serviceComposition.contractServiceEnabled()) {
+                contractServiceImpl.createMetrics();
+            }
             onceOnlyServiceInitializationPostDaggerHasHappened = true;
             try {
                 // Verify the native libraries
-                contractServiceImpl.nativeLibVerifier().verifyNativeLibs();
+                if (serviceComposition.contractServiceEnabled()) {
+                    contractServiceImpl.nativeLibVerifier().verifyNativeLibs();
+                }
             } catch (final IllegalStateException e) {
                 // This block will be invoked only if the contracts.evm.nativeLibVerification.halt is enabled
                 // We should be shutting down the node if the verification fails

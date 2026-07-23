@@ -22,8 +22,10 @@ import com.hedera.node.app.service.token.impl.handlers.CryptoCreateHandler;
 import com.hedera.node.app.spi.fees.FeeContext;
 import com.hedera.node.app.spi.fees.Fees;
 import com.hedera.node.app.spi.fees.SimpleFeeCalculator;
+import com.hedera.node.config.ConfigProvider;
 import com.hedera.node.config.data.FeesConfig;
-import com.swirlds.config.api.Configuration;
+import com.hedera.node.config.data.ContractsConfig;
+import com.hedera.node.config.VersionedConfiguration;
 import java.util.stream.Stream;
 import org.hiero.hapi.fees.FeeResult;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,10 +55,16 @@ class TransactionDispatcherTest {
     private FeeContext feeContext;
 
     @Mock
-    private Configuration configuration;
+    private VersionedConfiguration configuration;
+
+    @Mock
+    private ConfigProvider configProvider;
 
     @Mock
     private FeesConfig feesConfig;
+
+    @Mock
+    private ContractsConfig contractsConfig;
 
     @Mock
     private SimpleFeeCalculator simpleFeeCalculator;
@@ -69,7 +77,10 @@ class TransactionDispatcherTest {
 
     @BeforeEach
     void setUp() {
-        subject = new TransactionDispatcher(handlers, feeManager);
+        given(configProvider.getConfiguration()).willReturn(configuration);
+        given(configuration.getConfigData(ContractsConfig.class)).willReturn(contractsConfig);
+        given(contractsConfig.enabled()).willReturn(true);
+        subject = new TransactionDispatcher(handlers, feeManager, configProvider);
         testExchangeRate = ExchangeRate.newBuilder().hbarEquiv(1).centEquiv(12).build();
     }
 

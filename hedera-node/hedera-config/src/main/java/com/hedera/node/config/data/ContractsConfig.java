@@ -10,6 +10,8 @@ import java.util.Set;
 
 @ConfigData("contracts")
 public record ContractsConfig(
+        @ConfigProperty(defaultValue = "true") boolean enabled,
+
         @ConfigProperty(defaultValue = "1062787,1461860") Set<Long> permittedDelegateCallers,
 
         @ConfigProperty(value = "keys.legacyActivations", defaultValue = "1058134by[1062784]")

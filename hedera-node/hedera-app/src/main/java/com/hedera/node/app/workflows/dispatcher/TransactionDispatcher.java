@@ -18,6 +18,8 @@ import com.hedera.node.app.spi.workflows.PreHandleContext;
 import com.hedera.node.app.spi.workflows.PureChecksContext;
 import com.hedera.node.app.spi.workflows.TransactionHandler;
 import com.hedera.node.app.spi.workflows.WarmupContext;
+import com.hedera.node.app.services.ServiceComposition;
+import com.hedera.node.config.ConfigProvider;
 import com.hedera.node.config.data.FeesConfig;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.inject.Inject;
@@ -59,6 +61,7 @@ public class TransactionDispatcher {
 
     protected final TransactionHandlers handlers;
     protected final FeeManager feeManager;
+    private final ConfigProvider configProvider;
 
     /**
      * Creates a {@code TransactionDispatcher}.
@@ -66,9 +69,13 @@ public class TransactionDispatcher {
      * @param handlers the handlers for all transaction types
      */
     @Inject
-    public TransactionDispatcher(@NonNull final TransactionHandlers handlers, @NonNull final FeeManager feeManager) {
+    public TransactionDispatcher(
+            @NonNull final TransactionHandlers handlers,
+            @NonNull final FeeManager feeManager,
+            @NonNull final ConfigProvider configProvider) {
         this.handlers = requireNonNull(handlers);
         this.feeManager = requireNonNull(feeManager);
+        this.configProvider = requireNonNull(configProvider);
     }
 
     /**
@@ -226,6 +233,9 @@ public class TransactionDispatcher {
 
     @NonNull
     private TransactionHandler getHandler(@NonNull final TransactionBody txBody) {
+        if (!ServiceComposition.from(configProvider.getConfiguration()).permits(txBody)) {
+            throw new UnsupportedOperationException(TYPE_NOT_SUPPORTED);
+        }
         return switch (txBody.data().kind()) {
             case CONSENSUS_CREATE_TOPIC -> handlers.consensusCreateTopicHandler();
             case CONSENSUS_UPDATE_TOPIC -> handlers.consensusUpdateTopicHandler();
