@@ -121,7 +121,7 @@ public class StreamBuilderTest {
     private @Mock TokenID tokenID;
     private @Mock ScheduleID scheduleID;
     private @Mock TransactionID scheduledTransactionID;
-    private @Mock ContractStateChanges contractStateChanges;
+    private final ContractStateChanges contractStateChanges = ContractStateChanges.DEFAULT;
     private final ContractActions contractActions = ContractActions.DEFAULT;
     private @Mock ContractBytecode contractBytecode;
 

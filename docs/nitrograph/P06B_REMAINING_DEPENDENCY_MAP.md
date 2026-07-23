@@ -131,6 +131,44 @@ snapshot between PBJ ingress and PBJ wire emission. No `MessageFrame`, action
 tracer, Besu, or Tuweni type crosses into the shared action path. The native
 provider does not construct or resolve the executable producer.
 
+## P06B-4 state and storage-change flow
+
+Executable state tracking remains isolated from shared stream translation:
+
+`WorldUpdater`/`MutableAccount`/Besu `UInt256` and Tuweni bytes
+→ full-runtime `StorageAccesses`
+→ contract-implementation `ConversionUtils`
+→ PBJ `ContractStateChanges` or `ContractSlotUsage`
+→ neutral historical snapshots at shared ingress
+→ PBJ sidecar or block trace output
+→ official mirror importer.
+
+| Field or edge | Current source | Reachability | Classification | P06B-4 disposition |
+| --- | --- | --- | --- | --- |
+| world state, mutable accounts, and storage tracking | Besu/Tuweni contract implementation | full runtime only | `EXECUTABLE_RUNTIME`, `FULL_RUNTIME_ONLY`, `DEFER_TO_FINAL_REMOVAL` | unchanged |
+| executable-to-PBJ state-change conversion | `ConversionUtils.asPbjStateChanges` | full runtime producer | `EXECUTABLE_RUNTIME` | retained producer boundary |
+| executable-to-PBJ slot-usage conversion | `ConversionUtils.asPbjSlotUsages` | full runtime producer | `EXECUTABLE_RUNTIME` | retained producer boundary |
+| contract identity and grouping | PBJ `ContractID` and ordered lists | shared/native historical path | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE`, `REMOVABLE_IN_P06B_4` | immutable neutral grouping |
+| slot, read value, and written value | PBJ bytes, each 0–32 minimal big-endian bytes | shared/native historical path | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE`, `REMOVABLE_IN_P06B_4` | byte and presence preserving neutral value |
+| absent write versus explicit zero write | nullable PBJ `valueWritten` versus present empty bytes | shared/native historical path | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_4` | preserved explicitly |
+| reverted state-change handling | shared record builder removes only written-value presence | shared/native historical path | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE` | implemented on neutral values |
+| record state-change sidecar | neutral values → PBJ `ContractStateChanges` | shared record builder | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE` | wire bytes preserved |
+| block slot trace | PBJ `ContractSlotUsage`, state-change indexing | shared block builder | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE` | already Besu/Tuweni-free; PBJ wire one-of retained |
+| bytecode sidecar | PBJ `ContractBytecode` | mixed | `DEFER_TO_BYTECODE_SIDECAR_SLICE` | unchanged |
+| HAPI byte utilities | shared utility modules | mixed | `DEFER_TO_HAPI_BYTE_SLICE` | unchanged |
+
+No shared adapter is needed: executable world-state objects are converted to
+PBJ inside `hedera-smart-contract-service-impl` before invoking a shared stream
+builder. The native path reaches only PBJ-to-neutral snapshot construction and
+neutral-to-PBJ wire emission. `HistoricalContractStateChanges`,
+`HistoricalContractStateChange`, and `HistoricalStorageChange` contain no
+world-state access or mutation behavior.
+
+The wire schema deliberately permits 0–32 byte minimal big-endian slot and
+value encodings. The neutral boundary validates that upper bound without
+padding, trimming, or otherwise changing bytes. A missing written value remains
+distinct from a present empty written value.
+
 ## Distribution reachability
 
 - Full distribution: retains `ContractServiceImpl`, Besu execution jars, Tuweni,
