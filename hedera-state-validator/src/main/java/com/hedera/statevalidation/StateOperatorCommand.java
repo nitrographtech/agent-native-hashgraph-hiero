@@ -17,6 +17,7 @@ import picocli.CommandLine.Parameters;
             IntrospectCommand.class,
             ExportCommand.class,
             SortedExportCommand.class,
+            P06aContractMapFingerprintCommand.class,
             DiffCommand.class,
             CompactionCommand.class,
             ApplyBlocksCommand.class
