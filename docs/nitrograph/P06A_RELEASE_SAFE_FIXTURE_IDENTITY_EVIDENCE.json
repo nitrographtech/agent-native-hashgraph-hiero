@@ -1,0 +1,54 @@
+{
+  "classification": "IDENTITY_CONTINUITY_REQUIRED",
+  "classification_code": "B",
+  "fixture_round": 10738,
+  "historical_state_root": "e63751071394750ab8ca26b92711fa31dec916345c148f770e0827dd2987346d4bd2dd3017011c9eae0b01a6dea8da7a",
+  "private_key_files": {
+    "count": 1,
+    "paths": [
+      "data/keys/s-private-node1.pem"
+    ],
+    "contents_exposed": false
+  },
+  "public_identity_files": [
+    "data/keys/s-public-node1.pem",
+    "data/saved/com.hedera.services.ServicesMain/0/123/10738/currentRoster.json"
+  ],
+  "public_certificate_sha256": "09318a0e1bb9193fcfb7e3c49cc2a5390fac0eef98604d8401a70ce5f72fbc20",
+  "roster_entry_count": 1,
+  "roster_certificate_matches_public_pem": true,
+  "saved_state_private_pem_marker_count": 0,
+  "saved_state_private_filename_reference_count": 0,
+  "startup_evidence": {
+    "entrypoint": "hedera-node/hedera-app/src/main/java/com/hedera/node/app/ServicesMain.java",
+    "security_initializer": "platform-sdk/swirlds-platform-core/src/main/java/com/swirlds/platform/crypto/CryptoStatic.java",
+    "key_loader": "platform-sdk/swirlds-platform-core/src/main/java/com/swirlds/platform/crypto/EnhancedKeyStoreLoader.java",
+    "pair_validation": "platform-sdk/swirlds-platform-core/src/main/java/com/swirlds/platform/builder/PlatformBuilder.java",
+    "private_key_required": true,
+    "certificate_selected_from_active_roster": true,
+    "private_public_pair_verified_before_platform_start": true
+  },
+  "boundary": {
+    "private_key_persisted_in_state": false,
+    "corresponding_public_certificate_roster_bound": true,
+    "historical_root_commits_to_roster_state": true,
+    "unrelated_ephemeral_key_supported_without_roster_change": false,
+    "roster_change_permitted": false
+  },
+  "release_safe_activation_test": {
+    "performed": false,
+    "reason": "Classification B requires stopping before substitution or activation testing."
+  },
+  "integrity": {
+    "persisted_files_modified": false,
+    "historical_state_root_modified": false,
+    "fixture_files_modified": false
+  },
+  "publication": {
+    "archive_created": false,
+    "tag_created": false,
+    "release_created": false,
+    "asset_uploaded": false,
+    "gate_passed": false
+  }
+}
