@@ -1,0 +1,95 @@
+{
+  "fixture": {
+    "classification": "NODE_GENERATED_AUTHENTIC_TEST_FIXTURE_WITH_PUBLIC_TEST_IDENTITY",
+    "identity_warning": "THIS IDENTITY IS PUBLIC, COMPROMISED BY DESIGN, AND MUST NEVER BE USED OUTSIDE THE P06A FIXTURE HARNESS.",
+    "source_commit": "ff6490d66994da11af72e1d2f185ec7874fa383a",
+    "saved_state_round": 4744,
+    "state_root": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485",
+    "roster_certificate_sha256": "4f6d63a2fa8e8920c3b88324dc259984e170385cbb255a433f651eedbea550e1"
+  },
+  "storage": {
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "tag_target": "1675d1803e536b747346ec82a52d23509677d35e",
+    "release_database_id": 358796244,
+    "release_url": "https://github.com/nitrographtech/agent-native-hashgraph-hiero/releases/tag/p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "published_at": "2026-07-23T15:50:37Z",
+    "archive_asset_id": "RA_kwDOTgyWPc4dDHT3",
+    "archive_asset_filename": "nitrograph-p06a-preactivation-v065-ff6490d-round4744.tar.gz",
+    "archive_size_bytes": 4742658,
+    "archive_sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "checksum_asset_id": "RA_kwDOTgyWPc4dDHT1",
+    "checksum_manifest_sha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2",
+    "fresh_download_archive_verified": true,
+    "fresh_download_file_verification": "396/396 PASS",
+    "fresh_download_round_root_verified": true,
+    "tag_protection_ruleset_available": false,
+    "operational_policy": "Never replace the existing release asset; never move, replace, or reuse the fixture tag."
+  },
+  "security": {
+    "private_pem_count_in_archive": 0,
+    "parseable_private_material_count": 0,
+    "github_token_count": 0,
+    "cloud_credential_count": 0,
+    "generic_credential_count": 0,
+    "developer_specific_path_count": 0,
+    "temporary_activation_private_files_destroyed": true
+  },
+  "activation": {
+    "source_head": "1675d1803e536b747346ec82a52d23509677d35e",
+    "distribution": "distribution-native-agent",
+    "contracts_enabled": false,
+    "input": "fresh GitHub Release download after archive and per-file verification",
+    "roster_identity_regenerated_and_matched": true,
+    "historical_reopen": "PASS",
+    "provider": "HistoricalContractStateService",
+    "registered_schemas": [
+      "0.49.0",
+      "0.65.0"
+    ],
+    "registered_states": [
+      "BYTECODE",
+      "STORAGE",
+      "EVM_HOOK_STATES",
+      "LAMBDA_STORAGE"
+    ],
+    "post_activation_saved_state_round": 9221,
+    "post_activation_state_root": "6c699162be610a22d0a7aeb75f21cdeabb165fad1bed5a80af49ca2d26eb20347ff79f00f0cf29afea37849ea5de125e",
+    "restart": "PASS",
+    "post_restart_native_processing": "PASS"
+  },
+  "negative_execution": {
+    "transaction_bodies": {
+      "CONTRACT_CREATE": "INVALID_TRANSACTION_BODY",
+      "CONTRACT_CALL": "INVALID_TRANSACTION_BODY",
+      "CONTRACT_UPDATE": "INVALID_TRANSACTION_BODY",
+      "CONTRACT_DELETE": "INVALID_TRANSACTION_BODY",
+      "ETHEREUM_TRANSACTION": "INVALID_TRANSACTION_BODY"
+    },
+    "native_processing_after_rejections": "PASS",
+    "post_restart_rejection_matrix": "PASS",
+    "class_load_entries": 12839,
+    "besu_or_tuweni_classes_loaded": 0,
+    "prohibited_evm_engine_classes_loaded": 0,
+    "executable_contract_provider_resolved": false
+  },
+  "lifecycle": {
+    "native_token_processing": "PASS",
+    "coordination_layer_topic_publication": "PASS",
+    "save": "PASS",
+    "restart": "PASS",
+    "replay": "PASS via pre-consensus event replay during restart",
+    "record_stream_presence_and_checksum": "PASS",
+    "sidecar_presence_and_checksum": "PASS",
+    "block_stream_presence_and_checksum": "PASS",
+    "signed_state_load": "PASS",
+    "reconnect": "NOT_COMPLETED",
+    "state_synchronization": "NOT_COMPLETED",
+    "mirror_ingestion": "NOT_COMPLETED"
+  },
+  "integrity": {
+    "downloaded_pre_activation_fixture_reverified_after_activation": true,
+    "downloaded_fixture_files_modified": false,
+    "historical_input_root_unchanged": true,
+    "map_specific_cardinality_comparison": "NOT_COMPLETED"
+  }
+}
