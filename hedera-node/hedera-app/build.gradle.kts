@@ -171,6 +171,26 @@ tasks.register<JavaExec>("run") {
     args = listOf("-local", "0")
 }
 
+val distributionFull =
+    tasks.register<Sync>("distributionFull") {
+        group = "distribution"
+        description = "Assemble the behavioral-control distribution with every upstream service enabled."
+        dependsOn(copyNodeData)
+        from(nodeWorkingDir)
+        into(layout.buildDirectory.dir("distributions/distribution-full"))
+    }
+
+tasks.register<Sync>("distributionNativeAgent") {
+    group = "distribution"
+    description = "Assemble the native-agent distribution with the contract service disabled."
+    dependsOn(copyNodeData)
+    from(nodeWorkingDir)
+    into(layout.buildDirectory.dir("distributions/distribution-native-agent"))
+    filesMatching("data/config/application.properties") {
+        filter { line -> if (line == "contracts.enabled=true") "contracts.enabled=false" else line }
+    }
+}
+
 val cleanRun =
     tasks.register<Delete>("cleanRun") {
         val prjDir = layout.projectDirectory.dir("..")

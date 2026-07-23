@@ -123,8 +123,10 @@ public class UtilizationScaledThrottleMultiplier {
         final var accountsStore = storeFactory.readableStore(ReadableAccountStore.class);
         final var numAccountsAndContracts = accountsStore.sizeOfAccountState();
 
-        final var contractsStore = storeFactory.readableStore(ContractStateStore.class);
-        final var numContracts = contractsStore.getNumBytecodes();
+        final var contractsConfig = configuration.getConfigData(ContractsConfig.class);
+        final var numContracts = contractsConfig.enabled()
+                ? storeFactory.readableStore(ContractStateStore.class).getNumBytecodes()
+                : 0;
         final var numAccounts = numAccountsAndContracts - numContracts;
 
         return maxNumOfAccounts == 0 ? 100 : (int) ((100 * numAccounts) / maxNumOfAccounts);
