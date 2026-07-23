@@ -42,6 +42,14 @@
     "distribution_full": "PASS",
     "distribution_native_agent": "PASS"
   },
+  "ci_equivalent_validation": {
+    "workflow": ".github/workflows/anhn-native-agent-ci.yml",
+    "focused_app_tests_passed": 26,
+    "service_contract_tests": "PASS",
+    "distribution_full": "PASS",
+    "distribution_native_agent": "PASS",
+    "protected_platform_sdk_diff": 0
+  },
   "reconnect_and_synchronization": {
     "topology": "four node public-fixture-identity network",
     "real_reconnect": "PASS",
