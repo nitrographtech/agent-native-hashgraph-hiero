@@ -1,6 +1,6 @@
 # P06B Remaining Dependency Map
 
-Baseline: `agent-native@55f31cbe8592e4d732549469b9930b06694a3364`
+Baseline: `agent-native@54fbee50f55c565b98e60b039ad832fc5ea0affe`
 
 This map separates executable runtime coupling from historical data translation.
 Counts below cover production Java imports under `hedera-node`; test imports are
@@ -101,6 +101,35 @@ service providers remain confined to the contract implementation and are
 
 Record and block wire values remain PBJ types. P06B introduces no persisted state,
 wire-format, codec, state-ID, or schema change.
+
+## P06B-3 contract-action flow
+
+Executable action construction remains isolated from shared stream translation:
+
+`MessageFrame`/Besu/Tuweni → executable `EvmActionTracer` and `ActionStack`
+→ PBJ `ContractAction` → neutral `HistoricalContractAction`
+→ shared record/block builders → PBJ record sidecar or block `EvmTraceData`
+→ official mirror importer.
+
+| Field or edge | Current source | Reachability | Classification | P06B-3 disposition |
+| --- | --- | --- | --- | --- |
+| action tracer, stack, and frame lifecycle | Besu `MessageFrame`, `Address`, `Wei`, Tuweni `Bytes` | full runtime only | `EXECUTABLE_RUNTIME`, `FULL_RUNTIME_ONLY`, `DEFER_TO_FINAL_REMOVAL` | unchanged |
+| executable-to-PBJ action production | `ActionsHelper`, `ActionStack`, `EvmActionTracer` | full runtime only | `EXECUTABLE_RUNTIME` | retained as the producer boundary; no shared adapter added |
+| PBJ action ingress | `ContractOperationStreamBuilder.addActions` / `addContractActions` | full producer into shared builders | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_3` | snapshotted immediately into neutral values |
+| caller and recipient identity one-ofs | PBJ `AccountID`, `ContractID`, or targeted address bytes | shared/native historical path | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE`, `REMOVABLE_IN_P06B_3` | presence preserved explicitly |
+| input, output, revert, and error one-ofs | PBJ `Bytes` | shared/native historical path | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE`, `REMOVABLE_IN_P06B_3` | bytes and null/empty presence preserved |
+| action type and operation type | PBJ wire enums | shared/native historical path | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_3` | retained without executable behavior |
+| gas, gas-used, and value fields | protobuf `int64` Java bit patterns | shared/native historical path | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_3` | preserved verbatim; no native gas semantics introduced |
+| action index and hierarchy | list position plus `callDepth` | shared/native historical path | `HISTORICAL_DATA_MODEL`, `REMOVABLE_IN_P06B_3` | immutable ordered lists preserve both |
+| record sidecar serialization | neutral action → PBJ `ContractActions` | shared record builder | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE`, `DEFER_TO_SIDECAR_SLICE` | wire bytes preserved; broader sidecar work deferred |
+| block trace serialization | neutral action → PBJ `EvmTraceData` | shared block builder | `HISTORICAL_DATA_MODEL`, `SHARED_NATIVE` | wire bytes preserved |
+| state/storage and bytecode sidecars | PBJ stream values | mixed | `DEFER_TO_STATE_CHANGE_SLICE`, `DEFER_TO_SIDECAR_SLICE` | unchanged |
+
+There is no Besu/Tuweni adapter in `hedera-app`: the shared input is already
+neutral PBJ data. `HistoricalContractAction` is a non-executable immutable
+snapshot between PBJ ingress and PBJ wire emission. No `MessageFrame`, action
+tracer, Besu, or Tuweni type crosses into the shared action path. The native
+provider does not construct or resolve the executable producer.
 
 ## Distribution reachability
 

@@ -122,7 +122,7 @@ public class StreamBuilderTest {
     private @Mock ScheduleID scheduleID;
     private @Mock TransactionID scheduledTransactionID;
     private @Mock ContractStateChanges contractStateChanges;
-    private @Mock ContractActions contractActions;
+    private final ContractActions contractActions = ContractActions.DEFAULT;
     private @Mock ContractBytecode contractBytecode;
 
     @ParameterizedTest

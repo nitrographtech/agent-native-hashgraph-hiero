@@ -47,6 +47,7 @@ import com.hedera.hapi.streams.ContractBytecode;
 import com.hedera.hapi.streams.ContractStateChanges;
 import com.hedera.hapi.streams.TransactionSidecarRecord;
 import com.hedera.hapi.util.HapiUtils;
+import com.hedera.node.app.blocks.historical.HistoricalContractAction;
 import com.hedera.node.app.service.addressbook.impl.records.NodeCreateStreamBuilder;
 import com.hedera.node.app.service.addressbook.impl.records.RegisteredNodeCreateStreamBuilder;
 import com.hedera.node.app.service.consensus.impl.records.ConsensusCreateTopicStreamBuilder;
@@ -180,7 +181,7 @@ public class RecordStreamBuilder
     @Nullable
     private List<AbstractMap.SimpleEntry<ContractStateChanges, Boolean>> contractStateChanges;
 
-    private List<AbstractMap.SimpleEntry<ContractActions, Boolean>> contractActions = new LinkedList<>();
+    private List<AbstractMap.SimpleEntry<List<HistoricalContractAction>, Boolean>> contractActions = new LinkedList<>();
     private List<AbstractMap.SimpleEntry<ContractBytecode, Boolean>> contractBytecodes = new LinkedList<>();
     private final TraceDataSizeLimiter traceDataSizeLimiter;
     private long estimatedContractBytecodeSize;
@@ -370,7 +371,11 @@ public class RecordStreamBuilder
                     .map(pair -> new TransactionSidecarRecord(
                             transactionRecord.consensusTimestamp(),
                             pair.getValue(),
-                            new OneOf<>(TransactionSidecarRecord.SidecarRecordsOneOfType.ACTIONS, pair.getKey())))
+                            new OneOf<>(
+                                    TransactionSidecarRecord.SidecarRecordsOneOfType.ACTIONS,
+                                    new ContractActions(pair.getKey().stream()
+                                            .map(HistoricalContractAction::toPbj)
+                                            .toList()))))
                     .forEach(transactionSidecarRecords::add);
             // Any bytecodes created inside a batch and then reverted should not be streamed
             if (status != REVERTED_SUCCESS) {
@@ -1299,7 +1304,11 @@ public class RecordStreamBuilder
         if (!tryAddTraceData(ContractActions.PROTOBUF.measureRecord(contractActions))) {
             return this;
         }
-        this.contractActions.add(new AbstractMap.SimpleEntry<>(contractActions, isMigration));
+        this.contractActions.add(new AbstractMap.SimpleEntry<>(
+                contractActions.contractActions().stream()
+                        .map(HistoricalContractAction::fromPbj)
+                        .toList(),
+                isMigration));
         return this;
     }
 
