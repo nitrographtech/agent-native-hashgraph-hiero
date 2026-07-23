@@ -1,5 +1,5 @@
 {
-  "classification": "P06A_IN_PROGRESS",
+  "classification": "P06A_COMPLETE",
   "authoritative_base": "df183ff8caceba58361849961e3d43b4b376dc1f",
   "fixture_source_commit": "ff6490d66994da11af72e1d2f185ec7874fa383a",
   "safety_rule": "Historical contract state remains readable and migratable but is never executable on Nitrograph.",
@@ -72,14 +72,16 @@
     "os": "Ubuntu 24.04.4 LTS under WSL2",
     "architecture": "x86_64",
     "systemd": "running",
-    "docker": "NOT_INSTALLED",
-    "podman": "NOT_INSTALLED",
-    "postgresql": "NOT_INSTALLED",
-    "redis": "NOT_INSTALLED",
+    "docker": "29.6.2",
+    "containerd": "2.2.6",
+    "postgresql": "PASS via gcr.io/mirrornode/postgres:16-alpine Testcontainer",
+    "redis": "PASS via gcr.io/mirrornode/redis:8.2.2 Testcontainer",
     "available_disk": "922 GiB",
     "mirror_repository": "https://github.com/hiero-ledger/hiero-mirror-node",
     "mirror_commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
-    "ingestion": "BLOCKED_PENDING_PRIVILEGED_DOCKER_ENGINE_INSTALLATION"
+    "ingestion": "PASS",
+    "record_and_sidecar_evidence": "docs/nitrograph/P06A_MIRROR_INGESTION_EVIDENCE.json",
+    "block_stream_classification": "BLOCK_STREAM_INGESTION_PASSED"
   },
   "runtime_safety": {
     "historical_provider": "HistoricalContractStateService",
@@ -91,7 +93,10 @@
       "CONTRACT_DELETE": "INVALID_TRANSACTION_BODY",
       "ETHEREUM_TRANSACTION": "INVALID_TRANSACTION_BODY"
     },
-    "historical_contract_map_mutation": false
+    "historical_contract_map_mutation": false,
+    "instrumented_reconnect_test_xml_sha256": "32a49c5aaead9792a4ff656cdaef48c4de0967b5a313d3d1d65b1908ccd147fb",
+    "prohibited_evm_engine_classes_loaded_in_native_processes": 0,
+    "besu_tuweni_classes_loaded_in_native_processes": 0
   },
   "local_evidence": {
     "reconnect_test_xml_sha256": "4e9e92aa7bdf033b49f0d0a8828e826cab8658665a37d270749c509a86ec27ce",
