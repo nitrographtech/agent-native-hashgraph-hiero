@@ -1,0 +1,85 @@
+{
+  "classification": "IN_PROGRESS",
+  "base_commit": "eb016ede9e4b5c02208566ed2319e4042086bd71",
+  "fixture": {
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "archive_sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "preactivation_round": 4744,
+    "preactivation_root": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485"
+  },
+  "map_integrity": {
+    "comparison_round": 11220,
+    "comparison_root": "adf36bd3c0962ef48b15bd285e956152b88cbadba00b26458bce441d99ac4dcade58342a04879fb404b299886b8bda52",
+    "algorithm": "SHA-256 over lexicographically sorted, length-prefixed PBJ StateKey and StateValue wrapper bytes",
+    "normalized_map_inventory_sha256": "ee614896dc5443f6f85aa3283e286810ef7e484d57fa64e6d2a70273d99634dc",
+    "result": "UNCHANGED",
+    "maps": [
+      {
+        "state_key": "STORAGE",
+        "state_id": 4,
+        "schema_version": "0.49.0",
+        "cardinality": 0,
+        "key_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "value_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "aggregate_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "result": "UNCHANGED"
+      },
+      {
+        "state_key": "BYTECODE",
+        "state_id": 5,
+        "schema_version": "0.49.0",
+        "cardinality": 2,
+        "key_sha256": "07400baa36813f769dd05bd89f432a3fa55bc4e2adb92d77cd33f4c6835a2d8a",
+        "value_sha256": "c578e0ae40ed85aabad5404ab5370c8731d6a7555d4c2dbd2722dc15d92ae227",
+        "aggregate_sha256": "f8f73fe75503b4e451de81ad3bb7166694454899c8ee65aac8ac756cc3681952",
+        "result": "UNCHANGED"
+      },
+      {
+        "state_key": "EVM_HOOK_STATES",
+        "state_id": 51,
+        "schema_version": "0.65.0",
+        "cardinality": 1,
+        "key_sha256": "db053f67998db4c792f33e7a9d99bc353c61349e797b0a341908d541611d8192",
+        "value_sha256": "27caea9cdf28516f7c14bf79705cc776250f6e1b49839454f50b5c8925b8118c",
+        "aggregate_sha256": "395dffdca02535fd2b08bfe4330a907c1b5b41526c6063f3f7f8776158f1bb09",
+        "result": "UNCHANGED"
+      },
+      {
+        "state_key": "LAMBDA_STORAGE",
+        "state_id": 52,
+        "schema_version": "0.65.0",
+        "cardinality": 1,
+        "key_sha256": "aec504e5879e144e77a0929331659cf0f5188fed5e4e7c2008791c7bbeba90b3",
+        "value_sha256": "aca7fb92db8d0629b9b1348e52a7794f60f07fc1b34c472073bf07d45540121d",
+        "aggregate_sha256": "9bed0d3d4078bcb39a60e364fcdb9ede7dbcb84bf56f43db4d03bbd30374597b",
+        "result": "UNCHANGED"
+      }
+    ]
+  },
+  "multi_node": {
+    "published_fixture_roster": "single node; immutable",
+    "existing_otter_reconnect_harness": "real platform reconnect but does not carry Hedera historical contract maps",
+    "selected_strategy": "consensus-valid roster transition into a transient multi-node derivative, or a separately generated authenticated multi-node fixture",
+    "status": "NOT_COMPLETED"
+  },
+  "mirror": {
+    "repository": "https://github.com/hiero-ledger/hiero-mirror-node",
+    "commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "importer_path": "importer",
+    "integration_harness_dependencies": [
+      "PostgreSQL Testcontainer",
+      "Redis Testcontainer"
+    ],
+    "host_container_runtime": "UNAVAILABLE",
+    "status": "EXTERNAL_ENVIRONMENT_BLOCKER",
+    "compatibility_contract": "Run the pinned RecordFileParser ingestion path with the authenticated pre- and post-activation record/sidecar corpus against official PostgreSQL and Redis test containers; assert persisted transactions, contract results, logs, sidecars, native entities, and Coordination Layer messages."
+  },
+  "scope": {
+    "consensus_changes": false,
+    "platform_sdk_changes": false,
+    "persisted_identifier_changes": false,
+    "codec_changes": false,
+    "schema_version_changes": false,
+    "physical_evm_removal": false
+  }
+}
