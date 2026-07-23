@@ -33,8 +33,8 @@ import com.hedera.hapi.node.token.CryptoTransferTransactionBody;
 import com.hedera.hapi.node.transaction.SignedTransaction;
 import com.hedera.hapi.node.transaction.TransactionBody;
 import com.hedera.node.app.hapi.utils.ethereum.EthTxSigs;
-import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
 import com.hedera.node.app.service.token.ReadableAccountStore;
+import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.signature.AppKeyVerifier;
 import com.hedera.node.app.signature.impl.SignatureVerificationImpl;
 import com.hedera.node.app.spi.fixtures.ids.FakeEntityIdFactoryImpl;
@@ -84,7 +84,7 @@ public class HollowAccountCompletionsTest {
     private RecordStreamBuilder recordBuilder;
 
     @Mock
-    private EthereumTransactionHandler ethereumTransactionHandler;
+    private EthereumTransactionHandlerFacade ethereumTransactionHandler;
 
     @Mock
     private ParentTxn parentTxn;

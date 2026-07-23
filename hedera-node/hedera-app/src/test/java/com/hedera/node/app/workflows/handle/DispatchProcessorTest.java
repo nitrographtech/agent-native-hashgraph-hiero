@@ -51,7 +51,7 @@ import com.hedera.hapi.node.transaction.TransactionBody;
 import com.hedera.node.app.fees.AppFeeCharging;
 import com.hedera.node.app.fees.ExchangeRateManager;
 import com.hedera.node.app.fees.FeeAccumulator;
-import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
+import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.signature.AppKeyVerifier;
 import com.hedera.node.app.signature.impl.SignatureVerificationImpl;
 import com.hedera.node.app.spi.authorization.Authorizer;
@@ -120,7 +120,7 @@ class DispatchProcessorTest {
             SignedTransaction.DEFAULT, TXN_BODY, SignatureMap.DEFAULT, Bytes.EMPTY, NODE_CREATE, null);
 
     @Mock
-    private EthereumTransactionHandler ethereumTransactionHandler;
+    private EthereumTransactionHandlerFacade ethereumTransactionHandler;
 
     @Mock
     private Authorizer authorizer;

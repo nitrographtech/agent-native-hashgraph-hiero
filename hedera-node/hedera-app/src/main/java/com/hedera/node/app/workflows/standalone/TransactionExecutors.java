@@ -26,6 +26,7 @@ import com.hedera.node.app.service.schedule.impl.ScheduleServiceImpl;
 import com.hedera.node.app.service.token.impl.TokenServiceImpl;
 import com.hedera.node.app.service.util.impl.UtilServiceImpl;
 import com.hedera.node.app.services.AppContextImpl;
+import com.hedera.node.app.services.FullContractRuntimeProvider;
 import com.hedera.node.app.signature.AppSignatureVerifier;
 import com.hedera.node.app.signature.impl.SignatureExpanderImpl;
 import com.hedera.node.app.signature.impl.SignatureVerifierImpl;
@@ -308,7 +309,7 @@ public enum TransactionExecutors {
                 .tokenServiceImpl(new TokenServiceImpl(appContext))
                 .consensusServiceImpl(new ConsensusServiceImpl())
                 .networkServiceImpl(new NetworkServiceImpl())
-                .contractServiceImpl(contractService)
+                .contractRuntimeProvider(new FullContractRuntimeProvider(contractService))
                 .utilServiceImpl(utilService)
                 .scheduleServiceImpl(scheduleService)
                 .hintsService(hintsService)

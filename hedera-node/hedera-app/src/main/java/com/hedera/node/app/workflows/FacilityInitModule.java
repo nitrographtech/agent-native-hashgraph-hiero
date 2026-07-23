@@ -27,7 +27,6 @@ import com.hedera.node.app.fees.schemas.V0490FeeSchema;
 import com.hedera.node.app.records.BlockRecordService;
 import com.hedera.node.app.service.addressbook.impl.AddressBookServiceImpl;
 import com.hedera.node.app.service.consensus.impl.ConsensusServiceImpl;
-import com.hedera.node.app.service.contract.impl.ContractServiceImpl;
 import com.hedera.node.app.service.file.ReadableFileStore;
 import com.hedera.node.app.service.file.impl.FileServiceImpl;
 import com.hedera.node.app.service.networkadmin.impl.NetworkServiceImpl;
@@ -37,6 +36,7 @@ import com.hedera.node.app.service.schedule.impl.ScheduleServiceImpl;
 import com.hedera.node.app.service.token.api.TokenServiceApi;
 import com.hedera.node.app.service.token.impl.TokenServiceImpl;
 import com.hedera.node.app.service.util.impl.UtilServiceImpl;
+import com.hedera.node.app.services.ContractRuntimeProvider;
 import com.hedera.node.app.spi.AppContext;
 import com.hedera.node.app.spi.api.ServiceApiProvider;
 import com.hedera.node.app.spi.fees.FeeCharging;
@@ -145,8 +145,8 @@ public interface FacilityInitModule {
     @Provides
     @ElementsIntoSet
     @Singleton
-    static Set<ServiceFeeCalculator> provideContractServiceFeeCalculators(ContractServiceImpl contractService) {
-        return contractService.serviceFeeCalculators();
+    static Set<ServiceFeeCalculator> provideContractServiceFeeCalculators(ContractRuntimeProvider contractRuntime) {
+        return contractRuntime.serviceFeeCalculators();
     }
 
     @Provides
@@ -173,8 +173,8 @@ public interface FacilityInitModule {
     @Provides
     @ElementsIntoSet
     @Singleton
-    static Set<QueryFeeCalculator> provideContractQueryFeeCalculators(ContractServiceImpl contractService) {
-        return contractService.queryFeeCalculators();
+    static Set<QueryFeeCalculator> provideContractQueryFeeCalculators(ContractRuntimeProvider contractRuntime) {
+        return contractRuntime.queryFeeCalculators();
     }
 
     @Provides

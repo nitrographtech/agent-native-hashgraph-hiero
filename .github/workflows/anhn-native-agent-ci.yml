@@ -28,7 +28,9 @@ jobs:
       - name: Focused service-composition tests and distributions
         run: >-
           ./gradlew
+          :app-service-contract:test
           :app:test
+          --tests com.hedera.node.app.services.HistoricalContractRuntimeProviderTest
           --tests com.hedera.node.app.services.ServiceCompositionTest
           --tests com.hedera.node.app.workflows.dispatcher.TransactionDispatcherTest
           --tests com.hedera.node.app.fees.congestion.UtilizationScaledThrottleMultiplierTest

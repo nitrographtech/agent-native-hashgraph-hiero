@@ -7,11 +7,11 @@ import com.hedera.node.app.components.QueryInjectionComponent;
 import com.hedera.node.app.fees.ExchangeRateManager;
 import com.hedera.node.app.fees.FeeManager;
 import com.hedera.node.app.service.consensus.impl.handlers.ConsensusHandlers;
-import com.hedera.node.app.service.contract.impl.handlers.ContractHandlers;
 import com.hedera.node.app.service.file.impl.handlers.FileHandlers;
 import com.hedera.node.app.service.networkadmin.impl.handlers.NetworkAdminHandlers;
 import com.hedera.node.app.service.schedule.impl.handlers.ScheduleHandlers;
 import com.hedera.node.app.service.token.impl.handlers.TokenHandlers;
+import com.hedera.node.app.services.ContractRuntimeProvider;
 import com.hedera.node.app.spi.authorization.Authorizer;
 import com.hedera.node.app.spi.records.RecordCache;
 import com.hedera.node.app.state.WorkingStateAccessor;
@@ -30,7 +30,6 @@ import dagger.Provides;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.time.InstantSource;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import javax.inject.Singleton;
 
 /**
@@ -124,16 +123,16 @@ public interface QueryWorkflowInjectionModule {
             @NonNull final ConsensusHandlers consensusHandlers,
             @NonNull final FileHandlers fileHandlers,
             @NonNull final NetworkAdminHandlers networkHandlers,
-            @NonNull final Supplier<ContractHandlers> contractHandlers,
+            @NonNull final ContractRuntimeProvider contractRuntime,
             @NonNull final ScheduleHandlers scheduleHandlers,
             @NonNull final TokenHandlers tokenHandlers) {
         return new QueryHandlers(
                 consensusHandlers.consensusGetTopicInfoHandler(),
-                contractHandlers.get().contractGetBySolidityIDHandler(),
-                contractHandlers.get().contractCallLocalHandler(),
-                contractHandlers.get().contractGetInfoHandler(),
-                contractHandlers.get().contractGetBytecodeHandler(),
-                contractHandlers.get().contractGetRecordsHandler(),
+                contractRuntime.handlers().contractGetBySolidityIdHandler(),
+                contractRuntime.handlers().contractCallLocalHandler(),
+                contractRuntime.handlers().contractGetInfoHandler(),
+                contractRuntime.handlers().contractGetBytecodeHandler(),
+                contractRuntime.handlers().contractGetRecordsHandler(),
                 tokenHandlers.cryptoGetAccountBalanceHandler(),
                 tokenHandlers.cryptoGetAccountInfoHandler(),
                 tokenHandlers.cryptoGetAccountRecordsHandler(),

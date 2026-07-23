@@ -42,6 +42,7 @@ import com.hedera.node.app.service.schedule.impl.ScheduleServiceImpl;
 import com.hedera.node.app.service.token.impl.TokenServiceImpl;
 import com.hedera.node.app.service.util.impl.UtilServiceImpl;
 import com.hedera.node.app.services.AppContextImpl;
+import com.hedera.node.app.services.FullContractRuntimeProvider;
 import com.hedera.node.app.services.ServicesRegistry;
 import com.hedera.node.app.signature.AppSignatureVerifier;
 import com.hedera.node.app.signature.impl.SignatureExpanderImpl;
@@ -148,7 +149,8 @@ class IngestComponentTest {
                 .configProviderImpl(configProvider)
                 .bootstrapConfigProviderImpl(new BootstrapConfigProviderImpl())
                 .fileServiceImpl(new FileServiceImpl())
-                .contractServiceImpl(new ContractServiceImpl(appContext, NO_OP_METRICS))
+                .contractRuntimeProvider(
+                        new FullContractRuntimeProvider(new ContractServiceImpl(appContext, NO_OP_METRICS)))
                 .utilServiceImpl(new UtilServiceImpl(appContext, (signedTxn, config) -> null))
                 .scheduleService(new ScheduleServiceImpl(appContext))
                 .initTrigger(InitTrigger.GENESIS)

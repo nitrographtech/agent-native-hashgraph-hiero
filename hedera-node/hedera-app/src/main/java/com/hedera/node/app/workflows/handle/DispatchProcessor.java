@@ -23,7 +23,7 @@ import com.hedera.hapi.node.base.ResponseCodeEnum;
 import com.hedera.node.app.fees.AppFeeCharging;
 import com.hedera.node.app.fees.ExchangeRateManager;
 import com.hedera.node.app.fees.FeeAccumulator;
-import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
+import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.spi.authorization.Authorizer;
 import com.hedera.node.app.spi.fees.FeeCharging;
 import com.hedera.node.app.spi.fees.Fees;
@@ -73,7 +73,7 @@ public class DispatchProcessor {
     private final DispatchUsageManager dispatchUsageManager;
     private final ExchangeRateManager exchangeRateManager;
     private final TransactionDispatcher dispatcher;
-    private final EthereumTransactionHandler ethereumTransactionHandler;
+    private final EthereumTransactionHandlerFacade ethereumTransactionHandler;
     private final NetworkInfo networkInfo;
     private final OpWorkflowMetrics workflowMetrics;
     private final AppFeeCharging appFeeCharging;
@@ -88,7 +88,7 @@ public class DispatchProcessor {
             @NonNull final DispatchUsageManager dispatchUsageManager,
             @NonNull final ExchangeRateManager exchangeRateManager,
             @NonNull final TransactionDispatcher dispatcher,
-            @NonNull final EthereumTransactionHandler ethereumTransactionHandler,
+            @NonNull final EthereumTransactionHandlerFacade ethereumTransactionHandler,
             @NonNull final NetworkInfo networkInfo,
             @NonNull final OpWorkflowMetrics workflowMetrics,
             @NonNull final AppFeeCharging appFeeCharging) {

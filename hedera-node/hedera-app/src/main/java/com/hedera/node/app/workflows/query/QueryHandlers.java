@@ -2,11 +2,6 @@
 package com.hedera.node.app.workflows.query;
 
 import com.hedera.node.app.service.consensus.impl.handlers.ConsensusGetTopicInfoHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractCallLocalHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractGetBySolidityIDHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractGetBytecodeHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractGetInfoHandler;
-import com.hedera.node.app.service.contract.impl.handlers.ContractGetRecordsHandler;
 import com.hedera.node.app.service.file.impl.handlers.FileGetContentsHandler;
 import com.hedera.node.app.service.file.impl.handlers.FileGetInfoHandler;
 import com.hedera.node.app.service.networkadmin.impl.handlers.NetworkGetAccountDetailsHandler;
@@ -26,6 +21,7 @@ import com.hedera.node.app.service.token.impl.handlers.TokenGetAccountNftInfosHa
 import com.hedera.node.app.service.token.impl.handlers.TokenGetInfoHandler;
 import com.hedera.node.app.service.token.impl.handlers.TokenGetNftInfoHandler;
 import com.hedera.node.app.service.token.impl.handlers.TokenGetNftInfosHandler;
+import com.hedera.node.app.spi.workflows.QueryHandler;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
@@ -33,11 +29,11 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  */
 public record QueryHandlers(
         @NonNull ConsensusGetTopicInfoHandler consensusGetTopicInfoHandler,
-        @NonNull ContractGetBySolidityIDHandler contractGetBySolidityIDHandler,
-        @NonNull ContractCallLocalHandler contractCallLocalHandler,
-        @NonNull ContractGetInfoHandler contractGetInfoHandler,
-        @NonNull ContractGetBytecodeHandler contractGetBytecodeHandler,
-        @NonNull ContractGetRecordsHandler contractGetRecordsHandler,
+        @NonNull QueryHandler contractGetBySolidityIDHandler,
+        @NonNull QueryHandler contractCallLocalHandler,
+        @NonNull QueryHandler contractGetInfoHandler,
+        @NonNull QueryHandler contractGetBytecodeHandler,
+        @NonNull QueryHandler contractGetRecordsHandler,
         @NonNull CryptoGetAccountBalanceHandler cryptoGetAccountBalanceHandler,
         @NonNull CryptoGetAccountInfoHandler cryptoGetAccountInfoHandler,
         @NonNull CryptoGetAccountRecordsHandler cryptoGetAccountRecordsHandler,

@@ -14,10 +14,10 @@ import com.hedera.hapi.node.base.Key;
 import com.hedera.hapi.node.state.token.Account;
 import com.hedera.hapi.node.token.CryptoUpdateTransactionBody;
 import com.hedera.hapi.node.transaction.TransactionBody;
-import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
 import com.hedera.node.app.service.file.ReadableFileStore;
 import com.hedera.node.app.service.token.ReadableAccountStore;
 import com.hedera.node.app.service.token.records.CryptoUpdateStreamBuilder;
+import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.signature.AppKeyVerifier;
 import com.hedera.node.app.signature.impl.SignatureVerificationImpl;
 import com.hedera.node.app.spi.signatures.SignatureVerification;
@@ -45,10 +45,10 @@ import org.apache.logging.log4j.Logger;
 public class HollowAccountCompletions {
     private static final Logger logger = LogManager.getLogger(HollowAccountCompletions.class);
 
-    private final EthereumTransactionHandler ethereumTransactionHandler;
+    private final EthereumTransactionHandlerFacade ethereumTransactionHandler;
 
     @Inject
-    public HollowAccountCompletions(@NonNull final EthereumTransactionHandler ethereumTransactionHandler) {
+    public HollowAccountCompletions(@NonNull final EthereumTransactionHandlerFacade ethereumTransactionHandler) {
         // Dagger2
         this.ethereumTransactionHandler = requireNonNull(ethereumTransactionHandler);
     }
