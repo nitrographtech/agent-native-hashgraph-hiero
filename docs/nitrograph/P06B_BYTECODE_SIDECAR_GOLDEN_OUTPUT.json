@@ -1,0 +1,67 @@
+{
+  "schema": "nitrograph-p06b-bytecode-sidecar-golden-output-v1",
+  "baseline": {
+    "source_lineage": "agent-native@8b40a8ec1e3f009ac76f6b8ecde732c055a85703",
+    "fixture_release": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "fixture_classification": "NODE_GENERATED_AUTHENTIC_TEST_FIXTURE_WITH_PUBLIC_TEST_IDENTITY",
+    "bytecode_sidecar_records": 2,
+    "records": [
+      {
+        "contract_id": "0.0.1002",
+        "initcode_length": 2232,
+        "runtime_bytecode_length": 2200,
+        "initcode_sha256": "a9a2998aa46138feb40dbea1c2d7ecbd375e0584f409934857bfb0acd068651c",
+        "runtime_bytecode_sha256": "ccb88297edf093bd170e317759c76519a0ccb3e42399951ed4681855dc842aa1",
+        "pbj_record_sha256": "f5e83f557939f2efe99627257803c544a7c9acfa17a8c996e4d18b106e328348",
+        "sidecar_file": "2026-07-23T15_33_37.017649073Z_01.rcd.gz",
+        "sidecar_file_sha256": "58304a0f7937d974cb0cf4429107d459ab8b9e2244934e5a9e95add1ef55e8aa"
+      },
+      {
+        "contract_id": "0.0.1007",
+        "initcode_length": 589,
+        "runtime_bytecode_length": 570,
+        "initcode_sha256": "8067e73ccc77ee6458a7794ac03f906803d77f96099976af08b1b24ccbffffa5",
+        "runtime_bytecode_sha256": "3043b7c7ba28395830128cd996c6d1ee161d0532f04c2d896ae67b61dd6efa48",
+        "pbj_record_sha256": "3aac0bae7452f3996caaf3a09dbb4dec7a1055271b50c7a2df0737f83d7a56d4",
+        "sidecar_file": "2026-07-23T15_34_12.371237802Z_01.rcd.gz",
+        "sidecar_file_sha256": "0f403a8e5fb3307d020f8a08cb493ae5172cd1b09b81b04429bbb01262af0fc9"
+      }
+    ],
+    "semantic_canonical_form": "0.0.1002|init=2232:a9a2998aa46138feb40dbea1c2d7ecbd375e0584f409934857bfb0acd068651c|runtime=2200:ccb88297edf093bd170e317759c76519a0ccb3e42399951ed4681855dc842aa1|0.0.1007|init=589:8067e73ccc77ee6458a7794ac03f906803d77f96099976af08b1b24ccbffffa5|runtime=570:3043b7c7ba28395830128cd996c6d1ee161d0532f04c2d896ae67b61dd6efa48",
+    "semantic_fingerprint_sha256": "0dc30e88d327265a5d7dfe3abf5bcfedcba208ad056742cd613c4ae2de30b212"
+  },
+  "wire_semantics": {
+    "contract_id": "nullable protobuf message field",
+    "initcode": "non-null protobuf bytes; absent and explicit empty share Bytes.EMPTY wire semantics",
+    "runtime_bytecode": "non-null protobuf bytes; absent and explicit empty share Bytes.EMPTY wire semantics",
+    "evm_address": "not present in the ContractBytecode sidecar wire model; association is by ContractID",
+    "ordering": "record-sidecar insertion order followed by parent consensus timestamp association"
+  },
+  "authenticated_coverage": {
+    "covered": [
+      "two successful contract creations",
+      "initcode and runtime bytecode in each record",
+      "distinct ContractID associations",
+      "sidecar ordering and parent transaction association",
+      "official mirror contract persistence"
+    ],
+    "not_covered": [
+      "failed initcode-only creation",
+      "runtime-only sidecar",
+      "empty bytecode",
+      "large-code boundary",
+      "multiple creations in one transaction",
+      "Ethereum-format contract creation"
+    ],
+    "coverage_note": "Absent lifecycle variants are covered only by synthetic PBJ/neutral unit vectors and are not represented as authenticated node evidence."
+  },
+  "mirror_baseline": {
+    "repository": "hiero-ledger/hiero-mirror-node",
+    "commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "contracts": 2,
+    "sidecar_integrity": "PASS",
+    "bytecode_data": "PASS",
+    "silent_loss": false
+  },
+  "shutdown_tail_policy": "Only complete, signed, manifest-backed record and sidecar ranges are compared."
+}

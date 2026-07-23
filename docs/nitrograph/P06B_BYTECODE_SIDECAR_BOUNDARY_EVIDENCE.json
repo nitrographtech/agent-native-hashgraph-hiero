@@ -1,0 +1,152 @@
+{
+  "schema": "nitrograph-p06b-bytecode-sidecar-boundary-evidence-v1",
+  "status": "MERGE_READY",
+  "base": "agent-native@8b40a8ec1e3f009ac76f6b8ecde732c055a85703",
+  "implementation_commit": "15c0aadc4b10d00bde791045248a3f6bc66ba4d0",
+  "boundary": {
+    "full_runtime_producer": "Besu/Tuweni executable creation -> contract-implementation ConversionUtils -> PBJ ContractBytecode",
+    "shared_record_path": "PBJ ContractBytecode -> HistoricalContractBytecode -> PBJ bytecode sidecar",
+    "shared_block_path": "PBJ ExecutedInitcode -> Besu/Tuweni-free BlockStreamBuilder -> PBJ EvmTraceData",
+    "neutral_types": [
+      "HistoricalContractBytecode"
+    ],
+    "shared_besu_imports": 0,
+    "shared_tuweni_imports": 0,
+    "shared_executable_code_object_types": 0,
+    "adapter": "No shared Besu adapter; executable values are converted to PBJ inside hedera-smart-contract-service-impl."
+  },
+  "golden_output": {
+    "path": "docs/nitrograph/P06B_BYTECODE_SIDECAR_GOLDEN_OUTPUT.json",
+    "authenticated_records": 2,
+    "semantic_fingerprint_sha256": "0dc30e88d327265a5d7dfe3abf5bcfedcba208ad056742cd613c4ae2de30b212",
+    "contracts": [
+      {
+        "contract_id": "0.0.1002",
+        "initcode_length": 2232,
+        "initcode_sha256": "a9a2998aa46138feb40dbea1c2d7ecbd375e0584f409934857bfb0acd068651c",
+        "runtime_bytecode_length": 2200,
+        "runtime_bytecode_sha256": "ccb88297edf093bd170e317759c76519a0ccb3e42399951ed4681855dc842aa1"
+      },
+      {
+        "contract_id": "0.0.1007",
+        "initcode_length": 589,
+        "initcode_sha256": "8067e73ccc77ee6458a7794ac03f906803d77f96099976af08b1b24ccbffffa5",
+        "runtime_bytecode_length": 570,
+        "runtime_bytecode_sha256": "3043b7c7ba28395830128cd996c6d1ee161d0532f04c2d896ae67b61dd6efa48"
+      }
+    ],
+    "contract_association": "UNCHANGED",
+    "ordering": "UNCHANGED",
+    "result": "PASS"
+  },
+  "focused_validation": {
+    "app_tests": {
+      "passed": 32,
+      "failed": 0,
+      "coverage": "neutral bytecode, historical log/result/action/state values, stream builder, and block builder"
+    },
+    "contract_producer_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "distribution_full": "PASS",
+    "distribution_native_agent": "PASS"
+  },
+  "ci_equivalent_validation": {
+    "workflow": ".github/workflows/anhn-native-agent-ci.yml",
+    "focused_app_tests_passed": 26,
+    "service_contract_tests": "PASS",
+    "distribution_full": "PASS",
+    "distribution_native_agent": "PASS",
+    "elapsed": "29.90s",
+    "peak_rss_kib": 1267396,
+    "protected_platform_sdk_diff": 0
+  },
+  "reconnect_and_synchronization": {
+    "topology": "four node public-fixture-identity network",
+    "real_reconnect": "PASS",
+    "state_synchronization": "PASS",
+    "post_reconnect_native_processing": "PASS",
+    "legacy_rejections": "5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+    "test_count": {
+      "passed": 1,
+      "failed": 0
+    },
+    "pre_round": 159,
+    "post_round": 3125,
+    "test_xml_sha256": "9a568407459830e9039273e93eb45d0085f5c85ccbb9f35107a5bd2faadfce8d",
+    "elapsed": "6m09s",
+    "test_duration": "5m58s",
+    "peak_rss_kib": 1644920,
+    "swap_events": 0,
+    "instrumentation_note": "The semantic reconnect used no global verbose class logging. Targeted/static boundary checks preserve the prior exact-process zero-load proof and avoid the previously recorded four-node logging timeout."
+  },
+  "historical_map_integrity": {
+    "pre_round": 159,
+    "post_round": 3125,
+    "map_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "pre_evidence_sha256": "efaac1a10917e0afeaa714d89b545e899d41013914e12da7ff2e1bd2a0d7b8ca",
+    "post_evidence_sha256": "448164c9530e6a3d370a5b51e8f840d082bf5b96f2a45052dd70f763315fbb14",
+    "STORAGE": {
+      "result": "UNCHANGED",
+      "cardinality": 1,
+      "value_inventory_sha256": "2437fc8d8c6bdfefa9a9bd01d589250c54cc6765935591aa81fe17ab2d012064",
+      "representative_decoded_value": 424242
+    },
+    "BYTECODE": {
+      "result": "UNCHANGED",
+      "cardinality": 2,
+      "value_inventory_sha256": "12e0d9d7f83e2d4501c049deb7ceb39aa3c9a6d4e0b9423db2a8b7ecdc708101"
+    },
+    "EVM_HOOK_STATES": {
+      "result": "UNCHANGED",
+      "cardinality": 1,
+      "value_inventory_sha256": "1788434d8dd715103097b09ae6bafca864fc775905979a08210a81ab18918cd9"
+    },
+    "LAMBDA_STORAGE": {
+      "result": "UNCHANGED",
+      "cardinality": 1,
+      "value_inventory_sha256": "aca7fb92db8d0629b9b1348e52a7794f60f07d45540121d"
+    }
+  },
+  "mirror": {
+    "repository": "hiero-ledger/hiero-mirror-node",
+    "commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "source_changes": 0,
+    "postgres_redis_testcontainers": "PASS",
+    "signed_record_files": 11,
+    "transactions": 754,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "sidecar_records": 5,
+    "bytecode_rows": 2,
+    "complete_block_files": 129,
+    "block_files_persisted": 129,
+    "record_sidecar_result": "PASS",
+    "block_stream_result": "PASS",
+    "bytecode_hashes_exact": true,
+    "false_post_activation_bytecode_sidecars": 0,
+    "test_xml_sha256": "a279c9c0f44dd3a98f22b3f5393b073b380b7075f6a1f4aa5d6888d6c30e9204",
+    "elapsed": "42.35s",
+    "peak_rss_kib": 1322768,
+    "swap_events": 0,
+    "baseline_correction": "The first test-only assertion expected seven sidecar records from a broader corpus range; the complete signed published range contains five. The unmodified importer produced the exact expected bytecode rows in both runs, and the corrected signed-range assertion passed."
+  },
+  "runtime_safety": {
+    "historical_provider_selected": true,
+    "executable_provider_resolved": false,
+    "prohibited_evm_engine_classes_loaded_in_native_mode": 0,
+    "besu_tuweni_classes_loaded_in_native_mode": 0,
+    "note": "Prior P06B exact-process class-load evidence remains authoritative; P06B-5 adds no runtime dependency or executable code, and static shared-boundary scans remain zero."
+  },
+  "scope": {
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "protobuf_changes": 0,
+    "persisted_key_changes": 0,
+    "state_id_changes": 0,
+    "codec_changes": 0,
+    "schema_version_changes": 0,
+    "physical_evm_besu_removal": false
+  }
+}

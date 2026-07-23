@@ -123,7 +123,7 @@ public class StreamBuilderTest {
     private @Mock TransactionID scheduledTransactionID;
     private final ContractStateChanges contractStateChanges = ContractStateChanges.DEFAULT;
     private final ContractActions contractActions = ContractActions.DEFAULT;
-    private @Mock ContractBytecode contractBytecode;
+    private final ContractBytecode contractBytecode = ContractBytecode.DEFAULT;
 
     @ParameterizedTest
     @EnumSource(TransactionRecord.EntropyOneOfType.class)
