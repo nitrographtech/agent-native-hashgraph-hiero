@@ -51,3 +51,21 @@ Physical removal is permitted only after:
 
 No persisted key, state ID, codec, schema version, consensus, or platform-sdk change is
 part of P06B.
+
+## P06A handoff findings
+
+- A real four-node reconnect transferred and validated a signed state containing non-empty
+  `STORAGE`, `BYTECODE`, `EVM_HOOK_STATES`, and `LAMBDA_STORAGE`; the normalized per-map
+  content fingerprint was unchanged before and after transfer.
+- Four equal-weight nodes are the minimum local topology for isolating one node while
+  retaining the platform's greater-than-two-thirds consensus threshold.
+- Reconnect used the serialized virtual-map boundary and did not require contract execution.
+- The pinned official mirror importer ingested authenticated record streams, sidecars, and
+  328 complete block-stream files across activation. Historical contract results, logs,
+  bytecode/action sidecars, and Ethereum-format output remained interpretable without EVM
+  execution.
+- The mirror block path uses `BlockStreamReader`, `BlockFileTransformer`, and
+  `RecordFileParser`. P06B must preserve those decoded historical values while replacing
+  shared Besu/Tuweni value types; importer compatibility is now a regression gate.
+- P06B must retain the distinction between prohibited executable EVM classes and legacy
+  Besu/Tuweni data-model types still used by record and block translation.

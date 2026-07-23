@@ -13,6 +13,7 @@ import com.hedera.hapi.node.state.roster.Roster;
 import com.hedera.hapi.node.state.roster.RosterEntry;
 import com.hedera.node.internal.network.Network;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
+import com.hedera.services.bdd.fixtures.p06a.P06aPublicFixtureIdentity;
 import com.hedera.services.bdd.junit.hedera.HederaNode;
 import com.hedera.services.bdd.junit.hedera.NodeMetadata;
 import com.hederahashgraph.api.proto.java.ServiceEndpoint;
@@ -89,8 +90,17 @@ public class NetworkUtils {
         final Map<Long, Bytes> certsMap = new HashMap<>();
         final Map<NodeId, KeysAndCerts> kacMap;
         try {
-            kacMap = KeysAndCertsGenerator.generateKeysAndCerts(
-                    nodes.stream().map(HederaNode::getNodeId).map(NodeId::of).toList());
+            if ("four-node-explicitly-enabled".equals(System.getenv("P06A_PUBLIC_FIXTURE_NETWORK"))) {
+                kacMap = nodes.stream()
+                        .collect(java.util.stream.Collectors.toMap(
+                                node -> NodeId.of(node.getNodeId()),
+                                node -> P06aPublicFixtureIdentity.fixtureKeysAndCerts(123L, node.getNodeId())));
+            } else {
+                kacMap = KeysAndCertsGenerator.generateKeysAndCerts(nodes.stream()
+                        .map(HederaNode::getNodeId)
+                        .map(NodeId::of)
+                        .toList());
+            }
             for (final Entry<NodeId, KeysAndCerts> entry : kacMap.entrySet()) {
                 certsMap.put(
                         entry.getKey().id(),

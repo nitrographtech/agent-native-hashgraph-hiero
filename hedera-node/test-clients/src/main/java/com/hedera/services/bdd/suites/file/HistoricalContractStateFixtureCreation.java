@@ -4,6 +4,7 @@ package com.hedera.services.bdd.suites.file;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.accountAllowanceHook;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.accountEvmHookStore;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
@@ -13,6 +14,7 @@ import com.hedera.pbj.runtime.io.buffer.Bytes;
 import com.hedera.services.bdd.junit.HapiTest;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
 import com.hedera.services.bdd.suites.HapiSuite;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.DynamicTest;
 public final class HistoricalContractStateFixtureCreation extends HapiSuite {
     private static final Logger LOG = LogManager.getLogger(HistoricalContractStateFixtureCreation.class);
     private static final String HOOK_CONTRACT = "StorageAccessHook";
+    private static final String STORAGE_CONTRACT = "SimpleStorage";
     private static final String HOOK_OWNER = "p06aHookOwner";
     private static final long HOOK_ID = 234L;
 
@@ -45,6 +48,11 @@ public final class HistoricalContractStateFixtureCreation extends HapiSuite {
         final HapiSpecOperation createHookContract =
                 contractCreate(HOOK_CONTRACT).gas(5_000_000L).via("p06aHookContractCreate");
         return hapiTest(
+                uploadInitCode(STORAGE_CONTRACT),
+                contractCreate(STORAGE_CONTRACT).gas(1_000_000L).via("p06aStorageContractCreate"),
+                contractCall(STORAGE_CONTRACT, "set", BigInteger.valueOf(424_242L))
+                        .gas(1_000_000L)
+                        .via("p06aStorageWrite"),
                 uploadInitCode(HOOK_CONTRACT),
                 createHookContract,
                 cryptoCreate(HOOK_OWNER)

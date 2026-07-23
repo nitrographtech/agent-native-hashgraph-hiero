@@ -376,12 +376,13 @@ tasks.register<Test>("testSubprocess") {
     }
 
     val networkSize =
-        gradle.startParameter.taskNames
-            .stream()
-            .map { prCheckNetSizeOverrides[it] ?: "" }
-            .filter { it.isNotBlank() }
-            .findFirst()
-            .orElse("4")
+        System.getProperty("hapi.spec.network.size")
+            ?: gradle.startParameter.taskNames
+                .stream()
+                .map { prCheckNetSizeOverrides[it] ?: "" }
+                .filter { it.isNotBlank() }
+                .findFirst()
+                .orElse("4")
     systemProperty("hapi.spec.network.size", networkSize)
 
     // Note the 1/4 threshold for the restart check; DabEnabledUpgradeTest is a chaotic
