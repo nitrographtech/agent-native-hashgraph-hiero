@@ -44,6 +44,9 @@ jobs:
           test "$(grep -Fx 'contracts.enabled=true' hedera-node/hedera-app/build/distributions/distribution-full/data/config/application.properties)" = "contracts.enabled=true"
           test "$(grep -Fx 'contracts.enabled=false' hedera-node/hedera-app/build/distributions/distribution-native-agent/data/config/application.properties)" = "contracts.enabled=false"
 
+      - name: Enforce Nitrograph native runtime dependency policy
+        run: tools/p06b/verify-native-runtime-dependencies.sh
+
       - name: Enforce protected-layer boundary
         run: |
           test -z "$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- platform-sdk)"

@@ -233,3 +233,21 @@ rg -n '(besu|tuweni)' hedera-node --glob build.gradle.kts
 rg -n 'ContractServiceImpl|FullContractRuntimeProvider|HistoricalContractRuntimeProvider' hedera-node
 rg -n 'BlockItemsTranslator|ContractLoginfo|EvmTransactionLog|ContractAction|StateChange' hedera-node
 ```
+
+# P06B-6 post-translation closure
+
+The authoritative class-by-class inventory now lives in
+`P06B_NATIVE_RUNTIME_REACHABILITY_MAP.md`. Shared historical sidecar translation is closed:
+logs, results, actions, state/storage changes, and bytecode are neutral or PBJ-native.
+
+The remaining native debt is structural rather than semantic:
+
+- the combined app module still compiles against contract-implementation record-builder/store APIs;
+- the native distribution still packages the contract implementation and Besu/Tuweni/EVM jars;
+- standalone execution remains in the combined app module;
+- hapi-utils retains legacy data/crypto bridges;
+- full runtime construction remains isolated behind `FullContractRuntimeProvider`.
+
+`PrivilegesVerifier` no longer calls contract-implementation `ConversionUtils`; it uses neutral
+long-zero byte operations. `Hedera` no longer directly references or constructs
+`ContractServiceImpl`. Physical module/jar removal is deferred to the approved packaging plan.

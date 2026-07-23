@@ -78,7 +78,6 @@ import com.hedera.node.app.records.impl.WrappedRecordBlockHashMigration;
 import com.hedera.node.app.records.impl.producers.formats.SelfNodeAccountIdManagerImpl;
 import com.hedera.node.app.service.addressbook.impl.AddressBookServiceImpl;
 import com.hedera.node.app.service.consensus.impl.ConsensusServiceImpl;
-import com.hedera.node.app.service.contract.impl.ContractServiceImpl;
 import com.hedera.node.app.service.entityid.EntityIdService;
 import com.hedera.node.app.service.entityid.impl.AppEntityIdFactory;
 import com.hedera.node.app.service.entityid.impl.EntityIdServiceImpl;
@@ -580,7 +579,7 @@ public final class Hedera
         consensusServiceImpl = new ConsensusServiceImpl();
         networkServiceImpl = new NetworkServiceImpl();
         contractRuntimeProvider = serviceComposition.contractServiceEnabled()
-                ? new FullContractRuntimeProvider(new ContractServiceImpl(appContext, metrics))
+                ? FullContractRuntimeProvider.create(appContext, metrics)
                 : new HistoricalContractRuntimeProvider();
         scheduleServiceImpl = new ScheduleServiceImpl(appContext);
         final var rosterServiceImpl =
