@@ -18,7 +18,7 @@ import com.hedera.node.app.service.contract.impl.exec.gas.TinybarValues;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaNativeOperations;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaOperations;
 import com.hedera.node.app.service.contract.impl.exec.scope.SystemContractOperations;
-import com.hedera.node.app.service.contract.impl.exec.tracers.EvmActionTracer;
+import com.hedera.node.app.service.contract.impl.exec.tracers.NoTracer;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmBlocks;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmContext;
 import com.hedera.node.app.service.contract.impl.hevm.HederaWorldUpdater;
@@ -75,7 +75,7 @@ class QueryModuleTest {
 
     @Test
     void createsEvmActionTracer() {
-        assertInstanceOf(EvmActionTracer.class, provideActionSidecarContentTracer());
+        assertInstanceOf(NoTracer.class, provideActionSidecarContentTracer());
     }
 
     @Test

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package com.hedera.node.app.service.contract.impl.exec.utils;
+package com.hedera.services.bdd.fixturetooling.tracing;
 
 import static java.util.Objects.requireNonNull;
 
@@ -11,7 +11,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * to an evolving {@link ContractAction} object in the {@link ActionStack}---even though it will actually
  * need to be recreated each time it changes.
  */
-public class ActionWrapper {
+public final class ActionWrapper {
     private ContractAction value;
 
     /**

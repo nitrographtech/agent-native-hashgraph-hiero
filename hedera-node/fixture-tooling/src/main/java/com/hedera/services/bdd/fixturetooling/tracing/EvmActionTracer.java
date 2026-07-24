@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package com.hedera.node.app.service.contract.impl.exec.tracers;
+package com.hedera.services.bdd.fixturetooling.tracing;
 
 import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.hasActionSidecarsEnabled;
 import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.hasActionValidationEnabled;
@@ -12,7 +12,6 @@ import com.hedera.hapi.streams.CallOperationType;
 import com.hedera.hapi.streams.ContractAction;
 import com.hedera.hapi.streams.ContractActionType;
 import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracer;
-import com.hedera.node.app.service.contract.impl.exec.utils.ActionStack;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +26,7 @@ import org.hyperledger.besu.evm.operation.Operation;
  * Tracer implementation that chooses an appropriate {@link ActionStack} method to call based on the
  * {@link MessageFrame} state and system configuration.
  */
-public class EvmActionTracer implements ActionSidecarContentTracer {
+public final class EvmActionTracer implements ActionSidecarContentTracer {
     private static final Logger log = LogManager.getLogger(EvmActionTracer.class);
 
     private final ActionStack actionStack;

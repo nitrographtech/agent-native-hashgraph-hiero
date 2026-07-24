@@ -21,8 +21,7 @@ import com.hedera.node.app.service.contract.impl.exec.scope.HandleSystemContract
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaNativeOperations;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaOperations;
 import com.hedera.node.app.service.contract.impl.exec.scope.SystemContractOperations;
-import com.hedera.node.app.service.contract.impl.exec.tracers.EvmActionTracer;
-import com.hedera.node.app.service.contract.impl.exec.utils.ActionStack;
+import com.hedera.node.app.service.contract.impl.exec.tracers.NoTracer;
 import com.hedera.node.app.service.contract.impl.exec.utils.PendingCreationMetadataRef;
 import com.hedera.node.app.service.contract.impl.hevm.HandleContextHevmBlocks;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmBlocks;
@@ -51,7 +50,9 @@ import dagger.Provides;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.hyperledger.besu.evm.code.CodeFactory;
 
 @Module(includes = {TransactionConfigModule.class, TransactionInitialStateModule.class})
@@ -157,8 +158,16 @@ public interface TransactionModule {
 
     @Provides
     @TransactionScope
-    static EvmActionTracer provideEvmActionTracer() {
-        return new EvmActionTracer(new ActionStack());
+    static ActionSidecarContentTracer provideActionSidecarContentTracer(
+            @Nullable final Supplier<List<ActionSidecarContentTracer>> fixtureTracers) {
+        if (fixtureTracers == null) {
+            return NoTracer.NO_TRACER;
+        }
+        final var tracers = requireNonNull(fixtureTracers.get());
+        if (tracers.size() != 1) {
+            throw new IllegalStateException("Fixture execution requires exactly one action tracer");
+        }
+        return requireNonNull(tracers.getFirst());
     }
 
     @Provides

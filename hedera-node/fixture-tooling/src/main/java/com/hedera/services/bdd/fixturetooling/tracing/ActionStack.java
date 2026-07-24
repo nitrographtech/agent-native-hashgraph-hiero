@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package com.hedera.node.app.service.contract.impl.exec.utils;
+package com.hedera.services.bdd.fixturetooling.tracing;
 
 import static com.hedera.hapi.streams.CallOperationType.OP_CALL;
 import static com.hedera.hapi.streams.CallOperationType.OP_CREATE;
@@ -8,7 +8,8 @@ import static com.hedera.hapi.streams.ContractActionType.CREATE;
 import static com.hedera.hapi.streams.codec.ContractActionProtoCodec.RECIPIENT_UNSET;
 import static com.hedera.node.app.service.contract.impl.exec.failure.CustomExceptionalHaltReason.INVALID_SOLIDITY_ADDRESS;
 import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.entityIdFactory;
-import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.proxyUpdaterFor;
+import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.hederaAccountIdFor;
+import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.invalidAddressContext;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.hederaIdNumOfContractIn;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.hederaIdNumOfOriginatorIn;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.numberOfLongZero;
@@ -24,6 +25,7 @@ import com.hedera.hapi.node.base.ContractID;
 import com.hedera.hapi.streams.CallOperationType;
 import com.hedera.hapi.streams.ContractAction;
 import com.hedera.hapi.streams.ContractActionType;
+import com.hedera.node.app.service.contract.impl.exec.utils.InvalidAddressContext;
 import com.hedera.node.app.service.contract.impl.utils.OpcodeUtils;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -44,7 +46,7 @@ import org.hyperledger.besu.evm.frame.MessageFrame;
 /**
  * Encapsulates a stack of contract actions.
  */
-public class ActionStack {
+public final class ActionStack {
     private static final Logger log = LogManager.getLogger(ActionStack.class);
 
     private final ActionsHelper helper;
@@ -186,12 +188,12 @@ public class ActionStack {
                     builder.output(tuweniToPbjBytes(frame.getOutputData()));
                     if (action.targetedAddress() != null) {
                         final var maybeCreatedAddress = pbjToBesuAddress(action.targetedAddressOrThrow());
-                        final var maybeCreatedAccount = proxyUpdaterFor(frame).getHederaAccount(maybeCreatedAddress);
+                        final var maybeCreatedAccount = hederaAccountIdFor(frame, maybeCreatedAddress);
                         // Fill in the account of id of a successful lazy creation; but just leave
                         // the targeted address in case of a failed lazy-creation or a call to a
                         // non-existent address
                         if (maybeCreatedAccount != null) {
-                            builder.recipientAccount(maybeCreatedAccount.hederaId());
+                            builder.recipientAccount(maybeCreatedAccount);
                         }
                     }
                 }
@@ -214,7 +216,7 @@ public class ActionStack {
                     final var haltReason = maybeHaltReason.get();
                     builder.error(Bytes.wrap(haltReason.name().getBytes(UTF_8)));
                     if (CALL.equals(action.callType()) && haltReason == INVALID_SOLIDITY_ADDRESS) {
-                        final var invalidAddressContext = FrameUtils.invalidAddressContext(frame);
+                        final var invalidAddressContext = invalidAddressContext(frame);
                         // Only create the synth action if the invalid address was actually a call target
                         if (InvalidAddressContext.InvalidAddressType.InvalidCallTarget.equals(
                                 invalidAddressContext.type())) {

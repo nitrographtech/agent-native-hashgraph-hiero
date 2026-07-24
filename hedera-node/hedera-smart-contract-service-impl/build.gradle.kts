@@ -10,6 +10,7 @@ tasks.withType<JavaCompile>().configureEach { options.compilerArgs.add("-Xlint:-
 mainModuleInfo { annotationProcessor("dagger.compiler") }
 
 testModuleInfo {
+    requires("com.hedera.node.fixture.tooling") // P07-3A TEST_ONLY
     requires("com.hedera.node.app")
     requires("com.hedera.node.app.spi.test.fixtures")
     requires("com.hedera.node.config.test.fixtures")

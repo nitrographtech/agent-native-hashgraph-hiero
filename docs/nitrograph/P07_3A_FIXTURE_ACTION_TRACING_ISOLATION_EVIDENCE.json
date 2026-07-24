@@ -1,0 +1,130 @@
+{
+  "phase": "P07-3A",
+  "status": "COMPLETE",
+  "objective": "Isolate the minimum live ContractAction producer in fixture-generation-only tooling",
+  "blocker_checkpoint": {
+    "tested_head": "9beb506e1af68f5ffebefc88c2e7a7a071c85515",
+    "ci_run": 30117569106,
+    "merge_commit": "50d19afd7f6446d3204961f29da24d3ee99f83aa",
+    "production_changes": 0
+  },
+  "ownership": {
+    "tooling_module": "hedera-node/fixture-tooling",
+    "runtime_factory_spi": "com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracerFactory",
+    "moved_classes": ["EvmActionTracer", "ActionStack", "ActionWrapper", "ActionsHelper"],
+    "fixture_only_classes": ["FixtureActionTracerFactory"],
+    "deleted_runtime_aggregation": ["AddOnEvmActionTracer"],
+    "classes_duplicated": 0,
+    "fixture_tracer_source_bytes": 33234,
+    "package_strategy": "Fixture-owned package com.hedera.services.bdd.fixturetooling.tracing avoids a JPMS split package"
+  },
+  "dependency_direction": {
+    "allowed": "fixture-tooling -> full executable contract implementation",
+    "runtime_to_fixture_tooling": 0,
+    "native_to_fixture_tooling": 0,
+    "full_distribution_to_fixture_tooling": 0,
+    "normal_full_runtime_factories": 0,
+    "augmented_fixture_runtime_factories": 1
+  },
+  "runtime_behavior": {
+    "normal_full_runtime_tracer": "NoTracer",
+    "fixture_augmented_full_runtime_tracer": "EvmActionTracer",
+    "query_runtime_tracer": "NoTracer",
+    "native_runtime_changed": false,
+    "state_change_producer_changed": false,
+    "bytecode_producer_changed": false
+  },
+  "fixture_reproducibility": {
+    "authoritative_fixture_replaced": false,
+    "authoritative_fixture_regenerated": false,
+    "signed": false,
+    "published": false,
+    "generator": "HistoricalContractStateFixtureCreation through fixtureFullNodeDistribution",
+    "actions": 3,
+    "action_order": ["CREATE", "CALL", "CREATE"],
+    "state_change_groups": 2,
+    "bytecode_records": 2,
+    "sidecar_records": 7,
+    "semantic_sidecar_sha256": "318284b758f4734c4b74580c4c8edf688e17264d1def624f93685b162affe15f",
+    "transient_record_corpus_sha256": "3200e91547913584d84839548a290d27f3eea866893b87ac30f52d3df768775d",
+    "transient_sidecar_corpus_sha256": "6c5c99de426d176340ed6163f7bef9cef2fc7d252e39929c04e33a9c4d9b781f",
+    "transient_block_corpus_sha256": "d67ffe7123bf4c408d5602b03ee682670b2ccc0f97385e50d9eb3749ffd44dca"
+  },
+  "artifacts": {
+    "fixture_tooling_jar": {
+      "tracing_classes": 7,
+      "bytes": 26332,
+      "sha256": "692a128a1b488844406b0d5deae66c56e9b77e51a6664b007d2c4d57b5ed3f89"
+    },
+    "native_application_jar": {
+      "bytes": 1711488,
+      "sha256": "7cba1b6960d6c23a47687ca64bdf8fd78a023f67b76cf7c6edf214fdbb25f138",
+      "fixture_tracer_classes": 0
+    },
+    "full_application_jar": {
+      "bytes": 1719210,
+      "sha256": "e3a069122b76edc225055c54397c95922c98ed105f0e59374feae2c21c442e06",
+      "fixture_tracer_classes": 0
+    }
+  },
+  "validation": {
+    "contract_implementation_tests": "1736 passed",
+    "application_tests": "10407 passed; one unrelated resource-sensitive large-file test passed on isolated rerun",
+    "fixture_tooling_tests": "PASS",
+    "native_distribution": "PASS",
+    "full_distribution": "PASS",
+    "isolation_policy_and_intentional_controls": "PASS",
+    "reconnect": {
+      "attempts": 1,
+      "result": "PASS",
+      "duration": "4m57s",
+      "learner_active": true,
+      "state_synchronization": "PASS",
+      "post_reconnect_processing": "PASS",
+      "legacy_rejection": "5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+      "test_xml_sha256": "4273eed06a9cf83c31b5dbc6ef51d84e9b550bfd1edd1adbe3788a2d1ba4400d"
+    },
+    "historical_maps": {
+      "comparison": "UNCHANGED",
+      "STORAGE": "cardinality 1; decoded value 424242",
+      "BYTECODE": "cardinality 2",
+      "EVM_HOOK_STATES": "cardinality 1",
+      "LAMBDA_STORAGE": "cardinality 1",
+      "combined_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+    }
+  },
+  "mirror": {
+    "revision": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "official_importer_code_changes": 0,
+    "authenticated_corpus": {
+      "status": "PASS",
+      "records": 11,
+      "transactions": 754,
+      "contract_results": 3,
+      "contract_logs": 1,
+      "contract_actions": 3,
+      "complete_blocks": 139,
+      "test_xml_sha256": "d868c2efce1bc01033f214d32cfda61d282e2195c12ef48a8481af9d5d4dffe2"
+    },
+    "reproducibility_corpus": {
+      "parser_and_database_ingestion": "PASS",
+      "records": 5,
+      "transactions": 737,
+      "contract_results": 3,
+      "contract_logs": 0,
+      "contract_actions": 3,
+      "sidecar_records": 7,
+      "complete_blocks": 24,
+      "note": "The generic temporary harness asserted a positive log count after ingestion; this fixture-generation run intentionally covers action/state/bytecode sidecars and has no log-emitting transaction. All requested rows persisted before that harness-only assertion."
+    }
+  },
+  "protected_assets": {
+    "persisted_or_wire_change": false,
+    "consensus_change": false,
+    "platform_sdk_change": false,
+    "fixture_private_material_tracked": false
+  },
+  "blocker": "RESOLVED",
+  "resumed_p07_3_ready": true,
+  "wave_4_started": false
+}

@@ -13,6 +13,7 @@ import com.hedera.node.app.service.contract.impl.calculator.ContractGetInfoFeeCa
 import com.hedera.node.app.service.contract.impl.calculator.ContractUpdateFeeCalculator;
 import com.hedera.node.app.service.contract.impl.calculator.EthereumFeeCalculator;
 import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracer;
+import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracerFactory;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
 import com.hedera.node.app.service.contract.impl.exec.scope.DefaultVerificationStrategies;
 import com.hedera.node.app.service.contract.impl.exec.scope.VerificationStrategies;
@@ -36,6 +37,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.hyperledger.besu.evm.operation.Operation;
@@ -56,7 +58,7 @@ public class ContractServiceImpl implements ContractService {
      * @param appContext the current application context
      */
     public ContractServiceImpl(@NonNull final AppContext appContext, @NonNull final Metrics metrics) {
-        this(appContext, metrics, null, null, Set.of());
+        this(appContext, metrics, null, fixtureActionTracers(), Set.of());
     }
 
     /**
@@ -94,6 +96,22 @@ public class ContractServiceImpl implements ContractService {
                         contractsConfigSupplier,
                         appContext.idFactory(),
                         nativeLibVerifier);
+    }
+
+    private static @Nullable Supplier<List<ActionSidecarContentTracer>> fixtureActionTracers() {
+        final var factories =
+                ServiceLoader.load(ActionSidecarContentTracerFactory.class, ContractServiceImpl.class.getClassLoader())
+                        .stream()
+                        .map(ServiceLoader.Provider::get)
+                        .toList();
+        if (factories.isEmpty()) {
+            return null;
+        }
+        if (factories.size() != 1) {
+            throw new IllegalStateException("Expected at most one fixture action tracer factory");
+        }
+        final var factory = factories.getFirst();
+        return () -> List.of(factory.create());
     }
 
     @Override

@@ -1,20 +1,19 @@
 # P07 Execution Tracer Ownership
 
-Status: **BLOCKED — census complete; production deletion not started**  
+Status: **P07-3A PREREQUISITE IMPLEMENTED — fixture blocker resolved**
 Base: `agent-native@d6c5a7e9b44f32ac5d8f8d7ee686687792c6b2ac`  
 Wave: P07-3
 
 ## Stop-gate conclusion
 
 The authenticated P06 fixture-generation path requires live execution tracing to reproduce its
-contract-action sidecars. The immutable authenticated corpus contains three contract actions and
-seven sidecar records. Live actions are produced only by `EvmActionTracer` and its `ActionStack`.
-Removing the tracer producers would therefore change the documented reproducibility contract even
-though existing historical action sidecars would remain readable.
+three contract actions and seven sidecar records. P07-3A moved the minimum concrete producer
+(`EvmActionTracer`, `ActionStack`, `ActionWrapper`, and `ActionsHelper`) into `fixture-tooling`.
+Normal native and full distributions contain no fixture tracer implementation or provider.
+Historical interpretation remains unchanged.
 
-The P07-3 instruction explicitly requires stopping before deletion when authenticated fixture
-regeneration requires live tracers. No production source, test, build, JPMS, Dagger, service,
-configuration, metric, fixture, or output file was changed by this checkpoint.
+The fixture stop gate is now **RESOLVED**. Resumed P07-3 may remove the remaining runtime callback
+SPI and propagation after P07-3A merges.
 
 ## Measured ownership
 
@@ -27,11 +26,11 @@ behavior that cannot be deleted in the tracer wave.
 | Component | Source owner and role | Reachability | Output dependency | Classification | P07-3 disposition |
 |---|---|---|---|---|---|
 | `ActionSidecarContentTracer` | `impl/exec`; Besu `OperationTracer` plus PBJ action contract | Full runtime and fixture generation; native absent | Contract actions | EXECUTION_TRACER_CORE | DELETE_IN_P07_3 only after fixture prerequisite |
-| `EvmActionTracer` | `impl/exec/tracers`; owns `ActionStack` and callback handling | Full runtime and fixture generation; native absent | Sole live PBJ action producer | ACTION_TRACE_PRODUCER | BLOCKED |
-| `AddOnEvmActionTracer` | `impl/exec/tracers`; delegates to the primary tracer and add-ons | Full runtime only; native absent | Contract actions and add-on callbacks | TRACER_AGGREGATOR | BLOCKED |
+| `EvmActionTracer` | `fixture-tooling/tracing`; owns `ActionStack` and callback handling | Fixture generation only | Sole live PBJ action producer | ACTION_TRACE_PRODUCER | ISOLATED |
+| `AddOnEvmActionTracer` | removed | None | Former add-on aggregation | TRACER_AGGREGATOR | DELETED_IN_P07_3A |
 | `NoTracer` | `impl/exec/tracers`; no-op query tracer | Full query runtime; native absent | No action output | EXECUTION_TRACER_CORE | Delete with tracer API after prerequisite |
 | `ActionStack` and action validation | `impl/exec/utils`; frame/action hierarchy and validation | Full runtime and fixture generation | Action ordering, depth, revert/finalization | ACTION_TRACE_PRODUCER | BLOCKED; do not split casually |
-| `TransactionModule` | `impl/exec`; constructs `EvmActionTracer(new ActionStack())` | Full runtime and fixture generation | Transaction tracer binding | TRACER_AGGREGATOR | Remove binding after prerequisite |
+| `TransactionModule` | `impl/exec`; selects fixture SPI or `NoTracer` | Full runtime and fixture generation | Transaction callback binding | TRACER_AGGREGATOR | Remove callback in resumed P07-3 |
 | `QueryModule` | `impl/exec`; provides a query `ActionSidecarContentTracer` | Full runtime | Query execution callbacks | TRACER_AGGREGATOR | Remove binding after prerequisite |
 | `ContractServiceComponent` | implementation Dagger component; binds add-on tracer supplier | Full runtime | Optional add-on action tracing | TRACER_AGGREGATOR | Remove binding after prerequisite |
 | `ContractServiceImpl` | passes tracer supplier into the component | Full runtime and fixture generation | Composition only | FULL_RUNTIME_REQUIRED | Retain; later wave |
@@ -118,17 +117,8 @@ classifies as `FIXTURE_REQUIRES_LIVE_TRACERS`, not `FIXTURE_USES_PRECOMPUTED_OUT
 
 No fixture was regenerated, replaced, republished, or resigned during this checkpoint.
 
-## Smallest prerequisite for deletion
+## Prerequisite resolution
 
-Wave 3 requires a separate authorization choosing one compatibility contract:
-
-1. retain the current tracer producer in an explicitly fixture-generation-only executable artifact
-   while removing it from the normal full runtime;
-2. retire live regeneration of authenticated action sidecars and treat the immutable published
-   corpus plus verification tooling as the permanent oracle; or
-3. authorize a new fixture generation/output contract that no longer requires live action
-   sidecars.
-
-Option 1 best preserves current reproducibility but is an ownership move into executable fixture
-tooling and was not authorized in P07-3. Until one option is approved, Wave 3 is **BLOCKED** and
-Wave 4 must not begin.
+The authorized first option was implemented. Fixture generation loads the isolated provider from
+the augmented tooling classpath and reproduced 3 actions and 7 sidecars. Normal runtime artifacts
+cannot load it. P07-3 can resume after merge; Wave 4 remains out of scope.

@@ -12,8 +12,6 @@ import com.hedera.node.app.hapi.utils.ethereum.EthTxData;
 import com.hedera.node.app.service.contract.impl.annotations.TransactionScope;
 import com.hedera.node.app.service.contract.impl.exec.gas.CustomGasCharging;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
-import com.hedera.node.app.service.contract.impl.exec.tracers.AddOnEvmActionTracer;
-import com.hedera.node.app.service.contract.impl.exec.tracers.EvmActionTracer;
 import com.hedera.node.app.service.contract.impl.exec.utils.OpsDurationCounter;
 import com.hedera.node.app.service.contract.impl.hevm.*;
 import com.hedera.node.app.service.contract.impl.hevm.OpsDurationSchedule;
@@ -31,10 +29,8 @@ import com.hedera.pbj.runtime.io.buffer.Bytes;
 import com.swirlds.config.api.Configuration;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import java.util.List;
 import java.util.OptionalLong;
 import java.util.concurrent.Callable;
-import java.util.function.Supplier;
 import javax.inject.Inject;
 
 /**
@@ -51,11 +47,8 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
     @Nullable
     private final HydratedEthTxData hydratedEthTxData;
 
-    @Nullable
-    private final Supplier<List<ActionSidecarContentTracer>> addOnTracers;
-
     private final TransactionProcessor processor;
-    private final EvmActionTracer evmActionTracer;
+    private final ActionSidecarContentTracer actionTracer;
     private final RootProxyWorldUpdater rootProxyWorldUpdater;
     private final HevmTransactionFactory hevmTransactionFactory;
     private final CustomGasCharging gasCharging;
@@ -67,8 +60,7 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
      * @param contractsConfig the contracts configuration to use
      * @param configuration the configuration to use
      * @param hederaEvmContext the hedera EVM context
-     * @param addOnTracers all action sidecar content tracer callbacks
-     * @param evmActionTracer the EVM action tracer
+     * @param actionTracer the transaction-scoped action callback
      * @param worldUpdater the world updater for the transaction
      * @param hevmTransactionFactory the factory for EVM transaction
      * @param processor a map from the version of the Hedera EVM to the transaction processor
@@ -81,8 +73,7 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
             @NonNull final ContractsConfig contractsConfig,
             @NonNull final Configuration configuration,
             @NonNull final HederaEvmContext hederaEvmContext,
-            @Nullable Supplier<List<ActionSidecarContentTracer>> addOnTracers,
-            @NonNull final EvmActionTracer evmActionTracer,
+            @NonNull final ActionSidecarContentTracer actionTracer,
             @NonNull final RootProxyWorldUpdater worldUpdater,
             @NonNull final HevmTransactionFactory hevmTransactionFactory,
             @NonNull final TransactionProcessor processor,
@@ -90,8 +81,7 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
             @NonNull final ContractMetrics contractMetrics) {
         this.context = requireNonNull(context);
         this.hydratedEthTxData = hydratedEthTxData;
-        this.addOnTracers = addOnTracers;
-        this.evmActionTracer = requireNonNull(evmActionTracer);
+        this.actionTracer = requireNonNull(actionTracer);
         this.processor = requireNonNull(processor);
         this.rootProxyWorldUpdater = requireNonNull(worldUpdater);
         this.configuration = requireNonNull(configuration);
@@ -179,14 +169,11 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
 
         // Process the transaction and return its outcome
         try {
-            final var tracer = addOnTracers != null
-                    ? new AddOnEvmActionTracer(evmActionTracer, addOnTracers.get())
-                    : evmActionTracer;
             var result = processor.processTransaction(
                     hevmTransaction,
                     rootProxyWorldUpdater,
                     hederaEvmContext,
-                    tracer,
+                    actionTracer,
                     configuration,
                     opsDurationCounter);
 

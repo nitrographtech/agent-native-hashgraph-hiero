@@ -3,6 +3,8 @@
  * Module that provides the implementation of the Hedera Smart Contract Service.
  */
 module com.hedera.node.app.service.contract.impl {
+    uses com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracerFactory;
+
     requires transitive com.hedera.node.app.hapi.fees;
     requires transitive com.hedera.node.app.hapi.utils;
     requires transitive com.hedera.node.app.service.contract;
@@ -61,6 +63,7 @@ module com.hedera.node.app.service.contract.impl {
             com.hedera.node.app.service.contract.impl.test;
 
     exports com.hedera.node.app.service.contract.impl.exec.failure to
+            com.hedera.node.fixture.tooling,
             com.hedera.node.app.service.contract.impl.test,
             com.hedera.node.app.service.contract.impl.test.exec.scope;
     exports com.hedera.node.app.service.contract.impl.exec;

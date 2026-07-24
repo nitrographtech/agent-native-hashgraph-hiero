@@ -6,6 +6,7 @@ import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.is
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.numberOfLongZero;
 import static java.util.Objects.requireNonNull;
 
+import com.hedera.hapi.node.base.AccountID;
 import com.hedera.hapi.node.base.ContractID;
 import com.hedera.node.app.service.contract.impl.exec.FeatureFlags;
 import com.hedera.node.app.service.contract.impl.exec.gas.SystemContractGasCalculator;
@@ -136,6 +137,13 @@ public class FrameUtils {
 
     public static @NonNull ProxyWorldUpdater proxyUpdaterFor(@NonNull final MessageFrame frame) {
         return (ProxyWorldUpdater) frame.getWorldUpdater();
+    }
+
+    /** Returns the account identifier resolved for an EVM address. */
+    public static @Nullable AccountID hederaAccountIdFor(
+            @NonNull final MessageFrame frame, @NonNull final Address address) {
+        final var account = proxyUpdaterFor(requireNonNull(frame)).getHederaAccount(requireNonNull(address));
+        return account == null ? null : account.hederaId();
     }
 
     public static @NonNull TinybarValues tinybarValuesFor(@NonNull final MessageFrame frame) {
