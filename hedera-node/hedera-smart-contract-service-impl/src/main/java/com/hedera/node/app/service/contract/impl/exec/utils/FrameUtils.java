@@ -28,6 +28,10 @@ import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.evm.frame.MessageFrame;
 
 public class FrameUtils {
+    /** The HIP-1195 hook execution address; this is not a registered system contract. */
+    public static final Address HOOK_CONTRACT_ADDRESS =
+            Address.fromHexString(com.hedera.node.app.service.token.HookDispatchUtils.HTS_HOOKS_EVM_ADDRESS);
+
     public static final String CONFIG_CONTEXT_VARIABLE = "contractsConfig";
     public static final String TRACKER_CONTEXT_VARIABLE = "storageAccessTracker";
     public static final String ACTION_SIDECARS_VARIABLE = "actionSidecars";

@@ -1,0 +1,69 @@
+{
+  "phase": "P07-4",
+  "status": "IMPLEMENTED_VALIDATION_IN_PROGRESS",
+  "base_merge": "523bc791a33278fc89732d5326b85d970aa06987",
+  "scope": {
+    "registered_addresses_removed": ["0x167", "0x168", "0x169", "0x16a", "0x16b", "0x16c"],
+    "hook_address_0x16d": "retained as ordinary account-hook execution, not a registered system contract",
+    "production_java_files_deleted_from_contract_impl": 195,
+    "production_source_bytes_deleted_from_contract_impl": 943032,
+    "contract_impl_test_java_files_deleted": 154,
+    "contract_impl_test_source_bytes_deleted": 980354,
+    "system_contract_hapi_java_files_deleted": 81,
+    "system_contract_hapi_source_bytes_deleted": 2935319,
+    "duplicate_classes": 0
+  },
+  "fixture_impact": {
+    "system_contract_calls": 0,
+    "ordinary_contract_creates": 2,
+    "ordinary_contract_calls": 1,
+    "native_hook_state_write": 1,
+    "authoritative_fixture_regenerated": false,
+    "expected_contract_actions": 3,
+    "expected_state_change_groups": 2,
+    "expected_bytecode_records": 2,
+    "expected_sidecar_records": 7
+  },
+  "native_services_retained": [
+    "account service",
+    "token service and Native Asset Service",
+    "schedule service",
+    "exchange-rate data",
+    "native randomness",
+    "account hook service"
+  ],
+  "composition": {
+    "system_contract_map_binding": "removed",
+    "translator_dagger_modules": "removed",
+    "method_registry": "removed",
+    "secondary_system_contract_metrics": "removed",
+    "token_and_schedule_redirect_accounts": "removed",
+    "system_contract_service_loader_entries": 0,
+    "system_contract_jpms_edges": 0
+  },
+  "tracer_protocol": {
+    "system_contract_callbacks_removed": true,
+    "generic_precompile_callbacks_retained": true,
+    "ordinary_evm_callbacks_retained": true,
+    "classification": "LEGACY_EXECUTION_SEAM_DEFERRED_TO_ENGINE_REMOVAL"
+  },
+  "validation": {
+    "app_service_contract_impl_compile": "PASS",
+    "app_service_contract_impl_tests": "PASS (886)",
+    "test_clients_compile": "PASS",
+    "native_and_full_distribution_ci_matrix": "PASS",
+    "fixture_tooling_build": "PASS",
+    "intentional_policy_failures": "PASS",
+    "lifecycle_reconnect_mirror": "PENDING exact implementation head"
+  },
+  "protected_changes": {
+    "consensus": 0,
+    "platform_sdk": 0,
+    "protobuf_or_pbj": 0,
+    "persisted_format": 0,
+    "codec": 0,
+    "state_id": 0,
+    "schema_version": 0,
+    "saved_state_service_name": 0
+  }
+}

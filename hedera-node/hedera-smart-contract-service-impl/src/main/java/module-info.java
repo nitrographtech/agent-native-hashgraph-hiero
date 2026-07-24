@@ -82,8 +82,6 @@ module com.hedera.node.app.service.contract.impl {
     opens com.hedera.node.app.service.contract.impl.exec to
             com.hedera.node.app.service.contract.impl.test;
 
-    exports com.hedera.node.app.service.contract.impl.exec.systemcontracts.hts.mint;
-    exports com.hedera.node.app.service.contract.impl.exec.systemcontracts.hts.associations;
     exports com.hedera.node.app.service.contract.impl.schemas to
             com.hedera.node.app,
             com.hedera.node.app.service.contract.impl.test,

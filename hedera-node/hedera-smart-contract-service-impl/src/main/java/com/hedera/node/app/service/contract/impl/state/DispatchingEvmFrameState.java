@@ -23,7 +23,6 @@ import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pb
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.tuweniToPbjBytes;
 import static com.hedera.node.app.service.token.AliasUtils.extractEvmAddress;
 import static java.util.Objects.requireNonNull;
-import static org.hyperledger.besu.evm.frame.ExceptionalHaltReason.ILLEGAL_STATE_CHANGE;
 
 import com.hedera.hapi.node.base.AccountID;
 import com.hedera.hapi.node.base.ContractID;
@@ -451,8 +450,6 @@ public class DispatchingEvmFrameState implements EvmFrameState {
         final var to = getAccount(recipient);
         if (to == null) {
             return Optional.of(INVALID_SOLIDITY_ADDRESS);
-        } else if (to instanceof TokenEvmAccount || to instanceof ScheduleEvmAccount) {
-            return Optional.of(ILLEGAL_STATE_CHANGE);
         }
         // Note we can still use top-level signatures to meet receiver signature requirements
         final var status = nativeOperations.transferWithReceiverSigCheck(
@@ -521,9 +518,7 @@ public class DispatchingEvmFrameState implements EvmFrameState {
             return Optional.of(SELF_DESTRUCT_TO_SELF);
         }
         final var beneficiaryAccount = getAccount(beneficiary);
-        if (beneficiaryAccount == null
-                || beneficiaryAccount instanceof TokenEvmAccount
-                || beneficiaryAccount instanceof ScheduleEvmAccount) {
+        if (beneficiaryAccount == null) {
             return Optional.of(INVALID_SOLIDITY_ADDRESS);
         }
         // Token addresses don't have bytecode that could run a selfdestruct, so this cast is safe
@@ -581,19 +576,6 @@ public class DispatchingEvmFrameState implements EvmFrameState {
             } else {
                 return new ProxyEvmAccount(account.accountId(), this);
             }
-        }
-        final var token = nativeOperations.getToken(entityIdFactory().newTokenId(number));
-        if (token != null) {
-            // If the token is deleted or expired, the system contract executed by the redirect
-            // bytecode will fail with a more meaningful error message, so don't check that here
-            return new TokenEvmAccount(address, this);
-        }
-        final var schedule =
-                nativeOperations.getSchedule(nativeOperations.entityIdFactory().newScheduleId(number));
-        if (schedule != null) {
-            // If the schedule is deleted or expired, the system contract executed by the redirect
-            // bytecode will fail with a more meaningful error message, so don't check that here
-            return new ScheduleEvmAccount(address, this);
         }
         return null;
     }

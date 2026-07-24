@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.service.contract.impl.test.state.hooks;
 
-import static com.hedera.node.app.service.contract.impl.exec.systemcontracts.HtsSystemContract.HTS_HOOKS_CONTRACT_ADDRESS;
+import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.HOOK_CONTRACT_ADDRESS;
 import static com.hedera.node.app.service.contract.impl.test.TestHelpers.CODE_FACTORY;
 import static com.hedera.node.app.service.token.HookDispatchUtils.HTS_HOOKS_CONTRACT_NUM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,7 +70,7 @@ class ProxyEvmHookTest {
         assertEquals(expectedCode, code);
         assertEquals(hookContractCode, subject.getCode());
         assertEquals(expectedHash, subject.getCodeHash());
-        assertEquals(HTS_HOOKS_CONTRACT_ADDRESS, subject.getAddress());
+        assertEquals(HOOK_CONTRACT_ADDRESS, subject.getAddress());
         assertEquals(HTS_HOOKS_CONTRACT_NUM, subject.hederaContractId().contractNumOrThrow());
         assertEquals(expectedStorageValue, subject.getStorageValue(key));
 

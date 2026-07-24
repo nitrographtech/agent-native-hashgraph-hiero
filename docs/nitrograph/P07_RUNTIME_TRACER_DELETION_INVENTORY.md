@@ -19,7 +19,7 @@ execution, Bonneville, and transaction-result construction.
 | `ContractServiceImpl` | Loads the fixture factory in an augmented tooling distribution | `DELETE_NOW` only after fixture tooling owns execution composition |
 | `ContractServiceComponent`, `TransactionModule`, `QueryModule` | Dagger ownership and no-tracer binding | `DELETE_NOW` after processor signatures are neutralized |
 | `ContextTransactionProcessor`, `ContextQueryProcessor`, `TransactionProcessor`, `FrameRunner` | Carry the Hedera tracer through transaction and frame execution; `FrameRunner` invokes origin, sanitize, and not-executing callbacks | `UNKNOWN` — fixture callback integration is execution-path code |
-| `CustomMessageCallProcessor` | Emits precompile/system-contract, lazy-creation, exceptional-halt, and not-executing callbacks | `UNKNOWN` — explicit system-contract stop condition |
+| `CustomMessageCallProcessor` | Emits generic-precompile, lazy-creation, exceptional-halt, and not-executing callbacks; its system-contract dispatch and callbacks were removed in P07-4 | `LEGACY_EXECUTION_SEAM_DEFERRED_TO_ENGINE_REMOVAL` |
 | `HederaEVM`, `HederaEvmTransactionProcessor`, `HederaEvmTransactionResult` | Adapts Besu tracing and extracts PBJ actions into the result | `UNKNOWN` — fixture output would lose three actions |
 | `bonneville/BEVM`, `BonnevilleEVM`, `CallManager`, `TopXTN` | Propagate the Hedera tracer through the alternate EVM implementation | `UNKNOWN` — broader EVM redesign boundary |
 | `module-info.java` | `uses` factory plus tracer package export/open | `DELETE_NOW` after the source closure is removed |
@@ -48,7 +48,7 @@ fixture-tooling EvmActionTracer
   -> runtime ActionSidecarContentTracer callback contract
   -> FrameRunner
   -> CustomMessageCallProcessor
-  -> system-contract/precompile and lazy-creation callbacks
+  -> generic-precompile and lazy-creation callbacks
   -> HederaEVM / Bonneville
   -> HederaEvmTransactionResult.contractActions()
   -> PBJ ContractAction
@@ -66,9 +66,10 @@ classified:
 
 `LEGACY_EXECUTION_SEAM_DEFERRED_TO_ENGINE_REMOVAL`
 
-Each callback path will be deleted with its owning system-contract, Ethereum, world-state,
-Bonneville, or EVM processor in Waves 4–8. No fixture-specific frame, message, HEVM, Bonneville, or
-result processor will be created.
+The system-contract callback path was deleted with its owning dispatch in Wave 4. Each remaining
+callback path will be deleted with its owning Ethereum, world-state, Bonneville, or EVM processor
+in Waves 6–8. No fixture-specific frame, message, HEVM, Bonneville, or result processor will be
+created.
 
 No production source, test, Dagger, Gradle, JPMS, service metadata, PBJ model, persisted state, or
 fixture was changed at this checkpoint.

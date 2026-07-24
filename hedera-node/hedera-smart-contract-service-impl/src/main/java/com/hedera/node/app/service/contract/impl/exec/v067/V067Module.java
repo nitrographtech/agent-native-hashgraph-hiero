@@ -19,7 +19,6 @@ import com.hedera.node.app.service.contract.impl.exec.operations.*;
 import com.hedera.node.app.service.contract.impl.exec.operations.CustomSelfDestructOperation.UseEIP6780Semantics;
 import com.hedera.node.app.service.contract.impl.exec.processors.CustomContractCreationProcessor;
 import com.hedera.node.app.service.contract.impl.exec.processors.CustomMessageCallProcessor;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.HederaSystemContract;
 import com.hedera.node.app.service.contract.impl.exec.utils.FrameBuilder;
 import com.hedera.node.app.service.contract.impl.exec.v038.Version038AddressChecks;
 import com.hedera.node.app.service.contract.impl.hevm.HEVM;
@@ -32,11 +31,9 @@ import dagger.multibindings.IntoSet;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.inject.Singleton;
-import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.evm.EvmSpecVersion;
 import org.hyperledger.besu.evm.code.CodeFactory;
 import org.hyperledger.besu.evm.contractvalidation.ContractValidationRule;
@@ -106,10 +103,8 @@ public interface V067Module {
             @ServicesV067 @NonNull final FeatureFlags featureFlags,
             @ServicesV067 @NonNull final AddressChecks addressChecks,
             @ServicesV067 @NonNull final PrecompileContractRegistry registry,
-            @NonNull final Map<Address, HederaSystemContract> systemContracts,
             @NonNull final ContractMetrics contractMetrics) {
-        return new CustomMessageCallProcessor(
-                evm, featureFlags, registry, addressChecks, systemContracts, contractMetrics);
+        return new CustomMessageCallProcessor(evm, featureFlags, registry, addressChecks, contractMetrics);
     }
 
     // spotless:off

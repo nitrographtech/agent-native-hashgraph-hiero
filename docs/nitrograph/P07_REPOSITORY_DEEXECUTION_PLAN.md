@@ -189,18 +189,18 @@ Status: **COMPLETE** on `p07/externalize-fixture-execution-tooling`.
 - The exact-head four-node reconnect, state synchronization, historical-map comparison, official
   mirror record/sidecar/block ingestion, full-runtime tests, and isolation policies pass.
 
-Wave 3 status: **BLOCKED** on `p07/remove-execution-tracers`.
+Wave 3A (fixture tracer isolation) and Wave 3B (runtime aggregation/concrete-producer removal) are
+**COMPLETE**. Wave 3C, the residual callback protocol, is
+`LEGACY_EXECUTION_SEAM_DEFERRED_TO_ENGINE_REMOVAL`: duplicating frame, message, HEVM, Bonneville,
+and result processors in fixture tooling was rejected. Callback paths now collapse with their
+owning processors in Waves 4–8.
 
-The exact provenance census proves live actions flow exclusively through
-`EvmActionTracer`/`ActionStack` into `HederaEvmTransactionResult`, while state/storage changes and
-bytecode have independent producers. The authenticated fixture generator uses the pinned full node,
-and reproducing its expected three actions and seven sidecar records therefore requires live
-tracing. The mandated fixture stop condition triggered before any production deletion.
-
-The smallest recommended prerequisite is a separately authorized ownership slice that moves the
-live action producer into an explicit fixture-generation-only executable artifact. Alternatives
-are to retire live action-sidecar regeneration or authorize a replacement fixture output contract.
-Wave 4 must not start until one compatibility contract is selected.
+Wave 4 (system-contract removal) is implemented on `p07/remove-system-contracts` and awaits the
+exact-head lifecycle, reconnect, and mirror gates. It deletes the EVM-facing registries,
+translators, calls, redirects, ABI method registry, Dagger composition, and secondary metrics for
+addresses `0x167`–`0x16c`. Native token, account, schedule, exchange-rate, randomness, and hook
+services remain. Generic EVM precompiles and the ordinary `0x16d` account-hook execution seam are
+deferred to their owning engine waves.
 
 ## Risk assessment
 

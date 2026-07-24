@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.service.contract.impl.exec.operations;
 
-import static com.hedera.node.app.service.contract.impl.exec.systemcontracts.HtsSystemContract.HTS_HOOKS_CONTRACT_ADDRESS;
+import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.HOOK_CONTRACT_ADDRESS;
 import static org.hyperledger.besu.evm.frame.ExceptionalHaltReason.ILLEGAL_STATE_CHANGE;
 import static org.hyperledger.besu.evm.frame.ExceptionalHaltReason.INSUFFICIENT_GAS;
 import static org.hyperledger.besu.evm.internal.Words.clampedToLong;
@@ -197,7 +197,7 @@ public abstract class AbstractCustomCreateOperation extends AbstractOperation {
      * @return the sender address
      */
     protected Address getSenderAddress(final @NonNull MessageFrame frame) {
-        return frame.getRecipientAddress().equals(HTS_HOOKS_CONTRACT_ADDRESS)
+        return frame.getRecipientAddress().equals(HOOK_CONTRACT_ADDRESS)
                 ? FrameUtils.hookOwnerAddress(frame)
                 : frame.getRecipientAddress();
     }

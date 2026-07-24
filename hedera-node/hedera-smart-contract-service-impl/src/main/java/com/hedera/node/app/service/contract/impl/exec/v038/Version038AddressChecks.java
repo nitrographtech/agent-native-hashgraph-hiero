@@ -5,11 +5,9 @@ import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.is
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.numberOfLongZero;
 
 import com.hedera.node.app.service.contract.impl.exec.processors.ProcessorModule;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.HederaSystemContract;
 import com.hedera.node.app.service.contract.impl.exec.v030.Version030AddressChecks;
 import com.hedera.node.app.service.entityid.EntityIdFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.hyperledger.besu.datatypes.Address;
@@ -26,10 +24,8 @@ public class Version038AddressChecks extends Version030AddressChecks {
     private final EntityIdFactory entityIdFactory;
 
     @Inject
-    public Version038AddressChecks(
-            @NonNull Map<Address, HederaSystemContract> systemContracts,
-            @NonNull final EntityIdFactory entityIdFactory) {
-        super(systemContracts);
+    public Version038AddressChecks(@NonNull final EntityIdFactory entityIdFactory) {
+        super();
         this.entityIdFactory = entityIdFactory;
     }
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.service.contract.impl.state.hooks;
 
-import static com.hedera.node.app.service.contract.impl.exec.systemcontracts.HtsSystemContract.HTS_HOOKS_CONTRACT_ADDRESS;
+import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.HOOK_CONTRACT_ADDRESS;
 import static com.hedera.node.app.service.token.HookDispatchUtils.HTS_HOOKS_CONTRACT_NUM;
 import static java.util.Objects.requireNonNull;
 
@@ -56,7 +56,7 @@ public class ProxyEvmHook extends AbstractProxyEvmAccount {
 
     @Override
     public Address getAddress() {
-        return HTS_HOOKS_CONTRACT_ADDRESS;
+        return HOOK_CONTRACT_ADDRESS;
     }
 
     @Override

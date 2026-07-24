@@ -3,11 +3,8 @@ package com.hedera.node.app.service.contract.impl.test;
 
 import static com.hedera.node.app.hapi.utils.keys.KeyUtils.IMMUTABILITY_SENTINEL_KEY;
 import static com.hedera.node.app.service.contract.impl.exec.failure.CustomExceptionalHaltReason.INVALID_SIGNATURE;
-import static com.hedera.node.app.service.contract.impl.exec.systemcontracts.hts.TokenTupleUtils.typedKeyTupleFor;
-import static com.hedera.node.app.service.contract.impl.utils.ConstantUtils.ZERO_TOKEN_ID;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asEvmAddress;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asLongZeroAddress;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.headlongAddressOf;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.numberOfLongZero;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pbjToBesuAddress;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pbjToTuweniBytes;
@@ -63,12 +60,6 @@ import com.hedera.node.app.service.contract.impl.exec.gas.TinybarValues;
 import com.hedera.node.app.service.contract.impl.exec.scope.ActiveContractVerificationStrategy;
 import com.hedera.node.app.service.contract.impl.exec.scope.ActiveContractVerificationStrategy.UseTopLevelSigs;
 import com.hedera.node.app.service.contract.impl.exec.scope.VerificationStrategy;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.FullResult;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.has.HasCallAttempt;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.hss.HssCallAttempt;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.hts.HtsCallAttempt;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.hts.LogBuilder;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.hts.TokenTupleUtils.TokenKeyType;
 import com.hedera.node.app.service.contract.impl.exec.utils.PendingCreationMetadataRef;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmBlocks;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmContext;
@@ -78,7 +69,6 @@ import com.hedera.node.app.service.contract.impl.hevm.HederaEvmVersion;
 import com.hedera.node.app.service.contract.impl.records.ContractOperationStreamBuilder;
 import com.hedera.node.app.service.contract.impl.state.StorageAccess;
 import com.hedera.node.app.service.contract.impl.state.StorageAccesses;
-import com.hedera.node.app.service.contract.impl.utils.ConversionUtils;
 import com.hedera.node.app.spi.fixtures.ids.FakeEntityIdFactoryImpl;
 import com.hedera.node.app.spi.workflows.HandleException;
 import com.hedera.node.app.spi.workflows.ResourceExhaustedException;
@@ -96,7 +86,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -381,43 +370,6 @@ public class TestHelpers {
             .pauseKey(PAUSE_KEY)
             .metadataKey(METADATA_KEY)
             .build();
-    public static final List<Tuple> EXPECTED_FIXED_CUSTOM_FEES = List.of(
-            Tuple.of(2L, headlongAddressOf(ZERO_TOKEN_ID), true, false, headlongAddressOf(SENDER_ID)),
-            Tuple.of(3L, headlongAddressOf(FUNGIBLE_TOKEN_ID), false, false, headlongAddressOf(SENDER_ID)));
-    public static final List<Tuple> EXPECTED_FRACTIONAL_CUSTOM_FEES =
-            List.of(Tuple.of(1L, 100L, 2L, 4L, true, headlongAddressOf(SENDER_ID)));
-    public static final List<Tuple> EXPECTED_ROYALTY_CUSTOM_FEES = List.of(
-            Tuple.of(2L, 50L, 0L, headlongAddressOf(ZERO_TOKEN_ID), true, headlongAddressOf(SENDER_ID)),
-            Tuple.of(2L, 50L, 5L, headlongAddressOf(FUNGIBLE_TOKEN_ID), false, headlongAddressOf(SENDER_ID)));
-
-    public static final List<Tuple> EXPECTE_KEYLIST = List.of(
-            typedKeyTupleFor(TokenKeyType.ADMIN_KEY.bigIntegerValue(), ADMIN_KEY),
-            typedKeyTupleFor(TokenKeyType.KYC_KEY.bigIntegerValue(), KYC_KEY),
-            typedKeyTupleFor(TokenKeyType.FREEZE_KEY.bigIntegerValue(), FREEZE_KEY),
-            typedKeyTupleFor(TokenKeyType.WIPE_KEY.bigIntegerValue(), WIPE_KEY),
-            typedKeyTupleFor(TokenKeyType.SUPPLY_KEY.bigIntegerValue(), SUPPLY_KEY),
-            typedKeyTupleFor(TokenKeyType.FEE_SCHEDULE_KEY.bigIntegerValue(), FEE_SCHEDULE_KEY),
-            typedKeyTupleFor(TokenKeyType.PAUSE_KEY.bigIntegerValue(), PAUSE_KEY));
-
-    public static final List<Tuple> EXPECTED_KEYLIST_V2 = List.of(
-            typedKeyTupleFor(TokenKeyType.ADMIN_KEY.bigIntegerValue(), ADMIN_KEY),
-            typedKeyTupleFor(TokenKeyType.KYC_KEY.bigIntegerValue(), KYC_KEY),
-            typedKeyTupleFor(TokenKeyType.FREEZE_KEY.bigIntegerValue(), FREEZE_KEY),
-            typedKeyTupleFor(TokenKeyType.WIPE_KEY.bigIntegerValue(), WIPE_KEY),
-            typedKeyTupleFor(TokenKeyType.SUPPLY_KEY.bigIntegerValue(), SUPPLY_KEY),
-            typedKeyTupleFor(TokenKeyType.FEE_SCHEDULE_KEY.bigIntegerValue(), FEE_SCHEDULE_KEY),
-            typedKeyTupleFor(TokenKeyType.PAUSE_KEY.bigIntegerValue(), PAUSE_KEY),
-            typedKeyTupleFor(TokenKeyType.METADATA_KEY.bigIntegerValue(), METADATA_KEY));
-
-    public static final List<Tuple> EXPECTE_DEFAULT_KEYLIST = List.of(
-            typedKeyTupleFor(TokenKeyType.ADMIN_KEY.bigIntegerValue(), Key.DEFAULT),
-            typedKeyTupleFor(TokenKeyType.KYC_KEY.bigIntegerValue(), Key.DEFAULT),
-            typedKeyTupleFor(TokenKeyType.FREEZE_KEY.bigIntegerValue(), Key.DEFAULT),
-            typedKeyTupleFor(TokenKeyType.WIPE_KEY.bigIntegerValue(), Key.DEFAULT),
-            typedKeyTupleFor(TokenKeyType.SUPPLY_KEY.bigIntegerValue(), Key.DEFAULT),
-            typedKeyTupleFor(TokenKeyType.FEE_SCHEDULE_KEY.bigIntegerValue(), Key.DEFAULT),
-            typedKeyTupleFor(TokenKeyType.PAUSE_KEY.bigIntegerValue(), Key.DEFAULT));
-
     public static final Token UNREASONABLY_DIVISIBLE_TOKEN = Token.newBuilder()
             .tokenId(FUNGIBLE_TOKEN_ID)
             .name("Odd")
@@ -736,20 +688,6 @@ public class TestHelpers {
         assertEquals(expected.getGasCost(), actual.getGasCost());
     }
 
-    public static org.apache.tuweni.bytes.Bytes readableRevertReason(@NonNull final ResponseCodeEnum status) {
-        return org.apache.tuweni.bytes.Bytes.wrap(UInt256.valueOf(status.protoOrdinal()));
-    }
-
-    public static void assertSamePrecompileResult(final FullResult expected, final FullResult actual) {
-        assertEquals(expected.gasRequirement(), actual.gasRequirement());
-        final var expectedResult = expected.result();
-        final var actualResult = actual.result();
-        assertEquals(expectedResult.getState(), actualResult.getState());
-        assertEquals(expectedResult.getOutput(), actualResult.getOutput());
-        assertEquals(expectedResult.getHaltReason(), actualResult.getHaltReason());
-        assertEquals(expectedResult.isRefundGas(), actualResult.isRefundGas());
-    }
-
     public static boolean isSameResult(
             final Operation.OperationResult expected, final Operation.OperationResult actual) {
         return Objects.equals(expected.getHaltReason(), actual.getHaltReason())
@@ -895,49 +833,6 @@ public class TestHelpers {
                 com.esaulpaugh.headlong.abi.Address.toChecksumAddress(addressAsInteger));
     }
 
-    public static org.apache.tuweni.bytes.Bytes revertOutputFor(final ResponseCodeEnum status) {
-        return org.apache.tuweni.bytes.Bytes.wrap(status.protoName().getBytes(StandardCharsets.UTF_8));
-    }
-
-    public static org.apache.tuweni.bytes.Bytes ordinalRevertOutputFor(final ResponseCodeEnum status) {
-        return org.apache.tuweni.bytes.Bytes.wrap(UInt256.valueOf(status.protoOrdinal()));
-    }
-
-    public static org.apache.tuweni.bytes.Bytes bytesForRedirect(
-            final ByteBuffer encodedErcCall, final TokenID tokenId) {
-        return bytesForRedirect(encodedErcCall.array(), asLongZeroAddress(tokenId.tokenNum()));
-    }
-
-    public static org.apache.tuweni.bytes.Bytes bytesForRedirect(final byte[] subSelector, final Address tokenAddress) {
-        return org.apache.tuweni.bytes.Bytes.concatenate(
-                org.apache.tuweni.bytes.Bytes.wrap(HtsCallAttempt.REDIRECT_FOR_TOKEN.selector()),
-                tokenAddress,
-                org.apache.tuweni.bytes.Bytes.of(subSelector));
-    }
-
-    // Encode given a ByteBuffer and accountId input bytes for a call to a given contract.
-    // Largely, this is used to encode the call to redirectToAccount() proxy contract for testing purposes.
-    public static org.apache.tuweni.bytes.Bytes bytesForRedirectAccount(
-            final ByteBuffer encodedCall, final AccountID accountID) {
-        return bytesForRedirectAccount(encodedCall.array(), asLongZeroAddress(accountID.accountNumOrThrow()));
-    }
-
-    public static org.apache.tuweni.bytes.Bytes bytesForRedirectAccount(
-            final byte[] subSelector, final Address accountAddress) {
-        return org.apache.tuweni.bytes.Bytes.concatenate(
-                org.apache.tuweni.bytes.Bytes.wrap(HasCallAttempt.REDIRECT_FOR_ACCOUNT.selector()),
-                accountAddress,
-                org.apache.tuweni.bytes.Bytes.of(subSelector));
-    }
-
-    public static org.apache.tuweni.bytes.Bytes bytesForRedirectScheduleTxn(
-            final byte[] subSelector, final Address scheduleAddress) {
-        return org.apache.tuweni.bytes.Bytes.concatenate(
-                org.apache.tuweni.bytes.Bytes.wrap(HssCallAttempt.REDIRECT_FOR_SCHEDULE_TXN.selector()),
-                scheduleAddress,
-                org.apache.tuweni.bytes.Bytes.of(subSelector));
-    }
-
     public static org.apache.tuweni.bytes.Bytes asBytesResult(final ByteBuffer encoded) {
         return org.apache.tuweni.bytes.Bytes.wrap(encoded.array());
     }
@@ -1077,11 +972,6 @@ public class TestHelpers {
             }
         }
         return tokenTransferList;
-    }
-
-    public static LogTopic convertAccountToLog(final Account account) {
-        return LogTopic.wrap(org.apache.tuweni.bytes.Bytes.wrap(LogBuilder.expandByteArrayTo32Length(
-                ConversionUtils.priorityAddressOf(account).toArray())));
     }
 
     private static HederaEvmTransactionResult explicitSuccessFrom(

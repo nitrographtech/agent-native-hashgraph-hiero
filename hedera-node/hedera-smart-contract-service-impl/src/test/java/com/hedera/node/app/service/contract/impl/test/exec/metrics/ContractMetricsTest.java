@@ -8,8 +8,6 @@ import static org.mockito.Mockito.when;
 
 import com.hedera.hapi.node.base.HederaFunctionality;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.hts.wipe.WipeTranslator;
-import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethodRegistry;
 import com.hedera.node.config.data.ContractsConfig;
 import com.hedera.node.config.testfixtures.HederaTestConfigBuilder;
 import com.swirlds.metrics.api.Metrics;
@@ -22,7 +20,6 @@ import org.hiero.consensus.metrics.platform.DefaultPlatformMetrics;
 import org.hiero.consensus.metrics.platform.MetricKeyRegistry;
 import org.hiero.consensus.metrics.platform.PlatformMetricsFactoryImpl;
 import org.hiero.consensus.model.node.NodeId;
-import org.hyperledger.besu.evm.frame.MessageFrame.State;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -36,12 +33,9 @@ public class ContractMetricsTest {
     @Mock
     private ContractsConfig contractsConfig;
 
-    private final SystemContractMethodRegistry systemContractMethodRegistry = new SystemContractMethodRegistry();
-
     public @NonNull ContractMetrics getSubject() {
-        final var contractMetrics = new ContractMetrics(metrics, () -> contractsConfig, systemContractMethodRegistry);
+        final var contractMetrics = new ContractMetrics(metrics, () -> contractsConfig);
         contractMetrics.createContractPrimaryMetrics();
-        contractMetrics.createContractSecondaryMetrics();
         return contractMetrics;
     }
 
@@ -96,7 +90,6 @@ public class ContractMetricsTest {
     @Test
     public void countersGetIgnoredWhenDisabled() {
         given(contractsConfig.metricsSmartContractPrimaryEnabled()).willReturn(false);
-        given(contractsConfig.metricsSmartContractSecondaryEnabled()).willReturn(false);
 
         final var subject = getSubject();
 
@@ -109,8 +102,6 @@ public class ContractMetricsTest {
         subject.bumpRejectedForGasTx(HederaFunctionality.ETHEREUM_TRANSACTION, 14);
 
         subject.bumpRejectedType3EthTx(20);
-
-        subject.incrementSystemMethodCall(WipeTranslator.WIPE_FUNGIBLE_V1, State.EXCEPTIONAL_HALT);
 
         assertThat(subject.getAllCounterNames()).isEmpty();
         assertThat(subject.getAllCounterValues()).isEmpty();

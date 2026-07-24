@@ -2,32 +2,25 @@
 package com.hedera.node.app.service.contract.impl.exec.processors;
 
 import static com.hedera.hapi.streams.ContractActionType.PRECOMPILE;
-import static com.hedera.hapi.streams.ContractActionType.SYSTEM;
 import static com.hedera.node.app.service.contract.impl.exec.failure.CustomExceptionalHaltReason.*;
-import static com.hedera.node.app.service.contract.impl.exec.systemcontracts.HtsSystemContract.HTS_HOOKS_CONTRACT_ADDRESS;
-import static com.hedera.node.app.service.contract.impl.exec.systemcontracts.hts.create.CreateCommons.createMethodsSet;
 import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.*;
 import static com.hedera.node.app.service.contract.impl.hevm.HevmPropagatedCallFailure.MISSING_RECEIVER_SIGNATURE;
 import static com.hedera.node.app.service.contract.impl.hevm.HevmPropagatedCallFailure.RESULT_CANNOT_BE_EXTERNALIZED;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.numberOfLongZero;
+import static com.hedera.node.app.service.token.HookDispatchUtils.HTS_HOOKS_EVM_ADDRESS;
 import static org.hyperledger.besu.evm.frame.ExceptionalHaltReason.INSUFFICIENT_GAS;
 import static org.hyperledger.besu.evm.frame.MessageFrame.State.EXCEPTIONAL_HALT;
 
-import com.hedera.hapi.node.base.ContractID;
 import com.hedera.hapi.streams.ContractActionType;
 import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracer;
 import com.hedera.node.app.service.contract.impl.exec.AddressChecks;
 import com.hedera.node.app.service.contract.impl.exec.FeatureFlags;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.HederaSystemContract;
 import com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils;
 import com.hedera.node.app.service.contract.impl.hevm.HEVM;
 import com.hedera.node.app.service.contract.impl.state.ProxyEvmContract;
 import com.hedera.node.app.service.contract.impl.state.ProxyWorldUpdater;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.tuweni.bytes.Bytes;
@@ -54,7 +47,6 @@ public class CustomMessageCallProcessor extends PublicMessageCallProcessor {
     private final FeatureFlags featureFlags;
     private final AddressChecks addressChecks;
     private final PrecompileContractRegistry precompiles;
-    private final Map<Address, HederaSystemContract> systemContracts;
     private final ContractMetrics contractMetrics;
 
     private enum ForLazyCreation {
@@ -68,20 +60,17 @@ public class CustomMessageCallProcessor extends PublicMessageCallProcessor {
      * @param featureFlags current evm module feature flags
      * @param precompiles the present precompiles
      * @param addressChecks checks against addresses reserved for Hedera
-     * @param systemContracts the Hedera system contracts
      */
     public CustomMessageCallProcessor(
             @NonNull final HEVM evm,
             @NonNull final FeatureFlags featureFlags,
             @NonNull final PrecompileContractRegistry precompiles,
             @NonNull final AddressChecks addressChecks,
-            @NonNull final Map<Address, HederaSystemContract> systemContracts,
             @NonNull final ContractMetrics contractMetrics) {
         super(evm, precompiles);
         this.featureFlags = Objects.requireNonNull(featureFlags);
         this.precompiles = Objects.requireNonNull(precompiles);
         this.addressChecks = Objects.requireNonNull(addressChecks);
-        this.systemContracts = Objects.requireNonNull(systemContracts);
         this.contractMetrics = Objects.requireNonNull(contractMetrics);
     }
 
@@ -91,7 +80,6 @@ public class CustomMessageCallProcessor extends PublicMessageCallProcessor {
      *
      * <p>This contract address may reference,
      * <ol>
-     *     <li>A Hedera system contract.</li>
      *     <li>A native EVM precompile.</li>
      *     <li>A Hedera system account (up to {@code 0.0.750}).</li>
      *     <li>A valid lazy-creation target address.</li>
@@ -105,24 +93,6 @@ public class CustomMessageCallProcessor extends PublicMessageCallProcessor {
     @Override
     public void start(@NonNull final MessageFrame frame, @NonNull final OperationTracer tracer) {
         final var codeAddress = frame.getContractAddress();
-        // This must be done first as the system contract address range overlaps with system
-        // accounts. Note that unlike EVM precompiles, we do allow sending value "to" Hedera
-        // system contracts because they sometimes require fees greater than be reasonably
-        // paid using gas; for example, when creating a new token. But the system contract
-        // only diverts this value to the network's fee collection accounts, instead of
-        // actually receiving it.
-        // We do not allow sending value to Hedera system contracts except in the case of token creation.
-        if (systemContracts.containsKey(codeAddress)) {
-            if (!isTokenCreation(frame)) {
-                doHaltIfInvalidSystemCall(frame, tracer);
-                if (alreadyHalted(frame)) {
-                    return;
-                }
-            }
-            doExecuteSystemContract(systemContracts.get(codeAddress), codeAddress, frame, tracer);
-            return;
-        }
-
         var evmPrecompile = precompiles.get(codeAddress);
         if (evmPrecompile != null && !isPrecompileEnabled(codeAddress, frame)) {
             // disable precompile if so configured.
@@ -176,24 +146,8 @@ public class CustomMessageCallProcessor extends PublicMessageCallProcessor {
      * address, false otherwise
      */
     private static boolean isNotAllowanceHook(final @NonNull MessageFrame frame, final Address codeAddress) {
-        return !FrameUtils.isHookExecution(frame) || !HTS_HOOKS_CONTRACT_ADDRESS.equals(codeAddress);
-    }
-
-    /**
-     * Checks if the given message frame is a token creation scenario.
-     *
-     * <p>This method inspects the first four bytes of the input data of the message frame
-     * to determine if it matches any of the known selectors for creating fungible or non-fungible tokens.
-     *
-     * @param frame the message frame to check
-     * @return true if the input data matches any of the known create selectors, false otherwise
-     */
-    private boolean isTokenCreation(MessageFrame frame) {
-        if (frame.getInputData().isEmpty()) {
-            return false;
-        }
-        var selector = frame.getInputData().slice(0, 4).toArray();
-        return createMethodsSet.stream().anyMatch(s -> Arrays.equals(s.selector(), selector));
+        return !FrameUtils.isHookExecution(frame)
+                || !Address.fromHexString(HTS_HOOKS_EVM_ADDRESS).equals(codeAddress);
     }
 
     /**
@@ -241,52 +195,6 @@ public class CustomMessageCallProcessor extends PublicMessageCallProcessor {
         // tracePostExecution() method unless start() returns with a state of CODE_EXECUTING;
         // but for a precompile call this never happens.
         finishPrecompileExecution(frame, result, PRECOMPILE, (ActionSidecarContentTracer) tracer);
-    }
-
-    /**
-     * This method is necessary as the system contracts do not calculate their gas requirements until after
-     * the call to computePrecompile. Thus, the logic for checking for sufficient gas must be done in a different
-     * order vs normal precompiles.
-     *
-     * @param systemContract the system contract to execute
-     * @param frame the current frame
-     * @param tracer the operation tracer
-     */
-    private void doExecuteSystemContract(
-            @NonNull final HederaSystemContract systemContract,
-            @NonNull final Address systemContractAddress,
-            @NonNull final MessageFrame frame,
-            @NonNull final OperationTracer tracer) {
-        final var fullResult = systemContract.computeFully(
-                ContractID.newBuilder()
-                        .contractNum(numberOfLongZero(systemContractAddress))
-                        .build(),
-                frame.getInputData(),
-                frame);
-        final var gasRequirement = fullResult.gasRequirement();
-        final PrecompileContractResult result;
-
-        // ops duration recording
-        final var opsDurationCounter = FrameUtils.opsDurationCounter(frame);
-        final var opsDurationSchedule = opsDurationCounter.schedule();
-        final var opsDurationCost = gasRequirement
-                * opsDurationSchedule.systemContractGasBasedDurationMultiplier()
-                / opsDurationSchedule.multipliersDenominator();
-        opsDurationCounter.recordOpsDurationUnitsConsumed(opsDurationCost);
-        contractMetrics
-                .opsDurationMetrics()
-                .recordSystemContractOpsDuration(
-                        systemContract.getName(), systemContractAddress.toHexString(), opsDurationCost);
-
-        if (frame.getRemainingGas() < gasRequirement) {
-            result = PrecompileContractResult.halt(Bytes.EMPTY, Optional.of(INSUFFICIENT_GAS));
-        } else {
-            if (!fullResult.isRefundGas()) {
-                frame.decrementRemainingGas(gasRequirement);
-            }
-            result = fullResult.result();
-        }
-        finishPrecompileExecution(frame, result, SYSTEM, (ActionSidecarContentTracer) tracer);
     }
 
     private void finishPrecompileExecution(

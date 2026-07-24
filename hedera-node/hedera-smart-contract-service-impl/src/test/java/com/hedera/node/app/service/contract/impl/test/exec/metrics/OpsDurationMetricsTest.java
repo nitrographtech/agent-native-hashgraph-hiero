@@ -4,7 +4,6 @@ package com.hedera.node.app.service.contract.impl.test.exec.metrics;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.hedera.node.app.service.contract.impl.exec.metrics.OpsDurationMetrics;
-import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethod;
 import com.hedera.node.config.testfixtures.HederaTestConfigBuilder;
 import com.swirlds.metrics.api.Metrics;
 import java.util.concurrent.Executors;
@@ -15,18 +14,11 @@ import org.hiero.consensus.metrics.platform.PlatformMetricsFactoryImpl;
 import org.hiero.consensus.model.node.NodeId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class OpsDurationMetricsTest {
     private static final long DEFAULT_NODE_ID = 3;
     private Metrics metrics;
     private OpsDurationMetrics subject;
-
-    @Mock
-    private SystemContractMethod method2;
 
     @BeforeEach
     void setUp() {

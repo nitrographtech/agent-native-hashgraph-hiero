@@ -61,7 +61,6 @@ import com.hedera.hapi.node.state.throttles.ThrottleUsageSnapshots;
 import com.hedera.hapi.platform.state.SingletonType;
 import com.hedera.node.app.hapi.utils.CommonPbjConverters;
 import com.hedera.node.app.hapi.utils.SignatureGenerator;
-import com.hedera.node.app.service.contract.impl.utils.SystemContractUtils;
 import com.hedera.node.app.throttle.CongestionThrottleService;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import com.hedera.services.bdd.junit.HapiTestLifecycle;
@@ -79,6 +78,7 @@ import com.hedera.services.bdd.utils.Signing;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ScheduleID;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -305,8 +305,7 @@ public class RepeatableIntegrationTests {
             @NonNull final String keyName,
             @NonNull final ResponseCodeEnum status) {
         return withOpContext((spec, opLog) -> {
-            final var message =
-                    SystemContractUtils.messageFromScheduleId(CommonPbjConverters.toPbj(scheduleIdRef.get()));
+            final var message = scheduleSigningMessage(CommonPbjConverters.toPbj(scheduleIdRef.get()));
             final var privateKey = getEd25519PrivateKeyFromSpec(spec, keyName);
             final var publicKey = spec.registry().getKey(keyName).getEd25519();
             final var signedBytes = SignatureGenerator.signBytes(message.toByteArray(), privateKey);
@@ -333,8 +332,7 @@ public class RepeatableIntegrationTests {
             @NonNull final String keyName,
             @NonNull final ResponseCodeEnum status) {
         return withOpContext((spec, opLog) -> {
-            final var message =
-                    SystemContractUtils.messageFromScheduleId(CommonPbjConverters.toPbj(scheduleIdRef.get()));
+            final var message = scheduleSigningMessage(CommonPbjConverters.toPbj(scheduleIdRef.get()));
             final var messageHash = new Keccak.Digest256().digest(message.toByteArray());
             final var privateKey = getEcdsaPrivateKeyFromSpec(spec, keyName);
             final var publicKey = spec.registry().getKey(keyName).getECDSASecp256K1();
@@ -355,5 +353,13 @@ public class RepeatableIntegrationTests {
                             .gas(2_000_000L)
                             .hasKnownStatus(status));
         });
+    }
+
+    private static Bytes scheduleSigningMessage(final com.hedera.hapi.node.base.ScheduleID scheduleId) {
+        final var buffer = ByteBuffer.allocate(Long.BYTES * 3);
+        buffer.putLong(scheduleId.shardNum());
+        buffer.putLong(scheduleId.realmNum());
+        buffer.putLong(scheduleId.scheduleNum());
+        return Bytes.wrap(buffer.array());
     }
 }

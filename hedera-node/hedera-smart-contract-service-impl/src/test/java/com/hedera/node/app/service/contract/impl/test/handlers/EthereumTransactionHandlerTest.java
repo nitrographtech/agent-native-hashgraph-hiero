@@ -39,7 +39,6 @@ import com.hedera.node.app.service.contract.impl.exec.gas.CustomGasCharging;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaOperations;
 import com.hedera.node.app.service.contract.impl.exec.utils.OpsDurationCounter;
-import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethodRegistry;
 import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmContext;
 import com.hedera.node.app.service.contract.impl.hevm.HederaWorldUpdater;
@@ -165,11 +164,8 @@ class EthereumTransactionHandlerTest {
     @Mock
     private EntityIdFactory entityIdFactory;
 
-    private final SystemContractMethodRegistry systemContractMethodRegistry = new SystemContractMethodRegistry();
-
     private final Metrics metrics = new NoOpMetrics();
-    private final ContractMetrics contractMetrics =
-            new ContractMetrics(metrics, () -> contractsConfig, systemContractMethodRegistry);
+    private final ContractMetrics contractMetrics = new ContractMetrics(metrics, () -> contractsConfig);
 
     private OpsDurationCounter opsDurationCounter;
 
