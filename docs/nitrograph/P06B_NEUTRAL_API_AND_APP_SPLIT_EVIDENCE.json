@@ -1,0 +1,144 @@
+{
+  "schema": "nitrograph-p06b-neutral-api-and-app-split-evidence-v1",
+  "status": "VALIDATION_IN_PROGRESS",
+  "base": "agent-native@1ffddab00991a695acb62fa5ae7e8fdadfcf359e",
+  "implementation_commit": "28058708da001f7a98aec85a3fdede483fde708d",
+  "ownership": {
+    "neutral_api_artifact": "app-service-contract-0.75.0-SNAPSHOT.jar",
+    "record_builder_interfaces_moved": 6,
+    "record_builder_fqcns_changed": 0,
+    "compatibility_bridges": 0,
+    "historical_store_interfaces_and_adapters_added": 4,
+    "state_keys_or_ids_changed": 0,
+    "wire_or_schema_changes": 0
+  },
+  "neutral_api": {
+    "classes": 17,
+    "bytes": 17070,
+    "sha256": "ae0a29cb88507335ec938b8c8fa4b474d44bdc440cf05d9a718717df361e0872",
+    "contract_implementation_dependencies": 0,
+    "besu_references": 0,
+    "tuweni_references": 0,
+    "evm_engine_references": 0,
+    "standalone_references": 0,
+    "system_contract_references": 0
+  },
+  "application_artifacts": {
+    "native": {
+      "path": "hedera-node/hedera-app/build/distributions/distribution-native-agent/data/apps/HederaNode.jar",
+      "classes": 783,
+      "bytes": 1712156,
+      "sha256": "71429e52697661abd541c50a9486b83b1293bc6f475ae29ac1454040e43db67b",
+      "full_provider_classes": 0,
+      "standalone_classes": 0,
+      "embedded_contract_implementation_classes": 0,
+      "besu_classes": 0,
+      "tuweni_classes": 0,
+      "runtime_provider_metadata": [
+        "com.hedera.node.app.services.HistoricalContractRuntimeProviderFactory"
+      ],
+      "store_factory_metadata": [
+        "com.hedera.node.app.store.HistoricalContractStoreFactory"
+      ]
+    },
+    "full": {
+      "path": "hedera-node/hedera-app/build/distributions/distribution-full/data/apps/HederaNode.jar",
+      "classes": 819,
+      "bytes": 1785522,
+      "sha256": "cf0defc7f1f7abce7e0fc93b1dfee8a50800ec7630c2161bea35aacedaf83764",
+      "full_provider_retained": true,
+      "standalone_retained": true
+    }
+  },
+  "controlled_exclusion_probe": {
+    "excluded": [
+      "app-service-contract-impl-*",
+      "besu-*",
+      "evm-*",
+      "tuweni-*"
+    ],
+    "available": [
+      "Hedera",
+      "RecordStreamBuilder",
+      "ContractCreateStreamBuilder",
+      "ContractOperationStreamBuilder",
+      "ReadableContractStateStore",
+      "HistoricalReadableContractStateStore",
+      "HistoricalReadableEvmHookStore",
+      "HistoricalContractRuntimeProvider"
+    ],
+    "unavailable": [
+      "FullContractRuntimeProvider",
+      "TransactionExecutors",
+      "implementation ContractStateStore",
+      "Besu EVM",
+      "Tuweni Bytes"
+    ],
+    "historical_provider_service_loader": "PASS",
+    "original_no_class_def_found_error": "RESOLVED"
+  },
+  "enforcement": {
+    "native_policy": "PASS",
+    "intentional_prohibited_class_injection": "PASS: policy rejected injected FullContractRuntimeProvider",
+    "combined_module_descriptor_in_native_jar": false,
+    "full_factory_service_entries_in_native_jar": 0
+  },
+  "focused_validation": {
+    "historical_adapter_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "app_provider_and_store_tests": {
+      "passed": 36,
+      "failed": 0
+    },
+    "full_contract_builder_and_handler_tests": {
+      "passed": 32,
+      "failed": 0
+    },
+    "neutral_api_build": "PASS",
+    "native_application_and_distribution_build": "PASS",
+    "full_application_and_distribution_build": "PASS"
+  },
+  "reconnect_validation": {
+    "status": "ENVIRONMENTAL_RETRY_EXHAUSTED_WITHOUT_SEMANTIC_ASSERTION_FAILURE",
+    "attempt_1": {
+      "result": "CHECKING_TIMEOUT",
+      "failed_node": "node3",
+      "timeout": "PT3M30S",
+      "semantic_assertion_failures": 0,
+      "peak_rss_kib": 1297556,
+      "swap_events": 0
+    },
+    "attempt_2": {
+      "result": "PORT_BIND_FAILURE",
+      "failed_node": "node4",
+      "port": 38078,
+      "semantic_assertion_failures": 0,
+      "peak_rss_kib": 1635924,
+      "swap_events": 0,
+      "test_xml_sha256": "82fafeb4226820c64b2074afefe2839f6f97312ae0b7577370dad16247177bd6"
+    },
+    "prior_authoritative_gate": "PASS at P06B-6",
+    "current_gate": "NOT RECLASSIFIED AS PASS"
+  },
+  "pending_validation": [
+    "successful real four-node reconnect and state synchronization on this exact head",
+    "exact-head official mirror ingestion",
+    "exact-head CI"
+  ],
+  "scope": {
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "protobuf_changes": 0,
+    "persisted_format_changes": 0,
+    "state_id_changes": 0,
+    "codec_changes": 0,
+    "schema_version_changes": 0,
+    "physical_evm_besu_removal": false
+  },
+  "blocker_status": {
+    "original_packaging_blocker": "RESOLVED",
+    "p06b_7a_merge_readiness": "IN_PROGRESS"
+  }
+}
