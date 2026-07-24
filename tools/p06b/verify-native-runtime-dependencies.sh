@@ -54,6 +54,14 @@ native_dist="$repo_root/hedera-node/hedera-app/build/distributions/distribution-
 if test -d "$native_dist"; then
   grep -Fxq 'contracts.enabled=false' "$native_dist/data/config/application.properties" ||
     fail "native distribution does not disable executable contracts"
+  prohibited_jars="$(
+    find "$native_dist/data/lib" -maxdepth 1 -type f \
+      \( -name 'app-service-contract-impl-*' -o -name 'besu-*' -o \
+         -name 'evm-*' -o -name 'tuweni-*' \) -printf '%f\n' |
+      sort
+  )"
+  test -z "$prohibited_jars" ||
+    fail "native distribution contains executable contract jars: $prohibited_jars"
 fi
 
 native_app_jar="${P06B_NATIVE_APP_JAR:-$native_dist/data/apps/HederaNode.jar}"

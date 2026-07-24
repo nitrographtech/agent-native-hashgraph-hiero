@@ -143,7 +143,13 @@ val nativeAppJar =
             manifest.attributes(
                 "Class-Path" to
                     inputs.files
-                        .filter { it.extension == "jar" }
+                        .filter {
+                            it.extension == "jar" &&
+                                !it.name.startsWith("app-service-contract-impl-") &&
+                                !it.name.startsWith("besu-") &&
+                                !it.name.startsWith("evm-") &&
+                                !it.name.startsWith("tuweni-")
+                        }
                         .map { "../../data/lib/" + it.name }
                         .sorted()
                         .joinToString(separator = " ")
@@ -235,7 +241,13 @@ tasks.register<Sync>("distributionNativeAgent") {
     group = "distribution"
     description = "Assemble the native-agent distribution with the contract service disabled."
     dependsOn(copyNodeData, nativeAppJar)
-    from(nodeWorkingDir) { exclude("data/apps/HederaNode.jar") }
+    from(nodeWorkingDir) {
+        exclude("data/apps/HederaNode.jar")
+        exclude("data/lib/app-service-contract-impl-*")
+        exclude("data/lib/besu-*")
+        exclude("data/lib/evm-*")
+        exclude("data/lib/tuweni-*")
+    }
     from(nativeAppJar) {
         into("data/apps")
         rename { "HederaNode.jar" }
