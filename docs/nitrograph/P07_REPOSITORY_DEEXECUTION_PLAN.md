@@ -172,7 +172,7 @@ Wave 1 acceptance:
 
 ## Wave 2 implementation
 
-Implementation is on `p07/externalize-fixture-execution-tooling`.
+Status: **COMPLETE** on `p07/externalize-fixture-execution-tooling`.
 
 - `HistoricalContractStateFixtureCreation` moved from the test-client production artifact to the
   dedicated `fixture-tooling` module.
@@ -184,6 +184,8 @@ Implementation is on `p07/externalize-fixture-execution-tooling`.
   test infrastructure.
 - No Solidity corpus was broadly moved or deleted.
 - Runtime distributions have no dependency on or packaged class from `fixture-tooling`.
+- The exact-head four-node reconnect, state synchronization, historical-map comparison, official
+  mirror record/sidecar/block ingestion, full-runtime tests, and isolation policies pass.
 
 Wave 3 should remove full-runtime execution tracer producers and bindings while retaining neutral
 PBJ action/state/bytecode models and all historical translation and mirror semantics.

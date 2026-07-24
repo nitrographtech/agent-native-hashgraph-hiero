@@ -1,6 +1,6 @@
 # P07 Fixture Tooling Ownership
 
-Status: P07-2 ownership census complete
+Status: P07-2 COMPLETE
 Base: `ad2d2dfa45907b42976917fe03ded296e488d2d1`
 
 ## Decision
