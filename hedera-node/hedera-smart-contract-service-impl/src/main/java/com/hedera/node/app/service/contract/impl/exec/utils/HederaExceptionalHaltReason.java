@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package com.hedera.node.app.hapi.utils;
+package com.hedera.node.app.service.contract.impl.exec.utils;
 
 import org.hyperledger.besu.evm.frame.ExceptionalHaltReason;
 

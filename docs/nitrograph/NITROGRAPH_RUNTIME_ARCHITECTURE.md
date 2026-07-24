@@ -12,9 +12,11 @@ flowchart TD
     ASSET[Native Asset Service]
     COORD[Coordination Layer]
     STREAMS[Records and Block Streams]
-    NATIVE_JAR[Native HederaNode application jar]
+    NATIVE_JAR[Native HederaNode application jar<br/>no full or standalone entry points]
+    NATIVE_CRYPTO[Neutral native secp256k1 verifier]
     NATIVE_FACTORY[Historical runtime and store factories]
     NATIVE_JAR --> NATIVE_FACTORY --> APP
+    NATIVE_CRYPTO --> APP
     APP --> ACC
     APP --> ASSET
     APP --> COORD
@@ -73,10 +75,14 @@ flowchart TD
   controlled fixture generation. It is not selected in Nitrograph mode.
 - **Removed:** direct executable runtime types from shared log, result, action, state/storage, and
   bytecode translation.
-- **Remaining:** module dependencies and packaged jars supporting the combined full/native build.
+- **Removed from native packaging:** executable contract implementation, Besu, Tuweni, EVM,
+  system-contract/precompile, KZG, and standalone artifacts.
 - **P06B-7A split:** native and full application jars are physically distinct. The neutral
   compatibility API is owned by `app-service-contract`; the native jar contains only historical
-  provider/store service metadata. Executable dependency jars remain packaged until P06B-7.
+  provider/store service metadata.
+- **P06B-7 packaging isolation:** the native artifact contains no executable dependency jars,
+  prohibited classes, executable service metadata, or executable-only native libraries. The full
+  artifact remains separately buildable.
 - **Deferred:** new Nitrograph services listed above; none are implemented by P06B.
 
 The frozen invariant is: historical contract state remains readable and migratable but is never

@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.tuweni.bytes.Bytes;
+import com.hedera.pbj.runtime.io.buffer.Bytes;
 import org.junit.jupiter.api.Test;
 
 class ValidationUtilsTest {
@@ -74,7 +74,7 @@ class ValidationUtilsTest {
         validateTrueOrRevert(true, INVALID_ALLOWANCE_OWNER_ID);
         assertTrue(capturedEx.isReverting());
         assertTrue(trueExCapturedByCode.isReverting());
-        final var reason = Bytes.of(INVALID_ALLOWANCE_OWNER_ID.name().getBytes());
+        final var reason = Bytes.wrap(INVALID_ALLOWANCE_OWNER_ID.name().getBytes());
         assertEquals(reason, capturedEx.getRevertReason());
     }
 }

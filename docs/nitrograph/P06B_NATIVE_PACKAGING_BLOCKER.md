@@ -61,17 +61,11 @@ The controlled exclusion probe now reports:
 | Besu `EVM` | unavailable |
 | Tuweni `Bytes` | unavailable |
 
-This resolves the exact `NoClassDefFoundError` blocker. It does not claim completion of P06B-7:
-the native distribution still carries executable dependency jars and the combined full module
-descriptor remains a full-artifact concern.
+This resolves the exact `NoClassDefFoundError` blocker. P06B-7 subsequently removes all executable
+dependency jars from the native distribution while retaining the combined full module descriptor
+only in the full artifact.
 
 ## Authorized follow-on
 
-P06B-7 may now continue with:
-
-1. extract contract record-builder interfaces into an implementation-neutral API module;
-2. extract retained historical map store interfaces/adapters into the compatibility API;
-3. split the application artifact/source set so full-provider and standalone classes are excluded
-   from the native jar;
-4. preserve packages/wire/state identifiers where relocation is not required;
-5. rerun the complete P06A/P06B compatibility matrix before excluding any executable jar.
+P06B-7 packaging status: implementation complete; exact-head lifecycle and mirror evidence are the
+remaining merge-readiness gates.

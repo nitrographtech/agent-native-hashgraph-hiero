@@ -16,8 +16,8 @@ classify() {
     app-service-contract-[0-9]*) echo HISTORICAL_COMPATIBILITY_REQUIRED ;;
     app-service-contract-impl-*) echo FULL_RUNTIME_ONLY ;;
     besu-*|evm-*|tuweni-*) echo EXECUTABLE_EVM_ONLY ;;
-    headlong-*) echo RETAIN_TEMPORARILY_WITH_JUSTIFICATION ;;
-    secp256k1-*|secp256r1-*) echo UNKNOWN_REQUIRES_REVIEW ;;
+    headlong-*) echo GENERIC_SHARED_DEPENDENCY ;;
+    hedera-cryptography-hints-*|hedera-cryptography-wraps-*) echo GENERIC_SHARED_DEPENDENCY ;;
     *) echo NATIVE_REQUIRED ;;
   esac
 }
@@ -29,13 +29,12 @@ coordinate() {
     besu-*|evm-*) echo org.hyperledger.besu:inferred-from-artifact ;;
     tuweni-*) echo org.apache.tuweni:inferred-from-artifact ;;
     headlong-*) echo com.esaulpaugh:headlong ;;
-    secp256k1-*|secp256r1-*) echo org.hyperledger.besu:inferred-native-crypto ;;
     *) echo unresolved ;;
   esac
 }
 
 printf '{\n'
-printf '  "schema": "nitrograph-p06b-native-binary-inventory-before-v1",\n'
+printf '  "schema": "nitrograph-p06b-native-binary-inventory-v2",\n'
 printf '  "distribution": "%s",\n' "$DIST"
 printf '  "artifacts": [\n'
 first=true

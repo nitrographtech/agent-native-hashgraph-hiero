@@ -1,0 +1,157 @@
+{
+  "schema": "nitrograph-p06b-native-packaging-isolation-evidence-v1",
+  "status": "COMPLETE",
+  "implementation_head": "8587f30769fb66ad07b909e0ac0d57c7cf9e55b7",
+  "exact_build_validation_head": "da585627ff47647d13b2cf0099f4417ba5152e62",
+  "implementation_ci": {
+    "run": 30104988007,
+    "result": "PASS",
+    "head": "da585627ff47647d13b2cf0099f4417ba5152e62",
+    "bounded_fix": "Deferred native base-crypto artifact resolution to its producing Gradle task; exact native inventory remained byte-identical.",
+    "prior_failed_run": {
+      "run": 30104333264,
+      "head": "deb196bf348213d4d4eb37c9356a0424db0c7d8f",
+      "classification": "build-graph failure caused by early runtimeClasspath resolution before local project jars existed"
+    }
+  },
+  "p06b7a_prerequisite_merge": "8dcfad027dc7b56a446ce74cdcf036be23596af1",
+  "baseline": {
+    "artifacts": 205,
+    "bytes": 130610581,
+    "inventory_sha256": "669d066def5639f3ccd4e5873dc5922ee0ef1dbbe9616476140aad8aac95b3c4"
+  },
+  "intermediate": {
+    "artifacts": 199,
+    "bytes": 127945555,
+    "inventory_sha256": "82d0303d528c68544fc84dd92d9e7ac807b9acf1e8ead4e7fc3de48f9adf8bf0"
+  },
+  "final_inventory": {
+    "artifacts": 191,
+    "application_jars": 1,
+    "library_jars": 190,
+    "bytes": 95093936,
+    "bytes_removed": 35516645,
+    "percent_reduction": 27.193,
+    "inventory_sha256": "fb4673ec8047330e47ed361abfc8dbf6b29eac4d82d441b45dc50f06753e86b0"
+  },
+  "removal": {
+    "artifacts_removed": 14,
+    "besu_jars": 0,
+    "tuweni_jars": 0,
+    "evm_engine_jars": 0,
+    "contract_implementation_jars": 0,
+    "system_contract_runtime_jars": 0,
+    "standalone_execution_jars": 0,
+    "executable_only_native_libraries": 0
+  },
+  "generic_crypto_isolation": {
+    "native_secp256k1_implementation": "Bouncy Castle",
+    "platform_source_changes": 0,
+    "full_distribution_changes": 0,
+    "exact_native_classpath_vector": "PASS"
+  },
+  "mechanical_enforcement": {
+    "archive_scan": "PASS",
+    "classpath_probe": "PASS",
+    "historical_service_loader_only": "PASS",
+    "prohibited_jar_injection": "REJECTED",
+    "prohibited_class_injection": "REJECTED",
+    "prohibited_service_injection": "REJECTED",
+    "prohibited_module_injection": "REJECTED",
+    "prohibited_native_library_injection": "REJECTED"
+  },
+  "lifecycle": {
+    "status": "PASS",
+    "exact_head": "8587f30769fb66ad07b909e0ac0d57c7cf9e55b7",
+    "clean_p06a_only_reconnect": {
+      "result": "PASS",
+      "tests": 1,
+      "duration_seconds": 299,
+      "learner_node": 2,
+      "source_round": 2513,
+      "post_reconnect_round": 2535,
+      "initial_historical_state_hash": "2ac6a0f7fdac376cda3178274e32d2a2a4d28c56663308f03d539bda17fed4ee7b5e4826a244b9d428f57720d1a20a06",
+      "reconnect_complete": true,
+      "learner_active": true,
+      "post_reconnect_native_processing": true,
+      "legacy_rejection": "5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+      "test_xml_sha256": "1e96eae13b9bac1d11e5b6ab78fc97edc59697cf44554e4d7d299aadd4f97311",
+      "run_log_sha256": "3a5404025d11172a71907a3d10d640b51c4a8a5f66ac5de729f74e6fb92e12e1"
+    },
+    "aggregate_suite_note": "The P06A test passed in the aggregate run. Three unrelated ND_RECONNECT validation suites interfered on the shared network and failed; a clean filtered P06A-only run then passed and produced the authoritative mirror corpus.",
+    "historical_maps": {
+      "comparison": "UNCHANGED between node 0 and reconnected node 2 at round 2535",
+      "STORAGE": {
+        "cardinality": 1,
+        "decoded_value": 424242,
+        "aggregate_content_sha256": "4498f1861935388100d439abcd8124cb906dc479f990c91a4b5a3d6995dd892f"
+      },
+      "BYTECODE": {
+        "cardinality": 2,
+        "aggregate_content_sha256": "204633a18de2a97441e56adae79ce51656496582833a906a69471e24b87091ab"
+      },
+      "EVM_HOOK_STATES": {
+        "cardinality": 1,
+        "aggregate_content_sha256": "32ffae8553e2c27c2a85e6071b9d6eddb85bc07a4a175ed9047d0c2cdb9484f1"
+      },
+      "LAMBDA_STORAGE": {
+        "cardinality": 1,
+        "aggregate_content_sha256": "6359602eb1ab3cb0ef54e1eeddfb8bfd5bcd89a52d86afb191b1cc8cf419056b"
+      },
+      "combined_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+    }
+  },
+  "mirror": {
+    "status": "PASS",
+    "revision": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "official_importer_code_changes": 0,
+    "test_harness": "temporary untracked integration harness removed after validation",
+    "signed_record_files": 39,
+    "unsigned_shutdown_tail_files": 1,
+    "transactions": 857,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "contract_actions": 3,
+    "contract_state_change_groups": 2,
+    "bytecode_records": 2,
+    "sidecar_records": 7,
+    "complete_blocks": 134,
+    "record_corpus_sha256": "2d4b8fcd1530cf87c41e0c95b4eb9dd35c215b654f841f3cb4c1b9deba5bb364",
+    "sidecar_corpus_sha256": "4c3283043d8ddb09f5a63df244fe1c1b8dfdb88f8e8638fa96db29cf6c762a39",
+    "block_corpus_sha256": "5886c65a75b081f487e88954ebf6ce996ee5461c17a1f3c4398ca76d8beabec9",
+    "test_xml_sha256": "6d832d589f828a21115665c9a2bd6b16bce600ebdceeb3dd549314d1cdd3eeff",
+    "run_log_sha256": "8fcfa83b7269046223632be0c7bb468e4376b760d85f9f97a082820f281e211b",
+    "database_semantic_fingerprint": "records=39;transactions=857;contract_results=3;contract_logs=1;contract_actions=3;state_change_groups=2;bytecode=2;sidecars=7;blocks=134"
+  },
+  "full_distribution": {
+    "all_removed_native_artifacts_retained": true,
+    "application_jar_sha256": "cf0defc7f1f7abce7e0fc93b1dfee8a50800ec7630c2161bea35aacedaf83764",
+    "regression": "PASS: full build, 1750 contract implementation tests, app tests, full-runtime pre-activation fixture generation, and standalone compilation remain valid"
+  },
+  "exact_artifacts": {
+    "native_application_jar_sha256": "22652cc9bfe77aa830bfb49e80ddde05acbb25b50eb3134d98f83a6606ad7c60",
+    "full_application_jar_sha256": "cf0defc7f1f7abce7e0fc93b1dfee8a50800ec7630c2161bea35aacedaf83764",
+    "neutral_contract_api_jar_sha256": "ae0a29cb88507335ec938b8c8fa4b474d44bdc440cf05d9a718717df361e0872",
+    "native_filtered_base_crypto_jar_sha256": "fe31a62223d44bb221c6f4701a6a5d75dfc6d7240516ee24016949e583069bcc"
+  },
+  "tests": {
+    "contract_implementation": "1750 PASS",
+    "app_aggregate": "10425 PASS, 1 baseline resource-sensitive failure, 7 skipped",
+    "isolated_four_million_record_test": "1 PASS with assertions unchanged",
+    "native_and_full_builds": "PASS"
+  },
+  "environment": {
+    "java": "Eclipse Adoptium 25.0.3+9-LTS",
+    "gradle": "9.5.0",
+    "reconnect_peak_rss_bytes": 1550128000,
+    "mirror_peak_rss_bytes": 1374256000
+  },
+  "forbidden_changes": {
+    "consensus": 0,
+    "platform_sdk": 0,
+    "protobuf_or_pbj": 0,
+    "persisted_format": 0,
+    "codec_or_state_id": 0,
+    "schema_version": 0
+  }
+}

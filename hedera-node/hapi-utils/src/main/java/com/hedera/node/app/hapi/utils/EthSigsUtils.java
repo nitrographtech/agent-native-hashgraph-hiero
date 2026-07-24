@@ -3,20 +3,21 @@ package com.hedera.node.app.hapi.utils;
 
 import static java.lang.System.arraycopy;
 import static java.util.Objects.requireNonNull;
-import static org.hyperledger.besu.nativelib.secp256k1.LibSecp256k1.CONTEXT;
-import static org.hyperledger.besu.nativelib.secp256k1.LibSecp256k1.SECP256K1_EC_UNCOMPRESSED;
 
 import com.hedera.pbj.runtime.io.buffer.Bytes;
-import com.sun.jna.ptr.LongByReference;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.nio.ByteBuffer;
+import java.math.BigInteger;
+import java.util.Arrays;
+import org.bouncycastle.asn1.sec.SECNamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
-import org.hyperledger.besu.nativelib.secp256k1.LibSecp256k1;
 
 /**
  * Utility class for recovering EVM addresses from keys.
  */
 public final class EthSigsUtils {
+    private static final X9ECParameters SECP256K1 = SECNamedCurves.getByName("secp256k1");
+
     private EthSigsUtils() {}
 
     /**
@@ -28,13 +29,12 @@ public final class EthSigsUtils {
         requireNonNull(privateKeyBytes);
         // Create public key from private key
         // Return address from public key
-        LibSecp256k1.secp256k1_pubkey pubKey = new LibSecp256k1.secp256k1_pubkey();
-        var parseResult = LibSecp256k1.secp256k1_ec_pubkey_create(CONTEXT, pubKey, privateKeyBytes);
-        if (parseResult == 1) {
-            return recoverAddressFromPubKey(pubKey);
-        } else {
+        final var privateKey = new BigInteger(1, privateKeyBytes);
+        if (privateKey.signum() == 0 || privateKey.compareTo(SECP256K1.getN()) >= 0) {
             return new byte[0];
         }
+        return recoverAddressFromUncompressedPubKey(
+                SECP256K1.getG().multiply(privateKey).normalize().getEncoded(false));
     }
 
     /**
@@ -44,11 +44,10 @@ public final class EthSigsUtils {
      */
     public static byte[] recoverAddressFromPubKey(@NonNull final byte[] pubKeyBytes) {
         requireNonNull(pubKeyBytes);
-        LibSecp256k1.secp256k1_pubkey pubKey = new LibSecp256k1.secp256k1_pubkey();
-        var parseResult = LibSecp256k1.secp256k1_ec_pubkey_parse(CONTEXT, pubKey, pubKeyBytes, pubKeyBytes.length);
-        if (parseResult == 1) {
-            return recoverAddressFromPubKey(pubKey);
-        } else {
+        try {
+            return recoverAddressFromUncompressedPubKey(
+                    SECP256K1.getCurve().decodePoint(pubKeyBytes).normalize().getEncoded(false));
+        } catch (final IllegalArgumentException e) {
             return new byte[0];
         }
     }
@@ -65,19 +64,12 @@ public final class EthSigsUtils {
 
     /**
      * Recover the address from a public key.
-     * @param pubKey The public key.
+     * @param encoded The uncompressed public key.
      * @return The address.
      */
-    public static byte[] recoverAddressFromPubKey(@NonNull final LibSecp256k1.secp256k1_pubkey pubKey) {
-        requireNonNull(pubKey);
-        final ByteBuffer recoveredFullKey = ByteBuffer.allocate(65);
-        final LongByReference fullKeySize = new LongByReference(recoveredFullKey.limit());
-        LibSecp256k1.secp256k1_ec_pubkey_serialize(
-                CONTEXT, recoveredFullKey, fullKeySize, pubKey, SECP256K1_EC_UNCOMPRESSED);
-
-        recoveredFullKey.get(); // read and discard - recoveryId is not part of the account hash
-        var preHash = new byte[64];
-        recoveredFullKey.get(preHash, 0, 64);
+    private static byte[] recoverAddressFromUncompressedPubKey(@NonNull final byte[] encoded) {
+        requireNonNull(encoded);
+        final var preHash = Arrays.copyOfRange(encoded, 1, encoded.length);
         var keyHash = new Keccak.Digest256().digest(preHash);
         var address = new byte[20];
         arraycopy(keyHash, 12, address, 0, 20);

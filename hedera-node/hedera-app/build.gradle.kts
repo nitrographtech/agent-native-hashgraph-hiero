@@ -143,12 +143,56 @@ val nativeAppJar =
             manifest.attributes(
                 "Class-Path" to
                     inputs.files
-                        .filter { it.extension == "jar" }
+                        .filter {
+                            it.extension == "jar" &&
+                                !it.name.startsWith("app-service-contract-impl-") &&
+                                !it.name.startsWith("besu-") &&
+                                !it.name.startsWith("evm-") &&
+                                !it.name.startsWith("tuweni-") &&
+                                !it.name.startsWith("algorithms-") &&
+                                !it.name.startsWith("arithmetic-") &&
+                                !it.name.startsWith("blake2bf-") &&
+                                !it.name.startsWith("gnark-") &&
+                                !it.name.startsWith("jc-kzg-") &&
+                                !it.name.startsWith("rlp-") &&
+                                !it.name.startsWith("secp256k1-") &&
+                                !it.name.startsWith("secp256r1-")
+                        }
                         .map { "../../data/lib/" + it.name }
                         .sorted()
                         .joinToString(separator = " ")
             )
         }
+    }
+
+// The platform base-crypto artifact uses a Besu-native secp256k1 verifier. Native account
+// signatures still require secp256k1 verification, so the Nitrograph distribution replaces that
+// one implementation with an API-compatible Bouncy Castle implementation. Platform source and the
+// full distribution remain unchanged.
+val compileNativeCrypto by
+    tasks.registering(JavaCompile::class) {
+        source(layout.projectDirectory.dir("src/nativeCrypto/java"))
+        classpath = configurations.runtimeClasspath.get()
+        destinationDirectory.set(layout.buildDirectory.dir("classes/java/nativeCrypto"))
+        options.release.set(25)
+    }
+
+val baseCryptoJar =
+    providers.provider {
+        project(":base-crypto").tasks.named<Jar>("jar").get().archiveFile.get()
+    }
+
+val nativeBaseCryptoJar =
+    tasks.register<Jar>("nativeBaseCryptoJar") {
+        group = "build"
+        description = "Build base-crypto for the native distribution without Besu-native secp256k1."
+        dependsOn(compileNativeCrypto, ":base-crypto:jar")
+        archiveFileName.set(baseCryptoJar.map { it.asFile.name })
+        from(baseCryptoJar.map { zipTree(it) }) {
+            exclude("module-info.class")
+            exclude("org/hiero/base/crypto/engine/EcdsaSecp256k1Verifier*.class")
+        }
+        from(compileNativeCrypto)
     }
 
 // Copy dependencies into `data/lib`
@@ -234,12 +278,28 @@ val distributionFull =
 tasks.register<Sync>("distributionNativeAgent") {
     group = "distribution"
     description = "Assemble the native-agent distribution with the contract service disabled."
-    dependsOn(copyNodeData, nativeAppJar)
-    from(nodeWorkingDir) { exclude("data/apps/HederaNode.jar") }
+    dependsOn(copyNodeData, nativeAppJar, nativeBaseCryptoJar)
+    from(nodeWorkingDir) {
+        exclude("data/apps/HederaNode.jar")
+        exclude("data/lib/app-service-contract-impl-*")
+        exclude("data/lib/base-crypto-*")
+        exclude("data/lib/besu-*")
+        exclude("data/lib/evm-*")
+        exclude("data/lib/tuweni-*")
+        exclude("data/lib/algorithms-*")
+        exclude("data/lib/arithmetic-*")
+        exclude("data/lib/blake2bf-*")
+        exclude("data/lib/gnark-*")
+        exclude("data/lib/jc-kzg-*")
+        exclude("data/lib/rlp-*")
+        exclude("data/lib/secp256k1-*")
+        exclude("data/lib/secp256r1-*")
+    }
     from(nativeAppJar) {
         into("data/apps")
         rename { "HederaNode.jar" }
     }
+    from(nativeBaseCryptoJar) { into("data/lib") }
     into(layout.buildDirectory.dir("distributions/distribution-native-agent"))
     filesMatching("data/config/application.properties") {
         filter { line -> if (line == "contracts.enabled=true") "contracts.enabled=false" else line }

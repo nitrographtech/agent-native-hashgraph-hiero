@@ -291,7 +291,7 @@ public class HookCallsFactory {
 
     public static Address asHeadlongAddress(@NonNull final byte[] explicit) {
         requireNonNull(explicit);
-        final var integralAddress = org.apache.tuweni.bytes.Bytes.wrap(explicit).toUnsignedBigInteger();
+        final var integralAddress = new java.math.BigInteger(1, explicit);
         return Address.wrap(toChecksumAddress(integralAddress));
     }
 

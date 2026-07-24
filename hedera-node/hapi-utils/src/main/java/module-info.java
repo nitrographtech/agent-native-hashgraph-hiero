@@ -28,9 +28,6 @@ module com.hedera.node.app.hapi.utils {
     requires transitive javax.inject;
     requires transitive net.i2p.crypto.eddsa;
     requires transitive org.apache.commons.lang3;
-    requires transitive org.hyperledger.besu.evm;
-    requires transitive org.hyperledger.besu.nativelib.secp256k1;
-    requires transitive tuweni.bytes;
     requires com.swirlds.base;
     requires org.hiero.base.crypto;
     requires org.hiero.consensus.utility;
