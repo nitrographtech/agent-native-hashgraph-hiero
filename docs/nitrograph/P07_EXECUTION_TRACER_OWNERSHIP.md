@@ -1,6 +1,6 @@
 # P07 Execution Tracer Ownership
 
-Status: **P07-3 RUNTIME DELETION BLOCKED — execution callback boundary remains**
+Status: **P07-3 PARTIALLY COMPLETE — residual protocol deferred to engine removal**
 Base: `agent-native@d6c5a7e9b44f32ac5d8f8d7ee686687792c6b2ac`  
 Wave: P07-3
 
@@ -19,6 +19,11 @@ consume the Hedera-specific callbacks needed by the fixture producer. Removing t
 reduces authenticated fixture output to zero actions or requires fixture-specific execution
 processors, crossing the system-contract/world-state stop boundary. See
 `P07_RUNTIME_TRACER_DELETION_INVENTORY.md`.
+
+The authorized disposition rejects fixture-specific EVM processor duplication and classifies the
+remaining protocol as `LEGACY_EXECUTION_SEAM_DEFERRED_TO_ENGINE_REMOVAL`. Concrete tracing remains
+fixture-tooling-only. Each residual callback will be deleted with its owning system-contract,
+Ethereum, world-state, Bonneville, or EVM processor in Waves 4–8.
 
 ## Measured ownership
 

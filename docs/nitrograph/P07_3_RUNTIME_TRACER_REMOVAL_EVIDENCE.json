@@ -1,6 +1,6 @@
 {
   "phase": "P07-3",
-  "status": "BLOCKED",
+  "status": "PARTIALLY_COMPLETE_FINAL_PROTOCOL_DELETION_DEFERRED",
   "checkpoint_type": "deletion_inventory_only",
   "base": {
     "p07_3a_merge_commit": "3fa443b7daccc86be2c56fadb98473a0f0e0170c",
@@ -58,8 +58,9 @@
     "p07_3a_results_remain_authoritative": true
   },
   "required_next_slice": {
-    "recommended": "P07-3B fixture execution callback adapter",
-    "alternative": "Run system-contract and EVM processor removal before returning to tracer protocol deletion",
+    "classification": "LEGACY_EXECUTION_SEAM_DEFERRED_TO_ENGINE_REMOVAL",
+    "fixture_specific_evm_processor_duplication": "REJECTED",
+    "recommended": "Remove each callback with its owning processor during Waves 4 through 8",
     "wave_4_started": false
   }
 }

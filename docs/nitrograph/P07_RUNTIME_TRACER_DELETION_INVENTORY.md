@@ -2,7 +2,7 @@
 
 ## Status
 
-`BLOCKED` before production deletion.
+`PARTIALLY COMPLETE / FINAL PROTOCOL DELETION DEFERRED`.
 
 P07-3A moved the concrete action producer into fixture tooling, but the executable contract
 implementation still owns the callback protocol that lets that producer observe execution. Removing
@@ -59,15 +59,16 @@ produce zero actions. Moving the chain into fixture tooling requires subclassing
 runtime message/frame processors and touches system-contract and world-state execution. Both are
 explicit stop conditions for P07-3.
 
-## Required prerequisite
+## Authorized disposition
 
-Choose one bounded architecture before resuming deletion:
+Fixture-specific EVM processor duplication is rejected. The remaining callback protocol is
+classified:
 
-1. Authorize a fixture-only execution adapter that owns fixture variants of the frame/message/result
-   callback points, with no runtime dependency on fixture tooling; or
-2. Complete the system-contract and EVM processor removal waves first, then delete the now-unused
-   runtime callback protocol; or
-3. Authorize a broader combined tracer/system-contract execution-boundary wave.
+`LEGACY_EXECUTION_SEAM_DEFERRED_TO_ENGINE_REMOVAL`
+
+Each callback path will be deleted with its owning system-contract, Ethereum, world-state,
+Bonneville, or EVM processor in Waves 4–8. No fixture-specific frame, message, HEVM, Bonneville, or
+result processor will be created.
 
 No production source, test, Dagger, Gradle, JPMS, service metadata, PBJ model, persisted state, or
 fixture was changed at this checkpoint.
