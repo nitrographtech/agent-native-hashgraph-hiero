@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 module com.hedera.node.app {
+    uses com.hedera.node.app.services.ContractRuntimeProviderFactory;
+    uses com.hedera.node.app.store.ContractStoreFactory;
+
     requires transitive com.hedera.cryptography.hints;
     requires transitive com.hedera.cryptography.wraps;
     requires transitive com.hedera.node.app.hapi.fees;
@@ -140,4 +143,10 @@ module com.hedera.node.app {
 
     provides com.swirlds.config.api.ConfigurationExtension with
             com.hedera.node.app.config.ServicesConfigExtension;
+    provides com.hedera.node.app.services.ContractRuntimeProviderFactory with
+            com.hedera.node.app.services.HistoricalContractRuntimeProviderFactory,
+            com.hedera.node.app.services.FullContractRuntimeProviderFactory;
+    provides com.hedera.node.app.store.ContractStoreFactory with
+            com.hedera.node.app.store.HistoricalContractStoreFactory,
+            com.hedera.node.app.store.FullContractStoreFactory;
 }

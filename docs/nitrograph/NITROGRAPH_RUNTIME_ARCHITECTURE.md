@@ -1,6 +1,6 @@
 # Nitrograph Runtime Architecture
 
-Status: P06B-6 engineering control artifact
+Status: P06B-7A engineering control artifact
 
 ```mermaid
 flowchart TD
@@ -12,6 +12,9 @@ flowchart TD
     ASSET[Native Asset Service]
     COORD[Coordination Layer]
     STREAMS[Records and Block Streams]
+    NATIVE_JAR[Native HederaNode application jar]
+    NATIVE_FACTORY[Historical runtime and store factories]
+    NATIVE_JAR --> NATIVE_FACTORY --> APP
     APP --> ACC
     APP --> ASSET
     APP --> COORD
@@ -21,9 +24,11 @@ flowchart TD
   subgraph HCMP[HISTORICAL READ-ONLY COMPATIBILITY]
     PROVIDER[HistoricalContractRuntimeProvider]
     SCHEMAS[HistoricalContractStateService and retained schemas]
+    API[Neutral contract compatibility API<br/>record builders and read-only retained-map adapters]
     REJECT[Fail-closed legacy handlers]
     NEUTRAL[HistoricalLog<br/>HistoricalContractResult<br/>HistoricalContractAction<br/>HistoricalContractStateChanges<br/>HistoricalStorageChange<br/>HistoricalContractBytecode]
     PROVIDER --> SCHEMAS
+    SCHEMAS --> API
     PROVIDER --> REJECT
     SCHEMAS --> NEUTRAL
     NEUTRAL --> STREAMS
@@ -33,9 +38,10 @@ flowchart TD
 
   subgraph FULL[FULL EXECUTABLE LEGACY RUNTIME — REMAINING, NON-NATIVE]
     FULL_PROVIDER[FullContractRuntimeProvider]
+    FULL_JAR[Full HederaNode application jar]
     CSI[ContractServiceImpl]
     EVM[Besu/EVM/system contracts]
-    FULL_PROVIDER --> CSI --> EVM
+    FULL_JAR --> FULL_PROVIDER --> CSI --> EVM
   end
 
   subgraph FIXTURE[FIXTURE GENERATION ONLY]
@@ -68,8 +74,10 @@ flowchart TD
 - **Removed:** direct executable runtime types from shared log, result, action, state/storage, and
   bytecode translation.
 - **Remaining:** module dependencies and packaged jars supporting the combined full/native build.
+- **P06B-7A split:** native and full application jars are physically distinct. The neutral
+  compatibility API is owned by `app-service-contract`; the native jar contains only historical
+  provider/store service metadata. Executable dependency jars remain packaged until P06B-7.
 - **Deferred:** new Nitrograph services listed above; none are implemented by P06B.
 
 The frozen invariant is: historical contract state remains readable and migratable but is never
 executable on Nitrograph.
-

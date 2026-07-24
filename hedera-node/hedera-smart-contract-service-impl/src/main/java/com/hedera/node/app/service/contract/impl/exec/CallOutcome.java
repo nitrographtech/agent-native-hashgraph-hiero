@@ -2,6 +2,11 @@
 package com.hedera.node.app.service.contract.impl.exec;
 
 import static com.hedera.hapi.node.base.ResponseCodeEnum.SUCCESS;
+import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asPbjSlotUsages;
+import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asPbjStateChanges;
+import static com.hedera.node.app.service.token.HookDispatchUtils.HTS_HOOKS_CONTRACT_NUM;
+import static com.hedera.node.config.types.StreamMode.BLOCKS;
+import static com.hedera.node.config.types.StreamMode.RECORDS;
 import static java.util.Objects.requireNonNull;
 
 import com.hedera.hapi.block.stream.trace.EvmTransactionLog;
@@ -10,13 +15,18 @@ import com.hedera.hapi.node.base.ResponseCodeEnum;
 import com.hedera.hapi.node.contract.ContractFunctionResult;
 import com.hedera.hapi.node.contract.ContractNonceInfo;
 import com.hedera.hapi.node.contract.EvmTransactionResult;
+import com.hedera.hapi.node.state.contract.SlotKey;
+import com.hedera.hapi.node.state.hooks.EvmHookSlotKey;
 import com.hedera.hapi.streams.ContractAction;
+import com.hedera.hapi.streams.ContractActions;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmTransactionResult;
 import com.hedera.node.app.service.contract.impl.records.ContractCallStreamBuilder;
 import com.hedera.node.app.service.contract.impl.records.ContractCreateStreamBuilder;
+import com.hedera.node.app.service.contract.impl.records.ContractOperationStreamBuilder;
 import com.hedera.node.app.service.contract.impl.state.TxStorageUsage;
 import com.hedera.node.app.service.entityid.EntityIdFactory;
 import com.hedera.node.app.spi.workflows.HandleContext;
+import com.hedera.node.config.data.BlockStreamConfig;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -228,7 +238,7 @@ public record CallOutcome(
         streamBuilder.contractCallResult(result);
         // No-op for the RecordStreamBuilder
         streamBuilder.evmCallTransactionResult(txResult);
-        streamBuilder.withCommonFieldsSetFrom(this, context, idFactory);
+        setCommonFieldsOn(streamBuilder, context, idFactory);
     }
 
     /**
@@ -260,8 +270,69 @@ public record CallOutcome(
         streamBuilder
                 .createdContractID(recipientIdIfCreated())
                 .createdEvmAddress(createdEvmAddress)
-                .evmCreateTransactionResult(txResult)
-                .withCommonFieldsSetFrom(this, context, idFactory);
+                .evmCreateTransactionResult(txResult);
+        setCommonFieldsOn(streamBuilder, context, idFactory);
+    }
+
+    /**
+     * Adds implementation-owned execution details to the neutral stream-builder contract.
+     */
+    public ContractOperationStreamBuilder setCommonFieldsOn(
+            @NonNull final ContractOperationStreamBuilder streamBuilder,
+            @NonNull final HandleContext context,
+            @NonNull final EntityIdFactory idFactory) {
+        if (streamBuilder.hasTraceDataSizeLimitExceeded()) {
+            return streamBuilder;
+        }
+        if (actions != null) {
+            // (FUTURE) Remove after switching to block stream
+            streamBuilder.addContractActions(new ContractActions(actions), false);
+            streamBuilder.addActions(actions);
+            if (streamBuilder.hasTraceDataSizeLimitExceeded()) {
+                return streamBuilder;
+            }
+        }
+        if (hasTxStorageUsage()) {
+            final var storageUsage = txStorageUsageOrThrow();
+            final var storageAccesses = storageUsage.accesses();
+            final var streamMode = context.configuration()
+                    .getConfigData(BlockStreamConfig.class)
+                    .streamMode();
+            if (streamMode != BLOCKS && !storageAccesses.isEmpty()) {
+                streamBuilder.addContractStateChanges(requireNonNull(asPbjStateChanges(storageAccesses)), false);
+            }
+            final boolean traceExplicitWrites = !storageUsage.hasChangedKeys();
+            if (streamMode != RECORDS) {
+                streamBuilder.addContractSlotUsages(
+                        requireNonNull(asPbjSlotUsages(storageAccesses, traceExplicitWrites)));
+            }
+            if (streamBuilder.hasTraceDataSizeLimitExceeded()) {
+                return streamBuilder;
+            }
+            if (!traceExplicitWrites) {
+                final var changedKeys = storageUsage.changedKeysOrThrow();
+                streamBuilder.testForIdenticalKeys(key -> {
+                    if (key instanceof SlotKey slotKey) {
+                        return !changedKeys.contains(slotKey);
+                    }
+                    if (key instanceof EvmHookSlotKey hookSlotKey) {
+                        return !changedKeys.contains(
+                                new SlotKey(idFactory.newContractId(HTS_HOOKS_CONTRACT_NUM), hookSlotKey.key()));
+                    }
+                    return false;
+                });
+            }
+        }
+        if (hasLogs()) {
+            streamBuilder.addLogs(logsOrThrow());
+        }
+        if (hasChangedNonces()) {
+            streamBuilder.changedNonceInfo(changedNonceInfosOrThrow());
+        }
+        if (hasCreatedContractIds()) {
+            streamBuilder.createdContractIds(createdContractIdsOrThrow());
+        }
+        return streamBuilder;
     }
 
     /**

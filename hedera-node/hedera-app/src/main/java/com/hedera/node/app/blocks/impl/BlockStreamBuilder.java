@@ -86,13 +86,13 @@ import com.hedera.node.app.service.addressbook.impl.records.NodeCreateStreamBuil
 import com.hedera.node.app.service.addressbook.impl.records.RegisteredNodeCreateStreamBuilder;
 import com.hedera.node.app.service.consensus.impl.records.ConsensusCreateTopicStreamBuilder;
 import com.hedera.node.app.service.consensus.impl.records.ConsensusSubmitMessageStreamBuilder;
+import com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils;
 import com.hedera.node.app.service.contract.impl.records.ContractCallStreamBuilder;
 import com.hedera.node.app.service.contract.impl.records.ContractCreateStreamBuilder;
 import com.hedera.node.app.service.contract.impl.records.ContractDeleteStreamBuilder;
 import com.hedera.node.app.service.contract.impl.records.ContractOperationStreamBuilder;
 import com.hedera.node.app.service.contract.impl.records.ContractUpdateStreamBuilder;
 import com.hedera.node.app.service.contract.impl.records.EthereumTransactionStreamBuilder;
-import com.hedera.node.app.service.contract.impl.state.WritableEvmHookStore;
 import com.hedera.node.app.service.file.impl.records.CreateFileStreamBuilder;
 import com.hedera.node.app.service.schedule.ScheduleStreamBuilder;
 import com.hedera.node.app.service.token.api.FeeStreamBuilder;
@@ -762,7 +762,7 @@ public class BlockStreamBuilder
                                 for (final var read : reads) {
                                     var key = read.keyOrThrow();
                                     if (contractId == ContractID.DEFAULT) {
-                                        key = WritableEvmHookStore.minimalKey(key);
+                                        key = HistoricalContractKeyUtils.minimalKey(key);
                                     }
                                     final var index = writeIndexes.get(key);
                                     if (index != null) {

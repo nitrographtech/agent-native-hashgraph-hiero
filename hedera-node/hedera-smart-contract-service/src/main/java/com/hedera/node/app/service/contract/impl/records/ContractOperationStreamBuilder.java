@@ -1,14 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.service.contract.impl.records;
 
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asPbjSlotUsages;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asPbjStateChanges;
-import static com.hedera.node.app.service.token.HookDispatchUtils.HTS_HOOKS_CONTRACT_NUM;
-import static com.hedera.node.config.types.StreamMode.BLOCKS;
-import static com.hedera.node.config.types.StreamMode.RECORDS;
-import static java.util.Objects.requireNonNull;
-
-import com.hedera.hapi.block.stream.output.MapUpdateChange;
 import com.hedera.hapi.block.stream.trace.ContractSlotUsage;
 import com.hedera.hapi.block.stream.trace.EvmTransactionLog;
 import com.hedera.hapi.block.stream.trace.ExecutedInitcode;
@@ -16,17 +8,11 @@ import com.hedera.hapi.node.base.AccountID;
 import com.hedera.hapi.node.base.ContractID;
 import com.hedera.hapi.node.base.HederaFunctionality;
 import com.hedera.hapi.node.contract.ContractNonceInfo;
-import com.hedera.hapi.node.state.contract.SlotKey;
-import com.hedera.hapi.node.state.hooks.EvmHookSlotKey;
 import com.hedera.hapi.streams.ContractAction;
 import com.hedera.hapi.streams.ContractActions;
 import com.hedera.hapi.streams.ContractBytecode;
 import com.hedera.hapi.streams.ContractStateChanges;
-import com.hedera.node.app.service.contract.impl.exec.CallOutcome;
-import com.hedera.node.app.service.entityid.EntityIdFactory;
-import com.hedera.node.app.spi.workflows.HandleContext;
 import com.hedera.node.app.spi.workflows.record.DeleteCapableTransactionStreamBuilder;
-import com.hedera.node.config.data.BlockStreamConfig;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.List;
 import java.util.Set;
@@ -75,77 +61,6 @@ public interface ContractOperationStreamBuilder extends DeleteCapableTransaction
      * @return the set of contract IDs called during the transaction
      */
     Set<AccountID> explicitRewardSituationIds();
-
-    /**
-     * Updates this record builder to include the standard contract fields from the given outcome.
-     *
-     * @param outcome the EVM transaction outcome
-     * @param context the handle context
-     * @param idFactory the entity id factory
-     * @return this updated builder
-     */
-    default ContractOperationStreamBuilder withCommonFieldsSetFrom(
-            @NonNull final CallOutcome outcome,
-            @NonNull final HandleContext context,
-            @NonNull final EntityIdFactory idFactory) {
-        requireNonNull(outcome);
-        requireNonNull(context);
-        requireNonNull(idFactory);
-        if (hasTraceDataSizeLimitExceeded()) {
-            return this;
-        }
-        if (outcome.actions() != null) {
-            // (FUTURE) Remove after switching to block stream
-            addContractActions(new ContractActions(outcome.actions()), false);
-            // No-op for the RecordStreamBuilder
-            addActions(outcome.actions());
-            if (hasTraceDataSizeLimitExceeded()) {
-                return this;
-            }
-        }
-        if (outcome.hasTxStorageUsage()) {
-            final var txStorageUsage = outcome.txStorageUsageOrThrow();
-            final var storageAccesses = txStorageUsage.accesses();
-            // (FUTURE) Remove this check after switching to block stream
-            final var streamMode = context.configuration()
-                    .getConfigData(BlockStreamConfig.class)
-                    .streamMode();
-            if (streamMode != BLOCKS && !storageAccesses.isEmpty()) {
-                addContractStateChanges(requireNonNull(asPbjStateChanges(storageAccesses)), false);
-            }
-            final boolean traceExplicitWrites = !txStorageUsage.hasChangedKeys();
-            if (streamMode != RECORDS) {
-                addContractSlotUsages(requireNonNull(asPbjSlotUsages(storageAccesses, traceExplicitWrites)));
-            }
-            if (hasTraceDataSizeLimitExceeded()) {
-                return this;
-            }
-            if (!traceExplicitWrites) {
-                final var changedKeys = txStorageUsage.changedKeysOrThrow();
-                testForIdenticalKeys(o -> {
-                    if (o instanceof SlotKey slotKey) {
-                        return !changedKeys.contains(slotKey);
-                    }
-                    if (o instanceof EvmHookSlotKey evmHookSlotKey) {
-                        return !changedKeys.contains(
-                                new SlotKey(idFactory.newContractId(HTS_HOOKS_CONTRACT_NUM), evmHookSlotKey.key()));
-                    }
-                    return false;
-                });
-            }
-        }
-        // No-ops for the RecordStreamBuilder
-        if (outcome.hasLogs()) {
-            addLogs(outcome.logsOrThrow());
-        }
-        if (outcome.hasChangedNonces()) {
-            changedNonceInfo(outcome.changedNonceInfosOrThrow());
-        }
-        if (outcome.hasCreatedContractIds()) {
-            createdContractIds(outcome.createdContractIdsOrThrow());
-        }
-        return this;
-    }
 
     /**
      * Updates this record builder to include contract actions.

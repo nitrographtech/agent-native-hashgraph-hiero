@@ -1,0 +1,240 @@
+{
+  "schema": "nitrograph-p06b-neutral-api-and-app-split-evidence-v1",
+  "status": "COMPLETE",
+  "base": "agent-native@1ffddab00991a695acb62fa5ae7e8fdadfcf359e",
+  "implementation_commit": "28058708da001f7a98aec85a3fdede483fde708d",
+  "ownership": {
+    "neutral_api_artifact": "app-service-contract-0.75.0-SNAPSHOT.jar",
+    "record_builder_interfaces_moved": 6,
+    "record_builder_fqcns_changed": 0,
+    "compatibility_bridges": 0,
+    "historical_store_interfaces_and_adapters_added": 4,
+    "state_keys_or_ids_changed": 0,
+    "wire_or_schema_changes": 0
+  },
+  "neutral_api": {
+    "classes": 17,
+    "bytes": 17070,
+    "sha256": "ae0a29cb88507335ec938b8c8fa4b474d44bdc440cf05d9a718717df361e0872",
+    "contract_implementation_dependencies": 0,
+    "besu_references": 0,
+    "tuweni_references": 0,
+    "evm_engine_references": 0,
+    "standalone_references": 0,
+    "system_contract_references": 0
+  },
+  "application_artifacts": {
+    "native": {
+      "path": "hedera-node/hedera-app/build/distributions/distribution-native-agent/data/apps/HederaNode.jar",
+      "classes": 783,
+      "bytes": 1712156,
+      "sha256": "71429e52697661abd541c50a9486b83b1293bc6f475ae29ac1454040e43db67b",
+      "full_provider_classes": 0,
+      "standalone_classes": 0,
+      "embedded_contract_implementation_classes": 0,
+      "besu_classes": 0,
+      "tuweni_classes": 0,
+      "runtime_provider_metadata": [
+        "com.hedera.node.app.services.HistoricalContractRuntimeProviderFactory"
+      ],
+      "store_factory_metadata": [
+        "com.hedera.node.app.store.HistoricalContractStoreFactory"
+      ]
+    },
+    "full": {
+      "path": "hedera-node/hedera-app/build/distributions/distribution-full/data/apps/HederaNode.jar",
+      "classes": 819,
+      "bytes": 1785522,
+      "sha256": "cf0defc7f1f7abce7e0fc93b1dfee8a50800ec7630c2161bea35aacedaf83764",
+      "full_provider_retained": true,
+      "standalone_retained": true
+    }
+  },
+  "controlled_exclusion_probe": {
+    "excluded": [
+      "app-service-contract-impl-*",
+      "besu-*",
+      "evm-*",
+      "tuweni-*"
+    ],
+    "available": [
+      "Hedera",
+      "RecordStreamBuilder",
+      "ContractCreateStreamBuilder",
+      "ContractOperationStreamBuilder",
+      "ReadableContractStateStore",
+      "HistoricalReadableContractStateStore",
+      "HistoricalReadableEvmHookStore",
+      "HistoricalContractRuntimeProvider"
+    ],
+    "unavailable": [
+      "FullContractRuntimeProvider",
+      "TransactionExecutors",
+      "implementation ContractStateStore",
+      "Besu EVM",
+      "Tuweni Bytes"
+    ],
+    "historical_provider_service_loader": "PASS",
+    "original_no_class_def_found_error": "RESOLVED"
+  },
+  "enforcement": {
+    "native_policy": "PASS",
+    "intentional_prohibited_class_injection": "PASS: policy rejected injected FullContractRuntimeProvider",
+    "combined_module_descriptor_in_native_jar": false,
+    "full_factory_service_entries_in_native_jar": 0
+  },
+  "focused_validation": {
+    "historical_adapter_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "app_provider_and_store_tests": {
+      "passed": 36,
+      "failed": 0
+    },
+    "full_contract_builder_and_handler_tests": {
+      "passed": 32,
+      "failed": 0
+    },
+    "neutral_api_build": "PASS",
+    "native_application_and_distribution_build": "PASS",
+    "full_application_and_distribution_build": "PASS"
+  },
+  "ci": {
+    "run": 30068120558,
+    "tested_head": "d600b41c70f2392f23da90948b4f4b2834826b2e",
+    "result": "PASS",
+    "native_dependency_policy": "PASS",
+    "protected_layer_boundary": "PASS"
+  },
+  "reconnect_validation": {
+    "status": "PASS",
+    "exact_head": "d600b41c70f2392f23da90948b4f4b2834826b2e",
+    "environmental_preparation": {
+      "stale_node_or_java_processes": 0,
+      "occupied_test_ports": 0,
+      "available_disk_gib": 909,
+      "available_memory_gib": 22,
+      "file_descriptor_limit": 10240,
+      "logical_cpus": 14
+    },
+    "prior_attempt_history": [
+      {
+        "result": "CHECKING_TIMEOUT",
+        "failed_node": "node3",
+        "timeout": "PT3M30S",
+        "semantic_assertion_failures": 0,
+        "peak_rss_kib": 1297556,
+        "swap_events": 0
+      },
+      {
+        "result": "PORT_BIND_FAILURE",
+        "failed_node": "node4",
+        "port": 38078,
+        "semantic_assertion_failures": 0,
+        "peak_rss_kib": 1635924,
+        "swap_events": 0,
+        "test_xml_sha256": "82fafeb4226820c64b2074afefe2839f6f97312ae0b7577370dad16247177bd6"
+      }
+    ],
+    "clean_exact_head_attempt": {
+      "result": "PASS",
+      "test_started": "2026-07-24T13:31:28.240Z",
+      "native_network_active": "2026-07-24T13:32:11.990Z",
+      "reconnect_initiated": "2026-07-24T13:36:09.301Z",
+      "signed_state_signatures_received": "2026-07-24T13:36:09.912Z",
+      "state_transfer_finished": "2026-07-24T13:36:10.714Z",
+      "learner_active": "2026-07-24T13:36:13.911Z",
+      "post_reconnect_coordination_submission": "2026-07-24T13:36:15.889Z",
+      "source_node": 0,
+      "learner_node": 2,
+      "source_round": 3143,
+      "learner_start_round": 186,
+      "transferred_root": "e6e20f82998dc24749dd3ea361a7f64602da9a6f1cb9e5d6f188c1b20d002459e407ef08121aec69c1e49e9a495d0346",
+      "test_duration_seconds": 288.239,
+      "wall_clock": "5m02.89s",
+      "peak_rss_kib": 1342812,
+      "swap_events": 0,
+      "test_xml_sha256": "71a166d3a67031a10d7027dd02905e6ac10c96be6ea1b5dcbb0b97bec7b6df2e",
+      "log_sha256": "20e3fac73ad9e8a68ab080b62dc0e457f47543146a6e6f95192b4ca278f6c3eb",
+      "post_reconnect_native_processing": "PASS",
+      "post_reconnect_coordination_layer": "PASS",
+      "legacy_rejections": "5/5 INVALID_TRANSACTION_BODY before and after reconnect"
+    }
+  },
+  "historical_map_validation": {
+    "result": "UNCHANGED",
+    "preactivation_round": 186,
+    "post_reconnect_round": 3143,
+    "map_inventory_sha256_before": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "map_inventory_sha256_after": "5f74ae63338dfb551d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "STORAGE": {
+      "cardinality": 1,
+      "decoded_value": 424242,
+      "aggregate_content_sha256": "4498f1861935388100d439abcd8124cb906dc479f990c91a4b5a3d6995dd892f"
+    },
+    "BYTECODE": {
+      "cardinality": 2,
+      "aggregate_content_sha256": "204633a18de2a97441e56adae79ce51656496582833a906a69471e24b87091ab"
+    },
+    "EVM_HOOK_STATES": {
+      "cardinality": 1,
+      "aggregate_content_sha256": "32ffae8553e2c27c2a85e6071b9d6eddb85bc07a4a175ed9047d0c2cdb9484f1"
+    },
+    "LAMBDA_STORAGE": {
+      "cardinality": 1,
+      "aggregate_content_sha256": "6359602eb1ab3cb0ef54e1eeddfb8bfd5bcd89a52d86afb191b1cc8cf419056b"
+    },
+    "service_or_schema_change": 0,
+    "codec_change": 0
+  },
+  "mirror_validation": {
+    "result": "PASS",
+    "repository": "hiero-ledger/hiero-mirror-node",
+    "revision": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "source_head": "d600b41c70f2392f23da90948b4f4b2834826b2e",
+    "source_node": 0,
+    "signed_record_files": 37,
+    "transactions": 859,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "contract_actions": 3,
+    "contract_state_changes": 2,
+    "storage_changes": "present in the two persisted contract-state-change groups",
+    "bytecode_records": 2,
+    "sidecar_records": 7,
+    "complete_block_files": 131,
+    "persisted_block_files": 131,
+    "rejected_or_incomplete_record_files": 4,
+    "rejected_or_incomplete_block_files": 0,
+    "test_xml_sha256": "1e788361af0a09af73b60441eb1eac2270ed6f881e94177962b46afdfa6e9da2",
+    "database_semantic_fingerprint": "[{type=7,count=1},{type=8,count=2},{type=11,count=808},{type=14,count=4},{type=16,count=1},{type=17,count=20},{type=19,count=5},{type=23,count=1},{type=24,count=1},{type=27,count=2},{type=29,count=1},{type=51,count=3},{type=54,count=4},{type=55,count=5},{type=75,count=1}]",
+    "mirror_log_sha256": "6c0602af361c2fd2ba2bdd36738835b5b0d23d30c8157be1096072f848e6e03e"
+  },
+  "final_prerequisite_validation": {
+    "focused_tests": "30 passing",
+    "native_distribution": "PASS",
+    "full_distribution": "PASS",
+    "native_dependency_policy": "PASS",
+    "intentional_prohibited_class_injection": "PASS",
+    "controlled_exclusion_probe": "PASS",
+    "historical_only_service_loader": "PASS",
+    "exclusion_probe_sha256": "2bfbeaea3ec64a241fd848d8d3c97c50aeb460e952a51a544f076b7f18b64646",
+    "service_probe_sha256": "4953c5e9137ba122c796affe2ce13b2de655f9e502be8295daff5206eca1cdc1"
+  },
+  "pending_validation": [],
+  "scope": {
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "protobuf_changes": 0,
+    "persisted_format_changes": 0,
+    "state_id_changes": 0,
+    "codec_changes": 0,
+    "schema_version_changes": 0,
+    "physical_evm_besu_removal": false
+  },
+  "blocker_status": {
+    "original_packaging_blocker": "RESOLVED",
+    "p06b_7a_merge_readiness": "READY"
+  }
+}

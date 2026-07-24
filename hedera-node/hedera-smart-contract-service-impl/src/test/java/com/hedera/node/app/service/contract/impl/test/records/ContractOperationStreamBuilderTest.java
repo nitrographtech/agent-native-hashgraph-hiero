@@ -6,9 +6,7 @@ import static com.hedera.node.app.service.contract.impl.test.TestHelpers.entityI
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -29,7 +27,6 @@ import com.hedera.node.app.spi.workflows.HandleContext;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import java.util.List;
 import org.apache.tuweni.units.bigints.UInt256;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -42,11 +39,6 @@ class ContractOperationStreamBuilderTest {
 
     @Mock
     private ContractOperationStreamBuilder subject;
-
-    @BeforeEach
-    void setUp() {
-        doCallRealMethod().when(subject).withCommonFieldsSetFrom(any(), eq(context), eq(entityIdFactory));
-    }
 
     @Test
     void setsAllCommonFieldsIfPresent() {
@@ -73,7 +65,7 @@ class ContractOperationStreamBuilderTest {
                                 List.of(new StorageAccess(UInt256.MAX_VALUE, UInt256.ZERO, UInt256.ZERO)))),
                         null));
         given(context.configuration()).willReturn(DEFAULT_CONFIG);
-        final var builder = subject.withCommonFieldsSetFrom(outcome, context, entityIdFactory);
+        final var builder = outcome.setCommonFieldsOn(subject, context, entityIdFactory);
 
         verify(subject).addContractActions(ContractActions.DEFAULT, false);
         verify(subject).addContractStateChanges(stateChanges, false);
@@ -94,7 +86,7 @@ class ContractOperationStreamBuilderTest {
                 null,
                 null,
                 null);
-        final var builder = subject.withCommonFieldsSetFrom(outcome, context, entityIdFactory);
+        final var builder = outcome.setCommonFieldsOn(subject, context, entityIdFactory);
 
         verify(subject, never()).addContractActions(any(), anyBoolean());
         verify(subject, never()).addContractStateChanges(any(), anyBoolean());

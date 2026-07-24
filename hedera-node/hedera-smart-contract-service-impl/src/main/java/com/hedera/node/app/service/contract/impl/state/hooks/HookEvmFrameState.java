@@ -2,9 +2,9 @@
 package com.hedera.node.app.service.contract.impl.state.hooks;
 
 import static com.hedera.hapi.util.HapiUtils.CONTRACT_ID_COMPARATOR;
+import static com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils.minimalKey;
 import static com.hedera.node.app.service.contract.impl.exec.systemcontracts.HtsSystemContract.HTS_HOOKS_CONTRACT_ADDRESS;
 import static com.hedera.node.app.service.contract.impl.state.WritableEvmHookStore.ZERO_KEY;
-import static com.hedera.node.app.service.contract.impl.state.WritableEvmHookStore.minimalKey;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pbjToTuweniBytes;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pbjToTuweniUInt256;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.tuweniToPbjBytes;

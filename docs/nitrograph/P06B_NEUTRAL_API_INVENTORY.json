@@ -1,0 +1,34 @@
+{
+  "artifact": "app-service-contract-0.75.0-SNAPSHOT.jar",
+  "role": "NEUTRAL_CONTRACT_COMPATIBILITY_API",
+  "classes": 17,
+  "bytes": 17070,
+  "sha256": "ae0a29cb88507335ec938b8c8fa4b474d44bdc440cf05d9a718717df361e0872",
+  "relocated_record_interfaces": [
+    "com.hedera.node.app.service.contract.impl.records.ContractCallStreamBuilder",
+    "com.hedera.node.app.service.contract.impl.records.ContractCreateStreamBuilder",
+    "com.hedera.node.app.service.contract.impl.records.ContractDeleteStreamBuilder",
+    "com.hedera.node.app.service.contract.impl.records.ContractOperationStreamBuilder",
+    "com.hedera.node.app.service.contract.impl.records.ContractUpdateStreamBuilder",
+    "com.hedera.node.app.service.contract.impl.records.EthereumTransactionStreamBuilder"
+  ],
+  "retained_state_interfaces_and_adapters": [
+    "com.hedera.node.app.service.contract.ReadableContractStateStore",
+    "com.hedera.node.app.service.contract.ReadableEvmHookStore",
+    "com.hedera.node.app.service.contract.history.HistoricalReadableContractStateStore",
+    "com.hedera.node.app.service.contract.history.HistoricalReadableEvmHookStore",
+    "com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils"
+  ],
+  "prohibited_reference_scan": {
+    "contract_implementation": 0,
+    "besu": 0,
+    "tuweni": 0,
+    "evm_engine": 0,
+    "message_frame": 0,
+    "world_updater": 0,
+    "standalone_executor": 0,
+    "system_contract": 0
+  },
+  "package_names_retained": true,
+  "compatibility_bridges": []
+}

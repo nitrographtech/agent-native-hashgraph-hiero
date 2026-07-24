@@ -101,6 +101,56 @@ tasks.jar {
     }
 }
 
+// Produce a distinct Nitrograph-native application artifact. This is an application ownership
+// boundary only; P06B-7 will remove executable dependency jars after the compatibility API split.
+val nativeAppJar =
+    tasks.register<Jar>("nativeAppJar") {
+        group = "build"
+        description =
+            "Build the Nitrograph native application jar without full or standalone entry points."
+        archiveClassifier.set("native")
+        from(sourceSets.main.get().output)
+        // The main module descriptor provides both runtime profiles. Until P06B-7 creates a
+        // dedicated native module descriptor, the profile-specific artifact runs on the
+        // distribution classpath and advertises only its filtered META-INF/services entries.
+        exclude("module-info.class")
+        exclude("com/hedera/node/app/services/FullContractRuntimeProvider*.class")
+        exclude("com/hedera/node/app/services/FullContractRuntimeProviderFactory.class")
+        exclude("com/hedera/node/app/store/FullContractStoreFactory.class")
+        exclude("com/hedera/node/app/workflows/standalone/**")
+        exclude("com/hedera/node/app/fees/StandaloneFeeCalculatorImpl*.class")
+        exclude("com/hedera/node/app/service/contract/impl/**")
+        exclude("org/hyperledger/besu/**")
+        exclude("org/apache/tuweni/**")
+        filesMatching(
+            "META-INF/services/com.hedera.node.app.services.ContractRuntimeProviderFactory"
+        ) {
+            filter { line ->
+                if (line.endsWith(".FullContractRuntimeProviderFactory")) "" else line
+            }
+        }
+        filesMatching("META-INF/services/com.hedera.node.app.store.ContractStoreFactory") {
+            filter { line -> if (line.endsWith(".FullContractStoreFactory")) "" else line }
+        }
+        manifest {
+            attributes(
+                "Main-Class" to "com.hedera.node.app.ServicesMain",
+                "Enable-Native-Access" to "ALL-UNNAMED",
+            )
+        }
+        inputs.files(configurations.runtimeClasspath)
+        doFirst {
+            manifest.attributes(
+                "Class-Path" to
+                    inputs.files
+                        .filter { it.extension == "jar" }
+                        .map { "../../data/lib/" + it.name }
+                        .sorted()
+                        .joinToString(separator = " ")
+            )
+        }
+    }
+
 // Copy dependencies into `data/lib`
 val copyLib =
     tasks.register<Sync>("copyLib") {
@@ -174,7 +224,8 @@ tasks.register<JavaExec>("run") {
 val distributionFull =
     tasks.register<Sync>("distributionFull") {
         group = "distribution"
-        description = "Assemble the behavioral-control distribution with every upstream service enabled."
+        description =
+            "Assemble the behavioral-control distribution with every upstream service enabled."
         dependsOn(copyNodeData)
         from(nodeWorkingDir)
         into(layout.buildDirectory.dir("distributions/distribution-full"))
@@ -183,8 +234,12 @@ val distributionFull =
 tasks.register<Sync>("distributionNativeAgent") {
     group = "distribution"
     description = "Assemble the native-agent distribution with the contract service disabled."
-    dependsOn(copyNodeData)
-    from(nodeWorkingDir)
+    dependsOn(copyNodeData, nativeAppJar)
+    from(nodeWorkingDir) { exclude("data/apps/HederaNode.jar") }
+    from(nativeAppJar) {
+        into("data/apps")
+        rename { "HederaNode.jar" }
+    }
     into(layout.buildDirectory.dir("distributions/distribution-native-agent"))
     filesMatching("data/config/application.properties") {
         filter { line -> if (line == "contracts.enabled=true") "contracts.enabled=false" else line }

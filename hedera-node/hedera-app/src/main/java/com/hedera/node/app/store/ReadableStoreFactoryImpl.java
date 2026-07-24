@@ -22,10 +22,6 @@ import com.hedera.node.app.service.consensus.ConsensusService;
 import com.hedera.node.app.service.consensus.ReadableTopicStore;
 import com.hedera.node.app.service.consensus.impl.ReadableTopicStoreImpl;
 import com.hedera.node.app.service.contract.ContractService;
-import com.hedera.node.app.service.contract.ReadableEvmHookStore;
-import com.hedera.node.app.service.contract.impl.state.ContractStateStore;
-import com.hedera.node.app.service.contract.impl.state.ReadableContractStateStore;
-import com.hedera.node.app.service.contract.impl.state.ReadableEvmHookStoreImpl;
 import com.hedera.node.app.service.entityid.EntityIdService;
 import com.hedera.node.app.service.entityid.ReadableEntityIdStore;
 import com.hedera.node.app.service.entityid.impl.ReadableEntityIdStoreImpl;
@@ -68,6 +64,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 import org.hiero.consensus.platformstate.PlatformStateService;
 import org.hiero.consensus.platformstate.ReadablePlatformStateStore;
@@ -123,11 +120,14 @@ public class ReadableStoreFactoryImpl implements ReadableStoreFactory {
         newMap.put(
                 ReadableFreezeStore.class,
                 new StoreEntry(FreezeService.NAME, (states, entityCounters) -> new ReadableFreezeStoreImpl(states)));
-        // Contracts
-        newMap.put(ContractStateStore.class, new StoreEntry(ContractService.NAME, ReadableContractStateStore::new));
-        newMap.put(
-                ReadableEvmHookStore.class,
-                new StoreEntry(ContractService.NAME, (states, entityCounters) -> new ReadableEvmHookStoreImpl(states)));
+        // Contracts are profile-specific so native construction never links executable store implementations.
+        final var contractStores = ServiceLoader.load(ContractStoreFactory.class).stream()
+                .map(ServiceLoader.Provider::get)
+                .max(java.util.Comparator.comparingInt(ContractStoreFactory::priority))
+                .orElseThrow(() -> new IllegalStateException("No contract store factory is available"));
+        contractStores
+                .readableStores()
+                .forEach((type, factory) -> newMap.put(type, new StoreEntry(ContractService.NAME, factory)));
         // Block Records
         newMap.put(
                 ReadableBlockRecordStore.class,

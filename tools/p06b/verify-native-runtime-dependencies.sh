@@ -56,4 +56,44 @@ if test -d "$native_dist"; then
     fail "native distribution does not disable executable contracts"
 fi
 
+native_app_jar="${P06B_NATIVE_APP_JAR:-$native_dist/data/apps/HederaNode.jar}"
+if test -f "$native_app_jar"; then
+  jar_tool="${JAVA_HOME:+$JAVA_HOME/bin/}jar"
+  command -v "$jar_tool" >/dev/null || fail "jar tool is unavailable"
+  jar_entries="$("$jar_tool" tf "$native_app_jar")"
+  prohibited_entries='(^|/)(FullContractRuntimeProvider[^/]*|FullContractStoreFactory|ContractServiceImpl[^/]*|TransactionExecutors[^/]*)\.class$|^com/hedera/node/app/workflows/standalone/|^com/hedera/node/app/service/contract/impl/|^org/hyperledger/besu/|^org/apache/tuweni/'
+  if printf '%s\n' "$jar_entries" | rg -n "$prohibited_entries"; then
+    fail "native application jar contains full-runtime, standalone, or executable contract classes"
+  fi
+  for required_entry in \
+    com/hedera/node/app/ServicesMain.class \
+    com/hedera/node/app/services/HistoricalContractRuntimeProvider.class \
+    com/hedera/node/app/services/HistoricalContractRuntimeProviderFactory.class \
+    com/hedera/node/app/store/HistoricalContractStoreFactory.class; do
+    printf '%s\n' "$jar_entries" | grep -Fx "$required_entry" >/dev/null ||
+      fail "native application jar is missing $required_entry"
+  done
+  if printf '%s\n' "$jar_entries" | grep -Fx 'module-info.class' >/dev/null; then
+    fail "profile-filtered native jar must not retain the combined full-runtime module descriptor"
+  fi
+
+  inspect_dir="$(mktemp -d)"
+  trap 'rm -rf -- "$inspect_dir"' EXIT
+  (
+    cd "$inspect_dir"
+    "$jar_tool" xf "$native_app_jar" \
+      META-INF/services/com.hedera.node.app.services.ContractRuntimeProviderFactory \
+      META-INF/services/com.hedera.node.app.store.ContractStoreFactory
+    grep -Fxq 'com.hedera.node.app.services.HistoricalContractRuntimeProviderFactory' \
+      META-INF/services/com.hedera.node.app.services.ContractRuntimeProviderFactory ||
+      fail "native application jar does not advertise the historical runtime provider factory"
+    if rg -n '(FullContractRuntimeProviderFactory|FullContractStoreFactory)' META-INF/services; then
+      fail "native application service metadata advertises a full-runtime factory"
+    fi
+    grep -Fxq 'com.hedera.node.app.store.HistoricalContractStoreFactory' \
+      META-INF/services/com.hedera.node.app.store.ContractStoreFactory ||
+      fail "native application jar does not advertise the historical store factory"
+  )
+fi
+
 echo "P06B native dependency policy: PASS"

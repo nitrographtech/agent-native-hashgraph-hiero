@@ -5,9 +5,11 @@
 module com.hedera.node.app.service.contract {
     exports com.hedera.node.app.service.contract;
     exports com.hedera.node.app.service.contract.history;
+    exports com.hedera.node.app.service.contract.impl.records;
 
     uses com.hedera.node.app.service.contract.ContractService;
 
+    requires transitive com.hedera.node.app.service.token;
     requires transitive com.hedera.node.app.spi;
     requires transitive com.hedera.node.hapi;
     requires transitive com.hedera.pbj.runtime;

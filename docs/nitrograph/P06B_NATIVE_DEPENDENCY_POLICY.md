@@ -16,6 +16,8 @@
 - Native authorization/shared utilities → contract-implementation conversion utilities.
 - Native mode → executable metrics, native EVM verification, executable handlers, or system
   contracts.
+- Native application jar → full runtime provider/factory, full store factory, standalone executor,
+  embedded contract implementation, Besu, or Tuweni classes.
 
 ## Enforcement
 
@@ -29,3 +31,6 @@ CI runs it after both distributions are assembled. Explicit exceptions are limit
 The check deliberately does not claim physical jar absence. Packaging is governed by
 `P06B_PACKAGING_REMOVAL_PLAN.md`.
 
+P06B-7A additionally verifies the exact native application jar, its profile-specific service
+metadata, required native classes, absence of the combined full module descriptor, and an
+intentional prohibited-class injection that must fail.
