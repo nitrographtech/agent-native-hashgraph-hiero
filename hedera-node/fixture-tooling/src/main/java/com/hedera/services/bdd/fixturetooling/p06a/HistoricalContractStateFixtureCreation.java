@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package com.hedera.services.bdd.suites.file;
+package com.hedera.services.bdd.fixturetooling.p06a;
 
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.accountAllowanceHook;
@@ -24,8 +24,9 @@ import org.junit.jupiter.api.DynamicTest;
 /**
  * Populates retained V0.65 contract maps through real remote-node transactions.
  *
- * <p>This suite is a fixture-generation input, not a lifecycle substitute. It must target a pinned
- * full-runtime node with {@code hooks.hooksEnabled=true}.
+ * <p>This fixture-only entry point must target a pinned full-runtime node with
+ * {@code hooks.hooksEnabled=true}. It is deliberately owned by the fixture-tooling artifact and
+ * must never be packaged in a node runtime.
  */
 public final class HistoricalContractStateFixtureCreation extends HapiSuite {
     private static final Logger LOG = LogManager.getLogger(HistoricalContractStateFixtureCreation.class);

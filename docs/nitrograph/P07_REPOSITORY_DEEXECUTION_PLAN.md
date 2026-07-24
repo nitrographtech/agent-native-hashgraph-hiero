@@ -97,7 +97,7 @@ plan removes the EVM integration source first, then removes the now-unused Besu/
 | Wave | Removal | Compile fallout and required moves | Tests / fixtures / docs / CI | Blast radius and gate |
 |---:|---|---|---|---|
 | 1 | Standalone execution | Delete `workflows/standalone/**`; remove `StandaloneFeeCalculatorImpl` dependency on `TransactionExecutors`; remove standalone Dagger component and app exclusions | Remove or replace standalone-only tests; full node and fixture generator remain | Medium. App compile, native/full build, historical lifecycle |
-| 2 | Fixture-only executable tooling | Move pinned generation scripts/suites and public fixture identity workflow to an approved durable tooling repository or frozen source archive; retain retrieval/verification | Freeze source commit, toolchain, transaction sequence, hashes, and regeneration contract first | High provenance risk. Existing fixtures must remain independently consumable |
+| 2 | Fixture-only executable tooling | Dedicated `fixture-tooling` module owns the P06A historical population entry point and guarded PEM-writing command; general HAPI/migration infrastructure remains in `test-clients`; retrieval/verification remains permanent | Published source commit, toolchain, transaction sequence, identity, hashes, and regeneration contract remain frozen | COMPLETE after exact-head lifecycle/mirror/CI gates; existing fixtures remain independently consumable |
 | 3 | Execution tracers | Remove full-only tracer interfaces/implementations and tracer bindings after standalone is gone; retain PBJ action/state/bytecode models and neutral translators | Delete tracer unit tests; retain golden sidecar/mirror tests | Medium. Sidecar and block goldens must remain identical |
 | 4 | System contracts | Remove `exec/systemcontracts/**`, its Dagger bindings, executable precompile tests, and full-only service hooks | Retain token/account/schedule native APIs; remove smart-contract precompile CI partitions | Very high. Native token/account suites and protected historical streams must pass |
 | 5 | Solidity execution assets | Remove full-only Solidity execution/query handlers and compiler/source fixtures no longer needed after Wave 2 | Retain wire names such as `getBySolidityID`, address widths, PBJ fields, and historical query rejection | Medium. Do not cosmetically rename historical fields |
@@ -169,6 +169,26 @@ Wave 1 acceptance:
 - Fixture generation still uses the full node path, not standalone execution.
 - All P06 native lifecycle, map, rejection, reconnect, synchronization, and mirror gates remain
   valid.
+
+## Wave 2 implementation
+
+Status: **COMPLETE** on `p07/externalize-fixture-execution-tooling`.
+
+- `HistoricalContractStateFixtureCreation` moved from the test-client production artifact to the
+  dedicated `fixture-tooling` module.
+- PEM-writing and command-line parsing moved from the reconnect identity utility into
+  `P06aFixtureIdentityGenerator` in the tooling module.
+- `P06aPublicFixtureIdentity.fixtureKeysAndCerts()` remains in `test-clients` because it is shared
+  by the real four-node reconnect harness and does not write or publish identity material.
+- `DiverseStateCreation` remains paired with `DiverseStateValidation` as general full-node migration
+  test infrastructure.
+- No Solidity corpus was broadly moved or deleted.
+- Runtime distributions have no dependency on or packaged class from `fixture-tooling`.
+- The exact-head four-node reconnect, state synchronization, historical-map comparison, official
+  mirror record/sidecar/block ingestion, full-runtime tests, and isolation policies pass.
+
+Wave 3 should remove full-runtime execution tracer producers and bindings while retaining neutral
+PBJ action/state/bytecode models and all historical translation and mirror semantics.
 
 ## Risk assessment
 

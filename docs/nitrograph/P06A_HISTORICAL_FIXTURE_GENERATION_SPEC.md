@@ -31,7 +31,7 @@ values are never classified as authenticated node state.
 | Node topology | One local node for generation; minimum controlled multi-node topology only for reconnect/state sync |
 | Network/node | Local development network, node `0`, gRPC `50211` |
 | Genesis configuration | Exact files assembled by the pinned `:app:run` Sync task |
-| Hook-state generation | After the initial clean freeze, set only `hooks.hooksEnabled=true` in the generated runtime `application.properties`, restart the same pinned full runtime from its saved state, and run `HistoricalContractStateFixtureCreation` |
+| Hook-state generation | After the initial clean freeze, set only `hooks.hooksEnabled=true` in the generated runtime `application.properties`, restart the same pinned full runtime from its saved state, and run `:fixture-tooling:populateP06aHistoricalContractState` |
 
 The pre-activation corpus is created only by actual consensus-node transaction
 processing and a clean freeze/state write. The original corpus is copied read-only
@@ -57,7 +57,7 @@ The bounded transaction sequence is:
    state-writing contract functions, and retain validation metadata.
 2. After a clean freeze, enable hooks in the generated runtime configuration, restart
    the same pinned node from that saved state, and run
-   `HistoricalContractStateFixtureCreation`. This creates an account allowance hook
+   `:fixture-tooling:populateP06aHistoricalContractState`. This creates an account allowance hook
    and retains the slot `p06a-slot` with value `p06a-value` through real remote-node
    transactions.
 3. Run a contract logging case with sidecar validation enabled.

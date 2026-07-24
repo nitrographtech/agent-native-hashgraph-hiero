@@ -1,0 +1,183 @@
+{
+  "status": "COMPLETE",
+  "wave": "P07-2 fixture-generation externalization",
+  "repository": "https://github.com/nitrographtech/agent-native-hashgraph-hiero",
+  "base": {
+    "p07_1_tested_head": "b79700ead18349a7cbed7cd0d802911d4f6f09a3",
+    "p07_1_ci_run": 30110361947,
+    "p07_1_merge_commit": "ad2d2dfa45907b42976917fe03ded296e488d2d1"
+  },
+  "tested_implementation": {
+    "branch": "p07/externalize-fixture-execution-tooling",
+    "head": "bc9357b02b4dba96b9fcb018f53ca09690f6387c",
+    "production_runtime_behavior_changed": false,
+    "consensus_changed": false,
+    "platform_sdk_changed": false,
+    "protobuf_or_pbj_changed": false,
+    "persisted_identifiers_changed": false,
+    "state_ids_keys_codecs_or_schemas_changed": false
+  },
+  "ownership": {
+    "tooling_module": "hedera-node/fixture-tooling",
+    "moved_generator": "com.hedera.services.bdd.fixturetooling.p06a.HistoricalContractStateFixtureCreation",
+    "moved_signing_command": "com.hedera.services.bdd.fixturetooling.p06a.P06aFixtureIdentityGenerator",
+    "retained_general_test_infrastructure": [
+      "DiverseStateCreation",
+      "DiverseStateValidation",
+      "P06aPublicFixtureIdentity.fixtureKeysAndCerts"
+    ],
+    "dependency_direction": "fixture-tooling -> test-clients and pinned full node; runtime has no dependency on fixture-tooling",
+    "runtime_dagger_bindings": 0,
+    "runtime_service_loader_entries": 0,
+    "runtime_jpms_requires": 0
+  },
+  "source_delta": {
+    "files_changed": 17,
+    "insertions": 500,
+    "deletions": 116,
+    "generator_files_relocated": 1,
+    "relocated_generator_bytes_before": 3213,
+    "relocated_generator_bytes_after": 3284,
+    "new_guarded_identity_command_bytes": 4820,
+    "fixture_resources_moved": 0,
+    "solidity_resources_moved": 0,
+    "dead_generation_paths_deleted": 1,
+    "deleted_path": "PEM-writing main method formerly embedded in P06aPublicFixtureIdentity",
+    "authenticated_fixture_files_changed": 0
+  },
+  "authenticated_fixture": {
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "archive": "nitrograph-p06a-preactivation-v065-ff6490d-round4744.tar.gz",
+    "archive_sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "manifest_sha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2",
+    "source_commit": "ff6490d66994da11af72e1d2f185ec7874fa383a",
+    "round": 4744,
+    "state_root": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485",
+    "verified_files": 396,
+    "public_certificate_sha256": "4f6d63a2fa8e8920c3b88324dc259984e170385cbb255a433f651eedbea550e1",
+    "independent_identity_regeneration": "PASS; regenerated certificate fingerprint matched the saved-state roster",
+    "generated_private_material": "transient, untracked, unpublished, and securely destroyed",
+    "authoritative_fixture_regenerated": false,
+    "release_tag_or_identity_changed": false
+  },
+  "artifacts": {
+    "fixture_tooling_jar": {
+      "path": "hedera-node/fixture-tooling/build/libs/fixture-tooling-0.75.0-SNAPSHOT.jar",
+      "bytes": 6938,
+      "sha256": "ba4e4efdd59a9c5616018969fdbd129dd03cc60de983e7d622c522685d8243f9"
+    },
+    "native_application_jar": {
+      "bytes": 1711488,
+      "sha256": "7cba1b6960d6c23a47687ca64bdf8fd78a023f67b76cf7c6edf214fdbb25f138",
+      "fixture_tooling_classes": 0
+    },
+    "full_application_jar": {
+      "bytes": 1719210,
+      "sha256": "1e14d873087cab804f277429a54c4e0658ecb22a994f4607656c08b9d76854b4",
+      "fixture_tooling_classes": 0
+    }
+  },
+  "policy": {
+    "fixture_tooling_isolation": "PASS",
+    "standalone_removal": "PASS",
+    "native_dependency": "PASS",
+    "intentional_source_injection": "REJECTED",
+    "intentional_native_jar_class_injection": "REJECTED",
+    "intentional_full_jar_class_injection": "REJECTED",
+    "intentional_service_loader_injection": "REJECTED",
+    "intentional_jpms_injection": "REJECTED",
+    "private_key_added": false,
+    "developer_path_added": false
+  },
+  "builds": {
+    "fixture_tooling": "PASS",
+    "test_clients": "PASS",
+    "contract_implementation_tests": {
+      "passed": 1750,
+      "failed": 0
+    },
+    "application_tests": {
+      "passed": 10401,
+      "skipped": 7,
+      "failed": 0
+    },
+    "native_distribution": "PASS",
+    "full_distribution": "PASS",
+    "full_runtime_preserved": true
+  },
+  "reconnect": {
+    "result": "PASS",
+    "attempts": 1,
+    "test": "P06aHistoricalStateReconnectTest",
+    "duration_seconds": 293.626,
+    "network_started": "2026-07-24T17:38:08.603Z",
+    "recovering_node_started": "2026-07-24T17:42:50.283Z",
+    "recovering_node_active": "2026-07-24T17:43:00.530Z",
+    "learner_active": true,
+    "state_synchronization": "PASS",
+    "post_reconnect_native_processing": "PASS",
+    "post_reconnect_coordination_layer": "PASS",
+    "legacy_rejection": "10/10 INVALID_TRANSACTION_BODY across pre- and post-reconnect matrices",
+    "test_xml_sha256": "00df80ae2ef7f13b2088f35b5fa6279b2bc54345f0b446b5bc6e1238883ebf59"
+  },
+  "historical_maps": {
+    "source_round": 1697,
+    "recovering_node_round": 1840,
+    "source_state_root": "0a9042f95552ca89b3bd4daf4c255515df07f846cb890c8c8a0a17d175134bdbb83051058877bcc1c23de258129883f0",
+    "recovering_node_state_root": "79362126cddaac799169b8ebc4a2c5b30c1b883a59d3084a407b0c3a8093c19153eb4bf821a7b856b7ae1e499272f75c",
+    "combined_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "comparison": "UNCHANGED",
+    "STORAGE": {
+      "cardinality": 1,
+      "decoded_value": 424242,
+      "aggregate_content_sha256": "4498f1861935388100d439abcd8124cb906dc479f990c91a4b5a3d6995dd892f"
+    },
+    "BYTECODE": {
+      "cardinality": 2,
+      "aggregate_content_sha256": "204633a18de2a97441e56adae79ce51656496582833a906a69471e24b87091ab"
+    },
+    "EVM_HOOK_STATES": {
+      "cardinality": 1,
+      "aggregate_content_sha256": "32ffae8553e2c27c2a85e6071b9d6eddb85bc07a4a175ed9047d0c2cdb9484f1"
+    },
+    "LAMBDA_STORAGE": {
+      "cardinality": 1,
+      "aggregate_content_sha256": "6359602eb1ab3cb0ef54e1eeddfb8bfd5bcd89a52d86afb191b1cc8cf419056b"
+    }
+  },
+  "mirror": {
+    "result": "PASS",
+    "repository": "hiero-ledger/hiero-mirror-node",
+    "revision": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "official_importer_source_changes": 0,
+    "environmental_attempts": [
+      "direct shell failed before importer startup because Docker socket group was unavailable",
+      "single authorized rerun through the configured docker group passed"
+    ],
+    "signed_record_files": 38,
+    "transactions": 861,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "contract_actions": 3,
+    "contract_state_change_groups": 2,
+    "bytecode_records": 2,
+    "sidecar_records": 7,
+    "complete_blocks": 134,
+    "zero_byte_block_tails": 1,
+    "record_corpus_sha256": "fe3728504899ce6e8c4c315cace976960e7c829c7c19a8335385c82fb701f93f",
+    "sidecar_corpus_sha256": "a803614f99d74cb5a57fd14ecf3ef3f25b9b8c15731136e914912dac7763ac0d",
+    "block_corpus_sha256": "c862f5559d1910c816007df81e8c2a9a054c01087d93ccff2b2c47d8f0c2b6a6",
+    "test_xml_sha256": "c014be3d82f0d82f917435d4b4049ec002dc84f29c1b34818798848b520531e2",
+    "database_semantic_fingerprint": "records=38;transactions=861;contract_results=3;contract_logs=1;contract_actions=3;state_change_groups=2;bytecode=2;sidecars=7;blocks=134"
+  },
+  "wave_3_recommendation": {
+    "target": "execution tracers",
+    "first_inventory": [
+      "ActionSidecarContentTracer",
+      "AddOnEvmActionTracer",
+      "EvmActionTracer"
+    ],
+    "protected_boundaries": "neutral PBJ action/state/bytecode values, historical translators, sidecar ordering, block output, and mirror semantics",
+    "fixture_tooling_constraint": "invoke the full node; do not acquire or duplicate a tracer implementation"
+  }
+}
