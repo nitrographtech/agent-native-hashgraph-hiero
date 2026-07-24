@@ -2,24 +2,18 @@
 package com.hedera.node.app.hapi.utils.ethereum;
 
 import static com.hedera.node.app.hapi.utils.EthSigsUtils.recoverAddressFromPubKey;
-import static com.hedera.node.app.hapi.utils.ethereum.EthTxData.SECP256K1_EC_COMPRESSED;
-import static org.hyperledger.besu.nativelib.secp256k1.LibSecp256k1.CONTEXT;
-import static org.hyperledger.besu.nativelib.secp256k1.LibSecp256k1.secp256k1_ecdsa_recover;
-import static org.hyperledger.besu.nativelib.secp256k1.LibSecp256k1.secp256k1_ecdsa_recoverable_signature_parse_compact;
 
 import com.esaulpaugh.headlong.rlp.RLPEncoder;
 import com.esaulpaugh.headlong.util.Integers;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import com.sun.jna.ptr.LongByReference;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
-import org.hyperledger.besu.nativelib.secp256k1.LibSecp256k1;
+import org.bouncycastle.math.ec.ECAlgorithms;
 
 public record EthTxSigs(byte[] publicKey, byte[] address) {
     private static final BigInteger N = SECNamedCurves.getByName("secp256k1").getN();
@@ -28,7 +22,10 @@ public record EthTxSigs(byte[] publicKey, byte[] address) {
         final var message = calculateSignableMessage(ethTx);
         final var pubKey = extractSig(ethTx.recId(), ethTx.r(), ethTx.s(), message);
         final var address = recoverAddressFromPubKey(pubKey);
-        final var compressedKey = recoverCompressedPubKey(pubKey);
+        final var compressedKey = SECNamedCurves.getByName("secp256k1")
+                .getCurve()
+                .decodePoint(pubKey)
+                .getEncoded(true);
         return new EthTxSigs(compressedKey, address);
     }
 
@@ -96,15 +93,7 @@ public record EthTxSigs(byte[] publicKey, byte[] address) {
         });
     }
 
-    static byte[] recoverCompressedPubKey(LibSecp256k1.secp256k1_pubkey pubKey) {
-        final ByteBuffer recoveredFullKey = ByteBuffer.allocate(33);
-        final LongByReference fullKeySize = new LongByReference(recoveredFullKey.limit());
-        LibSecp256k1.secp256k1_ec_pubkey_serialize(
-                CONTEXT, recoveredFullKey, fullKeySize, pubKey, SECP256K1_EC_COMPRESSED);
-        return recoveredFullKey.array();
-    }
-
-    private static LibSecp256k1.secp256k1_pubkey extractSig(int recId, byte[] r, byte[] s, byte[] message) {
+    private static byte[] extractSig(int recId, byte[] r, byte[] s, byte[] message) {
         // The only meaningful recovery ids are 0 and 1 (even if the high order bytes
         // were used to encode the chain id, the parity is all that matters here)
         recId = Math.floorMod(recId, 2);
@@ -113,22 +102,35 @@ public record EthTxSigs(byte[] publicKey, byte[] address) {
 
         checkInBounds(r);
         checkInBounds(s);
-        // The RLP library output won't include leading zeros, which means
-        // a simple (r, s) concatenation breaks signature verification below
-        byte[] signature = concatLeftPadded(r, s);
-
-        final LibSecp256k1.secp256k1_ecdsa_recoverable_signature parsedSignature =
-                new LibSecp256k1.secp256k1_ecdsa_recoverable_signature();
-
-        if (secp256k1_ecdsa_recoverable_signature_parse_compact(CONTEXT, parsedSignature, signature, recId) == 0) {
-            throw new IllegalArgumentException("Could not parse signature");
-        }
-        final LibSecp256k1.secp256k1_pubkey newPubKey = new LibSecp256k1.secp256k1_pubkey();
-        if (secp256k1_ecdsa_recover(CONTEXT, newPubKey, parsedSignature, dataHash) == 0) {
+        final var params = SECNamedCurves.getByName("secp256k1");
+        final var rValue = new BigInteger(1, r);
+        final var sValue = new BigInteger(1, s);
+        final var x = rValue;
+        if (x.compareTo(params.getCurve().getField().getCharacteristic()) >= 0) {
             throw new IllegalArgumentException("Could not recover signature");
-        } else {
-            return newPubKey;
         }
+        final var encodedPoint = new byte[33];
+        encodedPoint[0] = (byte) (recId == 0 ? 0x02 : 0x03);
+        final var xBytes = x.toByteArray();
+        System.arraycopy(
+                xBytes,
+                Math.max(0, xBytes.length - 32),
+                encodedPoint,
+                33 - Math.min(32, xBytes.length),
+                Math.min(32, xBytes.length));
+        final var rPoint = params.getCurve().decodePoint(encodedPoint);
+        if (!rPoint.multiply(N).isInfinity()) {
+            throw new IllegalArgumentException("Could not recover signature");
+        }
+        final var e = new BigInteger(1, dataHash);
+        final var rInv = rValue.modInverse(N);
+        return ECAlgorithms.sumOfTwoMultiplies(
+                        params.getG(),
+                        e.negate().mod(N).multiply(rInv).mod(N),
+                        rPoint,
+                        sValue.multiply(rInv).mod(N))
+                .normalize()
+                .getEncoded(false);
     }
 
     @VisibleForTesting

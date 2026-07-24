@@ -1,17 +1,15 @@
 # P06B Packaging Removal Plan
 
-Status: plan only; no physical removal authorized
+Status: native packaging isolation implemented; repository source removal remains unauthorized
 
 ## Native Gradle and module changes
 
 1. DONE in P06B-7A: emit separate native and full application jars.
 2. DONE in P06B-7A: move native-required builder/store contracts to `app-service-contract`.
-3. Add a native-specific module descriptor and remove native
-   `requires transitive com.hedera.node.app.service.contract.impl`.
-4. Remove native `requires transitive org.hyperledger.besu.datatypes` and
-   `org.hyperledger.besu.evm`.
-5. Remove the corresponding contract implementation, EVM, Besu, and Tuweni runtime dependencies
-   from the native distribution configuration while retaining them in the full configuration.
+3. DONE: omit the combined full/native module descriptor from the native application artifact.
+4. DONE: remove native module edges to contract implementation, Besu, Tuweni, and EVM.
+5. DONE: remove implementation, EVM, Besu, Tuweni, precompile, KZG, and executable native
+   dependencies from native packaging while retaining them in the full configuration.
 
 ## Dagger and construction
 
@@ -35,8 +33,9 @@ priority.
 - executable system-contract and Solidity dependencies transitively owned by the implementation
 
 `app-service-contract-*.jar` or a replacement compatibility API remains for schemas and state keys.
-Secp256k1 is reviewed independently because native account/signature functionality may require
-generic cryptography even after EVM removal.
+Secp256k1 account verification remains required. P06B-7 replaces the Besu-native implementation
+only in the native packaging profile with an API-compatible Bouncy Castle verifier. The upstream
+platform source and full distribution remain unchanged.
 
 ## Distribution and test impact
 
@@ -55,12 +54,13 @@ The binary inventory must prove both removed direct jars and removed transitive 
 
 ## P06C physical-removal gates
 
-1. Separate native compile and runtime configurations exist.
+1. DONE: separate native compile and runtime packaging configurations exist.
 2. Native module descriptors contain no executable EVM requirements.
 3. Historical schemas and all four retained maps pass authenticated lifecycle tests.
 4. Shared record, sidecar, block, and mirror outputs retain golden equivalence.
 5. Native provider/Dagger graphs cannot construct or discover executable providers.
-6. Native runtime and packaged-jar inventories contain no prohibited executable EVM artifacts.
+6. DONE: native runtime and packaged-jar inventories contain no prohibited executable EVM
+   artifacts.
 7. Full runtime and fixture generation remain reproducible on their explicitly separate graph.
 8. SBOM, license, and notice changes are reviewed without waiver.
 9. Consensus, platform-sdk, persisted identifiers, codecs, and schemas remain unchanged.

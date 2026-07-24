@@ -1,0 +1,69 @@
+{
+  "schema": "nitrograph-p06b-native-packaging-isolation-evidence-v1",
+  "status": "VALIDATION_IN_PROGRESS",
+  "p06b7a_prerequisite_merge": "8dcfad027dc7b56a446ce74cdcf036be23596af1",
+  "baseline": {
+    "artifacts": 205,
+    "bytes": 130610581,
+    "inventory_sha256": "669d066def5639f3ccd4e5873dc5922ee0ef1dbbe9616476140aad8aac95b3c4"
+  },
+  "intermediate": {
+    "artifacts": 199,
+    "bytes": 127945555,
+    "inventory_sha256": "82d0303d528c68544fc84dd92d9e7ac807b9acf1e8ead4e7fc3de48f9adf8bf0"
+  },
+  "final_inventory": {
+    "artifacts": 191,
+    "application_jars": 1,
+    "library_jars": 190,
+    "bytes": 95093936,
+    "bytes_removed": 35516645,
+    "percent_reduction": 27.193,
+    "inventory_sha256": "fb4673ec8047330e47ed361abfc8dbf6b29eac4d82d441b45dc50f06753e86b0"
+  },
+  "removal": {
+    "artifacts_removed": 14,
+    "besu_jars": 0,
+    "tuweni_jars": 0,
+    "evm_engine_jars": 0,
+    "contract_implementation_jars": 0,
+    "system_contract_runtime_jars": 0,
+    "standalone_execution_jars": 0,
+    "executable_only_native_libraries": 0
+  },
+  "generic_crypto_isolation": {
+    "native_secp256k1_implementation": "Bouncy Castle",
+    "platform_source_changes": 0,
+    "full_distribution_changes": 0,
+    "exact_native_classpath_vector": "PASS"
+  },
+  "mechanical_enforcement": {
+    "archive_scan": "PASS",
+    "classpath_probe": "PASS",
+    "historical_service_loader_only": "PASS",
+    "prohibited_jar_injection": "REJECTED",
+    "prohibited_class_injection": "REJECTED",
+    "prohibited_service_injection": "REJECTED",
+    "prohibited_module_injection": "REJECTED",
+    "prohibited_native_library_injection": "REJECTED"
+  },
+  "lifecycle": {
+    "status": "PENDING EXACT IMPLEMENTATION HEAD"
+  },
+  "mirror": {
+    "status": "PENDING EXACT IMPLEMENTATION HEAD",
+    "revision": "834a7a1cb9204b02c192098c60654d08eb85bc2a"
+  },
+  "full_distribution": {
+    "all_removed_native_artifacts_retained": true,
+    "regression": "PENDING EXACT IMPLEMENTATION HEAD"
+  },
+  "forbidden_changes": {
+    "consensus": 0,
+    "platform_sdk": 0,
+    "protobuf_or_pbj": 0,
+    "persisted_format": 0,
+    "codec_or_state_id": 0,
+    "schema_version": 0
+  }
+}

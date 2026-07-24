@@ -50,14 +50,17 @@ unexpected_contract_impl_refs="$(
 test -z "$unexpected_contract_impl_refs" ||
   fail "unexpected ContractServiceImpl references: $unexpected_contract_impl_refs"
 
-native_dist="$repo_root/hedera-node/hedera-app/build/distributions/distribution-native-agent"
+native_dist="${P06B_NATIVE_DIST:-$repo_root/hedera-node/hedera-app/build/distributions/distribution-native-agent}"
 if test -d "$native_dist"; then
   grep -Fxq 'contracts.enabled=false' "$native_dist/data/config/application.properties" ||
     fail "native distribution does not disable executable contracts"
   prohibited_jars="$(
     find "$native_dist/data/lib" -maxdepth 1 -type f \
       \( -name 'app-service-contract-impl-*' -o -name 'besu-*' -o \
-         -name 'evm-*' -o -name 'tuweni-*' \) -printf '%f\n' |
+         -name 'evm-*' -o -name 'tuweni-*' -o -name 'algorithms-*' -o \
+         -name 'arithmetic-*' -o -name 'blake2bf-*' -o -name 'gnark-*' -o \
+         -name 'jc-kzg-*' -o -name 'rlp-*' -o -name 'secp256k1-*' -o \
+         -name 'secp256r1-*' \) -printf '%f\n' |
       sort
   )"
   test -z "$prohibited_jars" ||
@@ -86,7 +89,6 @@ if test -f "$native_app_jar"; then
   fi
 
   inspect_dir="$(mktemp -d)"
-  trap 'rm -rf -- "$inspect_dir"' EXIT
   (
     cd "$inspect_dir"
     "$jar_tool" xf "$native_app_jar" \
@@ -102,6 +104,57 @@ if test -f "$native_app_jar"; then
       META-INF/services/com.hedera.node.app.store.ContractStoreFactory ||
       fail "native application jar does not advertise the historical store factory"
   )
+  rm -rf -- "$inspect_dir"
+fi
+
+if test -d "$native_dist"; then
+  jar_tool="${JAVA_HOME:+$JAVA_HOME/bin/}jar"
+  command -v "$jar_tool" >/dev/null || fail "jar tool is unavailable"
+  inspect_root="$(mktemp -d)"
+  trap 'rm -rf -- "$inspect_root"' EXIT
+  prohibited_entries='^org/hyperledger/besu/|^org/apache/tuweni/|(^|/)(ContractServiceImpl|FullContractRuntimeProvider|FullContractRuntimeProviderFactory|FullContractStoreFactory|TransactionExecutors)[^/]*\.class$|^com/hedera/node/app/service/contract/impl/exec/|^com/hedera/node/app/service/contract/impl/state/'
+  while IFS= read -r archive; do
+    entries="$("$jar_tool" tf "$archive")"
+    if printf '%s\n' "$entries" | rg -n "$prohibited_entries"; then
+      fail "native archive $(basename "$archive") contains a prohibited class or package"
+    fi
+    archive_dir="$inspect_root/$(basename "$archive").d"
+    mkdir -p "$archive_dir"
+    (
+      cd "$archive_dir"
+      while IFS= read -r service_entry; do
+        "$jar_tool" xf "$archive" "$service_entry"
+      done < <(printf '%s\n' "$entries" | rg '^META-INF/services/' || true)
+    )
+    if test -d "$archive_dir/META-INF/services" &&
+      rg -n '(FullContractRuntimeProvider|FullContractStoreFactory|ContractServiceImpl|TransactionExecutors|service\.contract\.impl\.exec)' \
+        "$archive_dir/META-INF/services"; then
+      fail "native archive $(basename "$archive") advertises an executable service"
+    fi
+    if printf '%s\n' "$entries" | grep -Fxq 'module-info.class'; then
+      module_description="$("$jar_tool" --describe-module --file "$archive" 2>/dev/null || true)"
+      if printf '%s\n' "$module_description" |
+        rg -n '^requires (org\.hyperledger\.besu|tuweni\.|com\.hedera\.node\.app\.service\.contract\.impl)'; then
+        fail "native archive $(basename "$archive") has a prohibited module requirement"
+      fi
+    fi
+    if printf '%s\n' "$entries" |
+      rg -n '(^|/)(lib)?(besu|evm|secp256k1|secp256r1|ckzg)[^/]*\.(so|dll|dylib)$'; then
+      fail "native archive $(basename "$archive") contains an executable-only native library"
+    fi
+  done < <(
+    find "$native_dist/data/apps" "$native_dist/data/lib" -maxdepth 1 -type f -name '*.jar' |
+      sort
+  )
+  if find "$native_dist" -type f \
+    \( -name '*besu*.so' -o -name '*evm*.so' -o -name '*secp256k1*.so' -o \
+       -name '*secp256r1*.so' -o -name '*ckzg*.so' -o -name '*besu*.dll' -o \
+       -name '*evm*.dll' -o -name '*secp256k1*.dll' -o -name '*secp256r1*.dll' -o \
+       -name '*ckzg*.dll' -o -name '*besu*.dylib' -o -name '*evm*.dylib' -o \
+       -name '*secp256k1*.dylib' -o -name '*secp256r1*.dylib' -o -name '*ckzg*.dylib' \) |
+    grep -q .; then
+    fail "native distribution contains an executable-only extracted native library"
+  fi
 fi
 
 echo "P06B native dependency policy: PASS"

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.hapi.utils;
 
+import com.hedera.pbj.runtime.io.buffer.Bytes;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import org.apache.tuweni.bytes.Bytes;
 
 /**
  * Captures a failure in transaction processing to be captured by the {TransitionRunner} and used to
@@ -53,6 +53,6 @@ public class InvalidTransactionException extends RuntimeException {
 
     public Bytes messageBytes() {
         final var detail = getMessage();
-        return Bytes.of(detail.getBytes());
+        return Bytes.wrap(detail.getBytes());
     }
 }

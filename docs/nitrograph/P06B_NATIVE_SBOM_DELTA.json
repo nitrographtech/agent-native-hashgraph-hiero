@@ -1,0 +1,57 @@
+{
+  "schema": "nitrograph-p06b-native-sbom-delta-v1",
+  "baseline": {
+    "artifacts": 205,
+    "bytes": 130610581,
+    "inventory_sha256": "669d066def5639f3ccd4e5873dc5922ee0ef1dbbe9616476140aad8aac95b3c4"
+  },
+  "intermediate": {
+    "artifacts": 199,
+    "bytes": 127945555,
+    "inventory_sha256": "82d0303d528c68544fc84dd92d9e7ac807b9acf1e8ead4e7fc3de48f9adf8bf0"
+  },
+  "final": {
+    "artifacts": 191,
+    "bytes": 95093936,
+    "inventory_sha256": "fb4673ec8047330e47ed361abfc8dbf6b29eac4d82d441b45dc50f06753e86b0",
+    "artifacts_removed": 14,
+    "bytes_removed": 35516645,
+    "percent_reduction": 27.193
+  },
+  "removed_components": [
+    "project::app-service-contract-impl",
+    "org.hyperledger.besu:besu-datatypes:25.2.2",
+    "org.hyperledger.besu:besu-native-common:1.3.0",
+    "org.hyperledger.besu:evm:25.2.2",
+    "org.hyperledger.besu.internal:algorithms:25.2.2",
+    "org.hyperledger.besu.internal:rlp:25.2.2",
+    "org.hyperledger.besu:arithmetic:1.1.2",
+    "org.hyperledger.besu:blake2bf:1.1.2",
+    "org.hyperledger.besu:gnark:1.1.2",
+    "org.hyperledger.besu:secp256k1:1.3.0",
+    "org.hyperledger.besu:secp256r1:1.1.2",
+    "org.apache.tuweni:tuweni-bytes:2.4.2",
+    "org.apache.tuweni:tuweni-units:2.4.2",
+    "tech.pegasys:jc-kzg-4844:1.0.0"
+  ],
+  "replacement": {
+    "component": "native-only neutral secp256k1 verifier",
+    "implementation": "Bouncy Castle",
+    "public_api": "org.hiero.base.crypto.engine.EcdsaSecp256k1Verifier",
+    "platform_source_changed": false,
+    "full_distribution_changed": false
+  },
+  "retained_contract_adjacent": [
+    {
+      "component": "project::app-service-contract",
+      "reason": "historical schemas, state keys, neutral builders and retained-map adapters"
+    },
+    {
+      "component": "com.esaulpaugh:headlong:13.3.0",
+      "reason": "generic ABI/RLP data handling used by native token hooks and historical decoding"
+    }
+  ],
+  "license_families_removed_entirely": [],
+  "unresolved_license_findings": [],
+  "unresolved_binary_provenance": []
+}

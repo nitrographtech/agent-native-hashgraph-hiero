@@ -18,6 +18,9 @@
   contracts.
 - Native application jar → full runtime provider/factory, full store factory, standalone executor,
   embedded contract implementation, Besu, or Tuweni classes.
+- Any native library jar → Besu/Tuweni packages, executable EVM/world-state/system-contract
+  classes, or executable-only JNI libraries.
+- Native module descriptors or services → executable providers or contract implementation.
 
 ## Enforcement
 
@@ -28,9 +31,14 @@ CI runs it after both distributions are assembled. Explicit exceptions are limit
 - standalone `TransactionExecutors`;
 - contract-implementation and fixture-generation modules outside the shared native boundary.
 
-The check deliberately does not claim physical jar absence. Packaging is governed by
-`P06B_PACKAGING_REMOVAL_PLAN.md`.
+The check validates physical jar, class, module, service, and native-library absence from the exact
+native distribution. `test-native-binary-policy.sh` proves rejection of deliberately injected
+prohibited jars, classes, service entries, module requirements, and native libraries.
 
 P06B-7A additionally verifies the exact native application jar, its profile-specific service
 metadata, required native classes, absence of the combined full module descriptor, and an
 intentional prohibited-class injection that must fail.
+
+P06B-7 adds `probe-native-classpath.sh`, which uses the exact isolated distribution to prove
+required historical APIs and factories load, executable classes do not load, ServiceLoader exposes
+only historical factories, and neutral secp256k1 account verification remains functional.
