@@ -12,6 +12,7 @@ flowchart LR
 
   subgraph Tooling
     FT[fixture-tooling module]
+    TRACE[fixture-only action tracer]
     ORCH[P06A guarded scripts]
     MANIFEST[Manifest and provenance generation]
   end
@@ -28,6 +29,8 @@ flowchart LR
   end
 
   ORCH --> FT
+  FT --> TRACE
+  TRACE --> FULL
   FT --> HAPI
   FT --> FULL
   HAPI --> FULL
@@ -50,6 +53,7 @@ tooling. The native node consumes only authenticated output and historical compa
 - `HistoricalContractStateFixtureCreation`;
 - the guarded PEM-writing `P06aFixtureIdentityGenerator`;
 - Gradle tasks that run these entry points.
+- the minimum fixture-only action collector and its ServiceLoader factory.
 
 It does not contain:
 
@@ -57,12 +61,13 @@ It does not contain:
 - an EVM, Besu, Tuweni, world-state, or system-contract implementation;
 - node startup;
 - Dagger runtime composition;
-- ServiceLoader providers;
+- runtime ServiceLoader providers (its provider is present only in the tooling jar);
 - release credentials or private keys.
 
 The module is not a dependency of `hedera-app`, the native application artifact, the full
-application artifact, or either runtime distribution. It depends on `test-clients` and uses the
-full node as an external target.
+application artifact, or either runtime distribution. It depends on `test-clients` and the full
+contract implementation. `fixtureFullNodeDistribution` augments a transient copy of the full node
+with the tooling jar; normal distributions remain unmodified.
 
 ## Test fixtures and shared infrastructure
 

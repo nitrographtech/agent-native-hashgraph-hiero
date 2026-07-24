@@ -1,16 +1,17 @@
 # P07-3 Full-Runtime Output Delta
 
-Status: **PROPOSED ONLY — no production change performed**
+Status: **P07-3A IMPLEMENTED; RESUMED P07-3 DELTA STILL PENDING**
 
-The P07-3 tracer deletion was stopped because live action tracing is required to reproduce the
-authenticated fixture corpus. This document records the output delta that deletion would cause; it
-does not authorize or represent that delta as implemented.
+P07-3A removed the concrete live action producer from normal runtime ownership and retained it only
+in fixture tooling. The normal full distribution therefore no longer emits action sidecars; the
+transient fixture distribution still does. Remaining callback SPI removal belongs to resumed
+P07-3.
 
 | Output | Current full-runtime behavior | Behavior if action tracers are removed | Historical compatibility | Fixture and mirror impact |
 |---|---|---|---|---|
 | Contract result records | Produced from transaction execution result | Retained | Existing and new results remain interpretable | Expected to remain ingestible |
 | Contract logs | Included in contract results and neutral log translation | Retained | Existing logs unchanged | Expected to remain ingestible |
-| Contract actions | `EvmActionTracer` and `ActionStack` produce ordered PBJ actions | Live action list becomes absent unless a replacement producer is introduced | Existing action sidecars remain readable | Authenticated corpus regeneration loses its three actions; unacceptable without authorization |
+| Contract actions | Fixture-augmented full node produces ordered PBJ actions | Normal full runtime uses `NoTracer`; fixture tooling preserves live output | Existing action sidecars remain readable | Reproduction retains 3 actions through tooling |
 | State/storage changes | Built independently from transaction storage accesses in `CallOutcome` | Retained while world-state tracking remains | Existing state-change sidecars remain readable | Expected to remain ingestible; not validated because deletion did not occur |
 | Bytecode sidecars | Built independently by contract creation/transaction processors | Retained while contract creation remains | Existing bytecode sidecars remain readable | Expected to remain ingestible; not validated because deletion did not occur |
 | Sidecar association and ordering | Builder associates live actions/state/bytecode with parent transaction | Action sidecar portion disappears; remaining producers retain their paths | Existing associations unchanged | New corpus counts differ; immutable historical corpus remains unchanged |
@@ -30,6 +31,5 @@ Live full-runtime action production is not tracer-free. Removing that producer i
 historical-read compatibility problem; it is a fixture-reproducibility and new-output-contract
 change.
 
-The expected authenticated historical mirror counts remain three contract actions, two
-state-change groups, two bytecode records, and seven sidecar records. They were not rerun against a
-modified runtime because no runtime modification was permitted after the stop gate triggered.
+The transient reproducibility run produced three contract actions, two state-change groups, two
+bytecode records, and seven sidecar records. The immutable authenticated corpus remains unchanged.

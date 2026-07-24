@@ -10,9 +10,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.hedera.hapi.streams.ContractActionType;
-import com.hedera.node.app.service.contract.impl.exec.tracers.EvmActionTracer;
-import com.hedera.node.app.service.contract.impl.exec.utils.ActionStack;
 import com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils;
+import com.hedera.services.bdd.fixturetooling.tracing.ActionStack;
+import com.hedera.services.bdd.fixturetooling.tracing.EvmActionTracer;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;

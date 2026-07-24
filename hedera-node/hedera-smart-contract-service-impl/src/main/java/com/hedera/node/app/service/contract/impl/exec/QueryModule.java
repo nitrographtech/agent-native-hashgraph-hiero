@@ -14,8 +14,7 @@ import com.hedera.node.app.service.contract.impl.exec.scope.QueryHederaNativeOpe
 import com.hedera.node.app.service.contract.impl.exec.scope.QueryHederaOperations;
 import com.hedera.node.app.service.contract.impl.exec.scope.QuerySystemContractOperations;
 import com.hedera.node.app.service.contract.impl.exec.scope.SystemContractOperations;
-import com.hedera.node.app.service.contract.impl.exec.tracers.EvmActionTracer;
-import com.hedera.node.app.service.contract.impl.exec.utils.ActionStack;
+import com.hedera.node.app.service.contract.impl.exec.tracers.NoTracer;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmBlocks;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmContext;
 import com.hedera.node.app.service.contract.impl.hevm.HederaWorldUpdater;
@@ -81,7 +80,7 @@ public interface QueryModule {
     @Provides
     @QueryScope
     static ActionSidecarContentTracer provideActionSidecarContentTracer() {
-        return new EvmActionTracer(new ActionStack());
+        return NoTracer.NO_TRACER;
     }
 
     @Provides

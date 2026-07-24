@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package com.hedera.node.app.service.contract.impl.exec.utils;
+package com.hedera.services.bdd.fixturetooling.tracing;
 
 import static com.hedera.hapi.streams.CallOperationType.OP_UNKNOWN;
 import static com.hedera.hapi.streams.ContractActionType.NO_ACTION;
@@ -22,7 +22,7 @@ import org.hyperledger.besu.evm.frame.MessageFrame;
 /**
  * Helper class for pretty-printing, validating, and creating synthetic {@link ContractAction}s.
  */
-public class ActionsHelper {
+public final class ActionsHelper {
     private static final Bytes MISSING_ADDRESS_ERROR = Bytes.wrap("INVALID_SOLIDITY_ADDRESS".getBytes(UTF_8));
 
     /**

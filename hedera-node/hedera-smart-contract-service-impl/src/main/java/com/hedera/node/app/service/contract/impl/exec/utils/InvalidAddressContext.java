@@ -15,7 +15,7 @@ public final class InvalidAddressContext {
      * For the purpose of creating a synthetic ContractAction
      * we need to know whether the address was the target address of a call,
      * or something else (in which case we don't care about specifics).
-     * See: {@link ActionStack}.
+     * Used by executable operations and fixture-only action tracing.
      */
     public enum InvalidAddressType {
         InvalidCallTarget,

@@ -30,6 +30,7 @@ import com.hedera.hapi.node.contract.EthereumTransactionBody;
 import com.hedera.hapi.node.transaction.TransactionBody;
 import com.hedera.node.app.hapi.utils.ethereum.EthTxData;
 import com.hedera.node.app.service.contract.impl.ContractServiceComponent;
+import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracer;
 import com.hedera.node.app.service.contract.impl.exec.CallOutcome;
 import com.hedera.node.app.service.contract.impl.exec.ContextTransactionProcessor;
 import com.hedera.node.app.service.contract.impl.exec.TransactionComponent;
@@ -37,7 +38,6 @@ import com.hedera.node.app.service.contract.impl.exec.TransactionProcessor;
 import com.hedera.node.app.service.contract.impl.exec.gas.CustomGasCharging;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaOperations;
-import com.hedera.node.app.service.contract.impl.exec.tracers.EvmActionTracer;
 import com.hedera.node.app.service.contract.impl.exec.utils.OpsDurationCounter;
 import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethodRegistry;
 import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
@@ -131,7 +131,7 @@ class EthereumTransactionHandlerTest {
     private HederaEvmContext hederaEvmContext;
 
     @Mock
-    private EvmActionTracer tracer;
+    private ActionSidecarContentTracer tracer;
 
     @Mock
     private TransactionProcessor transactionProcessor;
@@ -196,7 +196,6 @@ class EthereumTransactionHandlerTest {
                 defaultContractsConfig,
                 DEFAULT_CONFIG,
                 hederaEvmContext,
-                null,
                 tracer,
                 baseProxyWorldUpdater,
                 hevmTransactionFactory,

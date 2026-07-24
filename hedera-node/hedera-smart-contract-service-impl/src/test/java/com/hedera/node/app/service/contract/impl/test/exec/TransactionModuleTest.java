@@ -2,7 +2,7 @@
 package com.hedera.node.app.service.contract.impl.test.exec;
 
 import static com.hedera.hapi.node.base.ResponseCodeEnum.ACCOUNT_DELETED;
-import static com.hedera.node.app.service.contract.impl.exec.TransactionModule.provideEvmActionTracer;
+import static com.hedera.node.app.service.contract.impl.exec.TransactionModule.provideActionSidecarContentTracer;
 import static com.hedera.node.app.service.contract.impl.exec.TransactionModule.provideHederaEvmContext;
 import static com.hedera.node.app.service.contract.impl.exec.TransactionModule.provideSenderEcdsaKey;
 import static com.hedera.node.app.service.contract.impl.test.TestHelpers.A_SECP256K1_KEY;
@@ -34,7 +34,7 @@ import com.hedera.node.app.service.contract.impl.exec.gas.TinybarValues;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaNativeOperations;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaOperations;
 import com.hedera.node.app.service.contract.impl.exec.scope.SystemContractOperations;
-import com.hedera.node.app.service.contract.impl.exec.tracers.EvmActionTracer;
+import com.hedera.node.app.service.contract.impl.exec.tracers.NoTracer;
 import com.hedera.node.app.service.contract.impl.exec.utils.PendingCreationMetadataRef;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmBlocks;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmVersion;
@@ -103,7 +103,7 @@ class TransactionModuleTest {
 
     @Test
     void createsEvmActionTracer() {
-        assertInstanceOf(EvmActionTracer.class, provideEvmActionTracer());
+        assertInstanceOf(NoTracer.class, provideActionSidecarContentTracer(null));
     }
 
     @Test
