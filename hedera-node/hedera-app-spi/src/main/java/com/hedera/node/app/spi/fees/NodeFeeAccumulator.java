@@ -11,7 +11,7 @@ import com.hedera.hapi.node.base.AccountID;
  */
 public interface NodeFeeAccumulator {
     /**
-     * A no-op accumulator that does nothing. It is only used in tests and in StandaloneDispatchFactory.
+     * A no-op accumulator that does nothing. It is only used in tests.
      */
     NodeFeeAccumulator NOOP = new NodeFeeAccumulator() {
         @Override

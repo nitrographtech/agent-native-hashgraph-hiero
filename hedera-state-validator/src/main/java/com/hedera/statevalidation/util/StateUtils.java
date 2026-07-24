@@ -48,7 +48,7 @@ import com.hedera.node.app.state.recordcache.RecordCacheService;
 import com.hedera.node.app.throttle.AppScheduleThrottleFactory;
 import com.hedera.node.app.throttle.CongestionThrottleService;
 import com.hedera.node.app.throttle.ThrottleAccumulator;
-import com.hedera.node.app.workflows.standalone.ExecutorComponent;
+import com.hedera.node.app.workflows.TransactionChecker;
 import com.hedera.node.config.data.BlockStreamConfig;
 import com.hedera.node.config.data.HederaConfig;
 import com.hedera.node.internal.network.Network;
@@ -79,7 +79,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.hiero.base.constructable.ConstructableRegistry;
 import org.hiero.base.constructable.ConstructableRegistryException;
@@ -238,7 +237,8 @@ public final class StateUtils {
                 () -> UNIVERSAL_NOOP_FEE_CHARGING,
                 new AppEntityIdFactory(config));
 
-        final AtomicReference<ExecutorComponent> componentRef = new AtomicReference<>();
+        final ConfigProviderImpl configProvider = new ConfigProviderImpl();
+        final TransactionChecker transactionChecker = new TransactionChecker(configProvider, new NoOpMetrics());
         Set.of(
                         new EntityIdServiceImpl(),
                         new ConsensusServiceImpl(),
@@ -247,9 +247,7 @@ public final class StateUtils {
                         new FreezeServiceImpl(),
                         new ScheduleServiceImpl(appContext),
                         new TokenServiceImpl(appContext),
-                        new UtilServiceImpl(appContext, (signedTxn, conf) -> componentRef
-                                .get()
-                                .transactionChecker()
+                        new UtilServiceImpl(appContext, (signedTxn, conf) -> transactionChecker
                                 .parseSignedAndCheck(
                                         signedTxn,
                                         config.getConfigData(HederaConfig.class).nodeTransactionMaxBytes())
