@@ -100,6 +100,13 @@
     "native_application_and_distribution_build": "PASS",
     "full_application_and_distribution_build": "PASS"
   },
+  "ci": {
+    "run": 30067876637,
+    "tested_head": "2d2d8a7d01adcea3a358c7d868734dfa5b0beb8e",
+    "result": "PASS",
+    "native_dependency_policy": "PASS",
+    "protected_layer_boundary": "PASS"
+  },
   "reconnect_validation": {
     "status": "ENVIRONMENTAL_RETRY_EXHAUSTED_WITHOUT_SEMANTIC_ASSERTION_FAILURE",
     "attempt_1": {
@@ -124,8 +131,7 @@
   },
   "pending_validation": [
     "successful real four-node reconnect and state synchronization on this exact head",
-    "exact-head official mirror ingestion",
-    "exact-head CI"
+    "exact-head official mirror ingestion"
   ],
   "scope": {
     "consensus_changes": 0,
