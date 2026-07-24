@@ -1,0 +1,79 @@
+{
+  "phase": "P07-3",
+  "status": "BLOCKED",
+  "checkpoint_type": "evidence_only",
+  "base": {
+    "p07_2_tested_head": "948ecc7588fd797581d9ce7f92257fee30e9b4b5",
+    "p07_2_ci_run": 30115739893,
+    "p07_2_merge_commit": "d6c5a7e9b44f32ac5d8f8d7ee686687792c6b2ac",
+    "branch": "p07/remove-execution-tracers"
+  },
+  "stop_condition": {
+    "triggered": true,
+    "condition": "authenticated fixture generation requires live execution tracers",
+    "exact_reason": "The pinned full-node generator executes the transactions that produce the authenticated action-sidecar corpus, and EvmActionTracer plus ActionStack are the only live PBJ ContractAction producer.",
+    "production_files_changed": 0,
+    "source_deleted": false
+  },
+  "ownership_measurement": {
+    "production_files_directly_naming_core_tracers": 20,
+    "production_bytes": 254199,
+    "test_files_directly_naming_core_tracers": 12,
+    "test_bytes": 178367,
+    "core_types": [
+      "ActionSidecarContentTracer",
+      "EvmActionTracer",
+      "AddOnEvmActionTracer",
+      "NoTracer",
+      "ActionStack"
+    ]
+  },
+  "output_provenance": {
+    "contract_actions": {
+      "producer": "EvmActionTracer and ActionStack through HederaEvmTransactionResult.maybeActionsFrom",
+      "tracer_required": true
+    },
+    "state_and_storage_changes": {
+      "producer": "TxStorageUsage accesses through CallOutcome.setCommonFieldsOn",
+      "tracer_required": false
+    },
+    "bytecode": {
+      "producer": "CustomContractCreationProcessor and ContextTransactionProcessor",
+      "tracer_required": false
+    }
+  },
+  "authenticated_fixture": {
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "source_commit": "ff6490d66994da11af72e1d2f185ec7874fa383a",
+    "round": 4744,
+    "archive_sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "manifest_sha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2",
+    "classification": "FIXTURE_REQUIRES_LIVE_TRACERS",
+    "regenerated": false,
+    "replaced": false,
+    "published": false
+  },
+  "frozen_historical_semantics": {
+    "contract_results": 3,
+    "contract_logs": 1,
+    "contract_actions": 3,
+    "state_change_groups": 2,
+    "bytecode_records": 2,
+    "sidecar_records": 7,
+    "existing_corpus_readability_affected": false
+  },
+  "validation": {
+    "production_diff_audit": "PASS",
+    "protected_asset_diff_audit": "PASS",
+    "fixture_immutability": "PASS",
+    "lifecycle_rerun": "NOT_APPLICABLE_NO_PRODUCTION_CHANGE",
+    "reconnect_rerun": "NOT_APPLICABLE_NO_PRODUCTION_CHANGE",
+    "mirror_rerun": "NOT_APPLICABLE_NO_PRODUCTION_CHANGE"
+  },
+  "required_next_authorization": [
+    "Move the live action tracer producer to an explicit fixture-generation-only executable artifact while removing it from the normal full runtime.",
+    "Or retire live regeneration of authenticated action sidecars and preserve the immutable corpus as the permanent oracle.",
+    "Or define and authenticate a replacement fixture output contract without live action sidecars."
+  ],
+  "wave_4_started": false
+}

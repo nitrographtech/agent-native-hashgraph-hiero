@@ -98,7 +98,7 @@ plan removes the EVM integration source first, then removes the now-unused Besu/
 |---:|---|---|---|---|
 | 1 | Standalone execution | Delete `workflows/standalone/**`; remove `StandaloneFeeCalculatorImpl` dependency on `TransactionExecutors`; remove standalone Dagger component and app exclusions | Remove or replace standalone-only tests; full node and fixture generator remain | Medium. App compile, native/full build, historical lifecycle |
 | 2 | Fixture-only executable tooling | Dedicated `fixture-tooling` module owns the P06A historical population entry point and guarded PEM-writing command; general HAPI/migration infrastructure remains in `test-clients`; retrieval/verification remains permanent | Published source commit, toolchain, transaction sequence, identity, hashes, and regeneration contract remain frozen | COMPLETE after exact-head lifecycle/mirror/CI gates; existing fixtures remain independently consumable |
-| 3 | Execution tracers | Remove full-only tracer interfaces/implementations and tracer bindings after standalone is gone; retain PBJ action/state/bytecode models and neutral translators | Delete tracer unit tests; retain golden sidecar/mirror tests | Medium. Sidecar and block goldens must remain identical |
+| 3 | Execution tracers | **BLOCKED.** Live `EvmActionTracer`/`ActionStack` production is required to reproduce the authenticated three-action sidecar corpus. Retain PBJ action/state/bytecode models and neutral translators. | No deletion performed. Requires an authorized fixture-only tracer owner or a revised fixture reproducibility contract. | Critical stop gate: deletion changes new full-runtime action output and authenticated fixture regeneration |
 | 4 | System contracts | Remove `exec/systemcontracts/**`, its Dagger bindings, executable precompile tests, and full-only service hooks | Retain token/account/schedule native APIs; remove smart-contract precompile CI partitions | Very high. Native token/account suites and protected historical streams must pass |
 | 5 | Solidity execution assets | Remove full-only Solidity execution/query handlers and compiler/source fixtures no longer needed after Wave 2 | Retain wire names such as `getBySolidityID`, address widths, PBJ fields, and historical query rejection | Medium. Do not cosmetically rename historical fields |
 | 6 | Ethereum execution | Remove Ethereum handler, hydration, transaction factories/processors, signature cache used only for execution, and executable Ethereum suites | Retain Ethereum PBJ bodies/results for decoding, rejection, and mirror | High. Historical Ethereum mirror counts and five-body rejection must pass |
@@ -187,8 +187,18 @@ Status: **COMPLETE** on `p07/externalize-fixture-execution-tooling`.
 - The exact-head four-node reconnect, state synchronization, historical-map comparison, official
   mirror record/sidecar/block ingestion, full-runtime tests, and isolation policies pass.
 
-Wave 3 should remove full-runtime execution tracer producers and bindings while retaining neutral
-PBJ action/state/bytecode models and all historical translation and mirror semantics.
+Wave 3 status: **BLOCKED** on `p07/remove-execution-tracers`.
+
+The exact provenance census proves live actions flow exclusively through
+`EvmActionTracer`/`ActionStack` into `HederaEvmTransactionResult`, while state/storage changes and
+bytecode have independent producers. The authenticated fixture generator uses the pinned full node,
+and reproducing its expected three actions and seven sidecar records therefore requires live
+tracing. The mandated fixture stop condition triggered before any production deletion.
+
+The smallest recommended prerequisite is a separately authorized ownership slice that moves the
+live action producer into an explicit fixture-generation-only executable artifact. Alternatives
+are to retire live action-sidecar regeneration or authorize a replacement fixture output contract.
+Wave 4 must not start until one compatibility contract is selected.
 
 ## Risk assessment
 
@@ -198,6 +208,7 @@ PBJ action/state/bytecode models and all historical translation and mirror seman
 | Test-client utilities mix generic address behavior with executable helpers | High | 34 direct implementation importers and cross-suite static imports | Classify each utility; move only proven generic PBJ/byte behavior |
 | System-contract removal damages native token/account tests | High | 183 production system-contract files coupled to token/schedule/account APIs | Remove callers, not native APIs; run native service suites |
 | Fixture authenticity becomes non-reproducible | Critical | Current generation needs pinned full runtime | Freeze/externalize tooling before executable source removal |
+| Tracer deletion changes fixture reproduction | Critical | Live PBJ actions have no producer other than `EvmActionTracer`/`ActionStack`; authenticated corpus contains three actions | Stop Wave 3; authorize fixture-only producer ownership or revise the fixture contract |
 | Platform crypto prevents total Besu removal | Critical | One protected `platform-sdk/base-crypto` Besu verifier and JPMS edge | Stop Wave 9; require upstream neutral release or separate approval |
 | CI deletion hides regressions | High | Smart-contract jobs are transitively enabled by several workflows | Establish replacement historical gates before changing required checks |
 | Historical “EVM/Solidity/gas” names mistaken for execution | High | Permanent PBJ, schema, and mirror fields retain legacy terminology | Protected inventory; prohibit cosmetic removal or renaming |
