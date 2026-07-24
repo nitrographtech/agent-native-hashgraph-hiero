@@ -7,6 +7,7 @@ fixture_root="$repo_root/hedera-node/fixture-tooling"
 artifact_roots=${P07_RUNTIME_ARTIFACT_ROOTS:-"$repo_root/hedera-node/hedera-app/build"}
 custom_artifact_roots=${P07_RUNTIME_ARTIFACT_ROOTS:+true}
 jar_bin=${P07_JAR_BIN:-}
+rg_bin=${P07_RG_BIN-$(command -v rg || true)}
 failures=0
 
 if [[ -z "$jar_bin" && -n "${JAVA_HOME:-}" && -x "$JAVA_HOME/bin/jar" ]]; then
@@ -48,32 +49,45 @@ fail() {
   failures=$((failures + 1))
 }
 
-production_hits=$(rg -n \
-  'class (HistoricalContractStateFixtureCreation|P06aFixtureIdentityGenerator)|fixturetooling\.p06a' \
-  "$repo_root" \
-  --glob '**/src/main/**' \
-  --glob '!hedera-node/fixture-tooling/**' \
-  --glob '!**/build/**' || true)
+readonly fixture_pattern='class (HistoricalContractStateFixtureCreation|P06aFixtureIdentityGenerator)|fixturetooling\.p06a'
+readonly module_pattern='(requires|uses|provides).*(fixture\.tooling|fixturetooling)'
+readonly service_pattern='HistoricalContractStateFixtureCreation|P06aFixtureIdentityGenerator|fixturetooling\.p06a'
+readonly runtime_pattern='com\.hedera\.node\.app\.(Hedera|HederaNode)|HistoricalContractRuntimeProvider|FullContractRuntimeProvider|ContractServiceImpl'
+
+if [[ -n "$rg_bin" ]]; then
+  production_hits=$("$rg_bin" -n "$fixture_pattern" "$repo_root" \
+    --glob '**/src/main/**' \
+    --glob '!hedera-node/fixture-tooling/**' \
+    --glob '!**/build/**' || true)
+  module_hits=$("$rg_bin" -n "$module_pattern" "$repo_root" \
+    --glob '**/src/main/java/module-info.java' \
+    --glob '!hedera-node/fixture-tooling/**' || true)
+  service_hits=$("$rg_bin" -n "$service_pattern" "$repo_root" \
+    --glob '**/src/main/resources/META-INF/services/**' \
+    --glob '!hedera-node/fixture-tooling/**' || true)
+else
+  production_hits=$(find "$repo_root" -path '*/src/main/*' -type f \
+    ! -path "$fixture_root/*" ! -path '*/build/*' -print0 |
+    xargs -0 grep -En "$fixture_pattern" 2>/dev/null || true)
+  module_hits=$(find "$repo_root" -path '*/src/main/java/module-info.java' -type f \
+    ! -path "$fixture_root/*" -print0 |
+    xargs -0 grep -En "$module_pattern" 2>/dev/null || true)
+  service_hits=$(find "$repo_root" -path '*/src/main/resources/META-INF/services/*' -type f \
+    ! -path "$fixture_root/*" -print0 |
+    xargs -0 grep -En "$service_pattern" 2>/dev/null || true)
+fi
 [[ -z "$production_hits" ]] || fail "fixture-only entry point outside fixture-tooling:\n$production_hits"
 
-module_hits=$(rg -n \
-  '(requires|uses|provides).*(fixture\.tooling|fixturetooling)' \
-  "$repo_root" \
-  --glob '**/src/main/java/module-info.java' \
-  --glob '!hedera-node/fixture-tooling/**' || true)
 [[ -z "$module_hits" ]] || fail "production JPMS edge to fixture tooling:\n$module_hits"
 
-service_hits=$(rg -n \
-  'HistoricalContractStateFixtureCreation|P06aFixtureIdentityGenerator|fixturetooling\.p06a' \
-  "$repo_root" \
-  --glob '**/src/main/resources/META-INF/services/**' \
-  --glob '!hedera-node/fixture-tooling/**' || true)
 [[ -z "$service_hits" ]] || fail "runtime service metadata exposes fixture tooling:\n$service_hits"
 
 if [[ -d "$fixture_root/src/main/java" ]]; then
-  runtime_edges=$(rg -n \
-    'com\\.hedera\\.node\\.app\\.(Hedera|HederaNode)|HistoricalContractRuntimeProvider|FullContractRuntimeProvider|ContractServiceImpl' \
-    "$fixture_root/src/main/java" || true)
+  if [[ -n "$rg_bin" ]]; then
+    runtime_edges=$("$rg_bin" -n "$runtime_pattern" "$fixture_root/src/main/java" || true)
+  else
+    runtime_edges=$(grep -REn "$runtime_pattern" "$fixture_root/src/main/java" || true)
+  fi
   [[ -z "$runtime_edges" ]] || fail "fixture tooling embeds node/runtime implementation:\n$runtime_edges"
 fi
 
@@ -84,15 +98,15 @@ for artifact_root in "${roots[@]}"; do
     case "$jar_file" in
       "$fixture_root"/*) continue ;;
     esac
-    jar_hits=$(list_jar "$jar_file" | rg \
+    jar_hits=$(list_jar "$jar_file" | grep -E \
       'com/hedera/services/bdd/fixturetooling/|HistoricalContractStateFixtureCreation|P06aFixtureIdentityGenerator' || true)
     [[ -z "$jar_hits" ]] || fail "fixture tooling packaged in runtime jar $jar_file:\n$jar_hits"
 
-    entries=$(list_jar "$jar_file" | rg '^META-INF/services/[^/]+$' || true)
+    entries=$(list_jar "$jar_file" | grep -E '^META-INF/services/[^/]+$' || true)
     if [[ -n "$entries" ]]; then
       packaged_services=$(
         while IFS= read -r entry; do read_jar_entry "$jar_file" "$entry"; done <<<"$entries" |
-          rg -n 'HistoricalContractStateFixtureCreation|P06aFixtureIdentityGenerator|fixturetooling\.p06a' ||
+          grep -En 'HistoricalContractStateFixtureCreation|P06aFixtureIdentityGenerator|fixturetooling\.p06a' ||
           true
       )
       [[ -z "$packaged_services" ]] ||
