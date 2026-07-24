@@ -36,6 +36,7 @@ jobs:
           --tests com.hedera.node.app.fees.congestion.UtilizationScaledThrottleMultiplierTest
           :app:distributionFull
           :app:distributionNativeAgent
+          :fixture-tooling:build
           --no-daemon
           --stacktrace
 
@@ -46,6 +47,13 @@ jobs:
 
       - name: Enforce Nitrograph native runtime dependency policy
         run: tools/p06b/verify-native-runtime-dependencies.sh
+
+      - name: Enforce P07 source and fixture ownership policies
+        run: |
+          tools/p07/verify-standalone-execution-removed.sh
+          tools/p07/test-standalone-removal-policy.sh
+          tools/p07/verify-fixture-tooling-isolated.sh
+          tools/p07/test-fixture-tooling-policy.sh
 
       - name: Enforce protected-layer boundary
         run: |

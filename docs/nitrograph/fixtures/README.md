@@ -19,6 +19,9 @@ The archive does not contain a private key. Activation tests must explicitly inv
 `scripts/p06a/generate-public-fixture-identity.sh` into a new restricted temporary
 directory and destroy that generated material after the isolated run.
 
+The generation-only Java entry points are owned by the dedicated `fixture-tooling`
+artifact. Neither native nor full runtime distributions package that artifact.
+
 The GitHub Release asset is operationally frozen by its content hash, dedicated
 annotated tag, committed manifest, and the project policy that an existing fixture
 asset must never be replaced. GitHub Release storage is not inherently immutable.

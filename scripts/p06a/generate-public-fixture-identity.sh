@@ -19,7 +19,7 @@ test ! -e "$OUTPUT_DIRECTORY/s-public-node1.pem"
 P06A_PUBLIC_FIXTURE_WORKFLOW=explicitly-enabled \
   "$SOURCE_ROOT/gradlew" \
   -p "$SOURCE_ROOT" \
-  :test-clients:generateP06aFixtureIdentity \
+  :fixture-tooling:generateP06aFixtureIdentity \
   -Pp06aFixtureNetworkId=123 \
   -Pp06aFixtureNodeId=0 \
   -Pp06aFixtureIdentityOutput="$OUTPUT_DIRECTORY" \
