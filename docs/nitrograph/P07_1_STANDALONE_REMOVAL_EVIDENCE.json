@@ -1,6 +1,7 @@
 {
   "schema": "nitrograph.p07.1.standalone-removal-evidence.v1",
-  "status": "IN_PROGRESS",
+  "status": "COMPLETE_PENDING_EXACT_HEAD_CI",
+  "implementation_validation_head": "c6a86448bccf2ab564a1efa6d01fdef236fda8a0",
   "base": {
     "p06b7_merge_commit": "3e6e6d5ba858d74366eabae2195f493d80831bf1",
     "p06b7_tested_head": "b487cd23bab93a6fc84c435a82f2d300ec58d83e",
@@ -52,11 +53,67 @@
     "native_distribution_build": "PASS",
     "full_distribution_build": "PASS",
     "state_validator_compile": "PASS",
+    "contract_implementation_tests": "1750 PASS",
+    "app_tests": "10407 PASS; one unchanged resource-sensitive WrappedRecordBlockHashMigrationTest failed with Java heap exhaustion",
     "exact_head_ci": "PENDING",
-    "native_lifecycle": "PENDING",
-    "reconnect": "PENDING",
-    "state_synchronization": "PENDING",
-    "mirror": "PENDING"
+    "native_lifecycle": "PASS via P06aHistoricalStateReconnectTest",
+    "reconnect": {
+      "result": "PASS",
+      "attempts": 1,
+      "duration": "4m50s",
+      "learner": 2,
+      "reconnect_round": 2182,
+      "learner_active": true,
+      "post_reconnect_processing": true,
+      "legacy_rejections": "5/5 INVALID_TRANSACTION_BODY",
+      "test_xml_sha256": "011fe1dc8387b64d7caa496267bcffedaab2a02838605110b7b33e60b122bfc9",
+      "run_log_sha256": "702dff06f9e8a49d04e45fc11fa8eed48883c3039bade79fca216288d9082580"
+    },
+    "state_synchronization": "PASS",
+    "historical_maps": {
+      "comparison": "UNCHANGED",
+      "STORAGE": {
+        "cardinality": 1,
+        "decoded_value": 424242,
+        "aggregate_content_sha256": "4498f1861935388100d439abcd8124cb906dc479f990c91a4b5a3d6995dd892f"
+      },
+      "BYTECODE": {
+        "cardinality": 2,
+        "aggregate_content_sha256": "204633a18de2a97441e56adae79ce51656496582833a906a69471e24b87091ab"
+      },
+      "EVM_HOOK_STATES": {
+        "cardinality": 1,
+        "aggregate_content_sha256": "32ffae8553e2c27c2a85e6071b9d6eddb85bc07a4a175ed9047d0c2cdb9484f1"
+      },
+      "LAMBDA_STORAGE": {
+        "cardinality": 1,
+        "aggregate_content_sha256": "6359602eb1ab3cb0ef54e1eeddfb8bfd5bcd89a52d86afb191b1cc8cf419056b"
+      },
+      "combined_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+    },
+    "mirror": {
+      "result": "PASS",
+      "repository": "hiero-ledger/hiero-mirror-node",
+      "revision": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+      "official_source_changes": 0,
+      "signed_record_files": 33,
+      "unsigned_record_tail_files": 1,
+      "transactions": 857,
+      "contract_results": 3,
+      "contract_logs": 1,
+      "contract_actions": 3,
+      "contract_state_change_groups": 2,
+      "bytecode_records": 2,
+      "sidecar_records": 7,
+      "complete_blocks": 129,
+      "incomplete_block_tails": 1,
+      "record_corpus_sha256": "ede27e51cd7365e88138c07cf40268c4a0c458fbc690b66bff0bca05c2cac640",
+      "sidecar_corpus_sha256": "bee18daead558c436d5a2ea303abef900fbf5fec2ef703b320c28afb21da74a6",
+      "block_corpus_sha256": "132fcd8889853c689d69d65d27fcd00f174b90d427b49214d1fc9cba3dda5dc4",
+      "test_xml_sha256": "91f2a8da10c4a4bcae49fe2803c3f7fed1a6c6a146e9317be212b6ed038ec013",
+      "run_log_sha256": "ccc821c5fa1318a36c02addcf5d4bacdb9c4d9f5329b86412b5c58866be69207",
+      "database_semantic_fingerprint": "records=33;transactions=857;contract_results=3;contract_logs=1;contract_actions=3;state_change_groups=2;bytecode=2;sidecars=7;blocks=129"
+    }
   },
   "protected_boundaries": {
     "consensus_changed": false,

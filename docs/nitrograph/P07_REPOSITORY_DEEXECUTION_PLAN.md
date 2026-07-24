@@ -138,12 +138,12 @@ plan removes the EVM integration source first, then removes the now-unused Besu/
 
 ## Recommended Wave 1 implementation
 
-Implementation status: **IN PROGRESS** on
+Implementation status: **COMPLETE PENDING EXACT-HEAD CI** on
 `p07/remove-standalone-execution`. Production standalone sources and their
 standalone-only tests have been removed. The authenticated fixture path was
 confirmed to use the pinned full node rather than `TransactionExecutors`.
-Wave 1 becomes `COMPLETE` only after the exact-head lifecycle, reconnect,
-synchronization, mirror, and CI gates pass.
+The exact-head lifecycle, reconnect, synchronization, and official mirror gates
+pass. Wave 1 becomes `COMPLETE` when the final documentation head passes CI.
 
 Wave 1 should be a bounded PR titled:
 
