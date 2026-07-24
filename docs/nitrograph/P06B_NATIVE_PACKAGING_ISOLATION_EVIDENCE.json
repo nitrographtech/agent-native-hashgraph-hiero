@@ -2,7 +2,18 @@
   "schema": "nitrograph-p06b-native-packaging-isolation-evidence-v1",
   "status": "COMPLETE",
   "implementation_head": "8587f30769fb66ad07b909e0ac0d57c7cf9e55b7",
-  "implementation_ci": "pending final exact-head run",
+  "exact_build_validation_head": "da585627ff47647d13b2cf0099f4417ba5152e62",
+  "implementation_ci": {
+    "run": 30104988007,
+    "result": "PASS",
+    "head": "da585627ff47647d13b2cf0099f4417ba5152e62",
+    "bounded_fix": "Deferred native base-crypto artifact resolution to its producing Gradle task; exact native inventory remained byte-identical.",
+    "prior_failed_run": {
+      "run": 30104333264,
+      "head": "deb196bf348213d4d4eb37c9356a0424db0c7d8f",
+      "classification": "build-graph failure caused by early runtimeClasspath resolution before local project jars existed"
+    }
+  },
   "p06b7a_prerequisite_merge": "8dcfad027dc7b56a446ce74cdcf036be23596af1",
   "baseline": {
     "artifacts": 205,
