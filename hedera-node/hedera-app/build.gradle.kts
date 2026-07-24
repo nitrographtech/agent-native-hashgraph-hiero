@@ -177,28 +177,18 @@ val compileNativeCrypto by
         options.release.set(25)
     }
 
+val baseCryptoJar =
+    providers.provider {
+        project(":base-crypto").tasks.named<Jar>("jar").get().archiveFile.get()
+    }
+
 val nativeBaseCryptoJar =
     tasks.register<Jar>("nativeBaseCryptoJar") {
         group = "build"
         description = "Build base-crypto for the native distribution without Besu-native secp256k1."
-        dependsOn(compileNativeCrypto)
-        archiveFileName.set(
-            provider {
-                configurations.runtimeClasspath
-                    .get()
-                    .single { it.name.startsWith("base-crypto-") }
-                    .name
-            }
-        )
-        from(
-            provider {
-                zipTree(
-                    configurations.runtimeClasspath.get().single {
-                        it.name.startsWith("base-crypto-")
-                    }
-                )
-            }
-        ) {
+        dependsOn(compileNativeCrypto, ":base-crypto:jar")
+        archiveFileName.set(baseCryptoJar.map { it.asFile.name })
+        from(baseCryptoJar.map { zipTree(it) }) {
             exclude("module-info.class")
             exclude("org/hiero/base/crypto/engine/EcdsaSecp256k1Verifier*.class")
         }
