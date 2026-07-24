@@ -138,6 +138,13 @@ plan removes the EVM integration source first, then removes the now-unused Besu/
 
 ## Recommended Wave 1 implementation
 
+Implementation status: **IN PROGRESS** on
+`p07/remove-standalone-execution`. Production standalone sources and their
+standalone-only tests have been removed. The authenticated fixture path was
+confirmed to use the pinned full node rather than `TransactionExecutors`.
+Wave 1 becomes `COMPLETE` only after the exact-head lifecycle, reconnect,
+synchronization, mirror, and CI gates pass.
+
 Wave 1 should be a bounded PR titled:
 
 `P07-1: remove standalone executable transaction infrastructure`
@@ -206,4 +213,3 @@ Stop the affected route immediately if a wave requires:
 - changing consensus;
 - changing `platform-sdk` without separate authorization;
 - retaining executable behavior to interpret historical data.
-

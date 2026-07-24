@@ -87,7 +87,6 @@ module com.hedera.node.app {
             com.hedera.node.test.clients,
             com.hedera.state.validator;
     exports com.hedera.node.app.workflows.dispatcher;
-    exports com.hedera.node.app.workflows.standalone;
     exports com.hedera.node.app.config;
     exports com.hedera.node.app.workflows.handle.validation;
     exports com.hedera.node.app.signature;
@@ -128,7 +127,6 @@ module com.hedera.node.app {
     exports com.hedera.node.app.throttle.annotations;
     exports com.hedera.node.app.workflows.query.annotations;
     exports com.hedera.node.app.signature.impl;
-    exports com.hedera.node.app.workflows.standalone.impl;
     exports com.hedera.node.app.records.impl;
     exports com.hedera.node.app.records.impl.producers;
     exports com.hedera.node.app.records.impl.producers.formats;

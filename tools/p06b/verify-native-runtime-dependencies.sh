@@ -44,7 +44,7 @@ fi
 unexpected_contract_impl_refs="$(
   rg -l 'ContractServiceImpl' "$app_main" |
     sed "s#^$repo_root/##" |
-    rg -v '^hedera-node/hedera-app/src/main/java/com/hedera/node/app/services/FullContractRuntimeProvider\.java$|^hedera-node/hedera-app/src/main/java/com/hedera/node/app/workflows/standalone/TransactionExecutors\.java$' ||
+    rg -v '^hedera-node/hedera-app/src/main/java/com/hedera/node/app/services/FullContractRuntimeProvider\.java$' ||
     true
 )"
 test -z "$unexpected_contract_impl_refs" ||

@@ -1340,7 +1340,7 @@ class BEVM {
             return push32(blockHash.toArrayUnsafe());
         }
 
-        // assume custom from TransactionExecutorsTest
+        // assume custom configuration
         return push(0x1234567890L);
     }
 

@@ -1,0 +1,69 @@
+{
+  "schema": "nitrograph.p07.1.standalone-removal-evidence.v1",
+  "status": "IN_PROGRESS",
+  "base": {
+    "p06b7_merge_commit": "3e6e6d5ba858d74366eabae2195f493d80831bf1",
+    "p06b7_tested_head": "b487cd23bab93a6fc84c435a82f2d300ec58d83e",
+    "p06b7_ci_run": 30105438439,
+    "census_merge_commit": "b63a6f38660ca233d629f84e598b8fab1871d383",
+    "census_tested_head": "51fe72dd7177cb4100a2509f65c5b7ee38e5c92a",
+    "census_ci_run": 30108239515
+  },
+  "source_delta": {
+    "production_java_files_removed": 9,
+    "production_source_bytes_removed": 51560,
+    "test_java_files_removed": 5,
+    "test_source_bytes_removed": 66944,
+    "packages_removed": [
+      "com.hedera.node.app.workflows.standalone",
+      "com.hedera.node.app.workflows.standalone.impl"
+    ],
+    "jpms_exports_removed": 2,
+    "standalone_dagger_components_removed": 1,
+    "standalone_service_entries_removed": 0
+  },
+  "fixture_generation": {
+    "replacement_required": false,
+    "authoritative_path": "pinned full-node HAPI submission",
+    "suites": [
+      "DiverseStateCreation",
+      "HistoricalContractStateFixtureCreation"
+    ],
+    "transaction_executors_references": 0,
+    "authenticated_fixture_regenerated": false,
+    "authenticated_fixture_republished": false
+  },
+  "tooling_adjustment": {
+    "module": "hedera-state-validator",
+    "before": "indirect uninitialized ExecutorComponent reference used only to request TransactionChecker",
+    "after": "direct construction of shared TransactionChecker",
+    "node_runtime_changed": false
+  },
+  "enforcement": {
+    "source_absence_policy": "tools/p07/verify-standalone-execution-removed.sh",
+    "intentional_failure_policy": "tools/p07/test-standalone-removal-policy.sh",
+    "source_injection_rejected": true,
+    "class_injection_rejected": true,
+    "service_injection_rejected": true,
+    "module_injection_rejected": true
+  },
+  "validation": {
+    "app_compile": "PASS",
+    "native_distribution_build": "PASS",
+    "full_distribution_build": "PASS",
+    "state_validator_compile": "PASS",
+    "exact_head_ci": "PENDING",
+    "native_lifecycle": "PENDING",
+    "reconnect": "PENDING",
+    "state_synchronization": "PENDING",
+    "mirror": "PENDING"
+  },
+  "protected_boundaries": {
+    "consensus_changed": false,
+    "platform_sdk_changed": false,
+    "protobuf_or_pbj_changed": false,
+    "persisted_identifiers_changed": false,
+    "state_ids_or_keys_changed": false,
+    "codecs_or_schemas_changed": false
+  }
+}

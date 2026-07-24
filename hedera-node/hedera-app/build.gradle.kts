@@ -117,8 +117,6 @@ val nativeAppJar =
         exclude("com/hedera/node/app/services/FullContractRuntimeProvider*.class")
         exclude("com/hedera/node/app/services/FullContractRuntimeProviderFactory.class")
         exclude("com/hedera/node/app/store/FullContractStoreFactory.class")
-        exclude("com/hedera/node/app/workflows/standalone/**")
-        exclude("com/hedera/node/app/fees/StandaloneFeeCalculatorImpl*.class")
         exclude("com/hedera/node/app/service/contract/impl/**")
         exclude("org/hyperledger/besu/**")
         exclude("org/apache/tuweni/**")

@@ -501,19 +501,6 @@ public class SavepointStackImpl implements HandleContext.SavepointStack, State {
     }
 
     /**
-     * Builds the {@link BlockRecordSource} and/or {@link RecordSource} for this user transaction. This is only used in
-     * {@link com.hedera.node.app.workflows.standalone.TransactionExecutor}
-     *
-     * @param consensusTime consensus time of the transaction
-     * @param exchangeRates the active exchange rates
-     * @return the source of records and/or blocks for the transaction
-     */
-    public HandleOutput buildHandleOutput(
-            @NonNull final Instant consensusTime, @NonNull final ExchangeRateSet exchangeRates) {
-        return buildHandleOutput(consensusTime, exchangeRates, null);
-    }
-
-    /**
      * Builds the {@link BlockRecordSource} and/or {@link RecordSource} for this user transaction.
      *
      * @param consensusTime consensus time of the transaction
