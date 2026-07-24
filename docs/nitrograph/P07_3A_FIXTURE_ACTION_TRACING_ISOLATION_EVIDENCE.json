@@ -53,8 +53,8 @@
   "artifacts": {
     "fixture_tooling_jar": {
       "tracing_classes": 7,
-      "bytes": 26332,
-      "sha256": "692a128a1b488844406b0d5deae66c56e9b77e51a6664b007d2c4d57b5ed3f89"
+      "bytes": 26456,
+      "sha256": "bd20f99c84b09c1495826b3b02e5ff6bfb7ddd4e812853fe58f968b16d0a6728"
     },
     "native_application_jar": {
       "bytes": 1711488,
