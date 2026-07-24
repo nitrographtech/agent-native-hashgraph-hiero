@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "checkpoint": "P06B-7 native packaging isolation",
+  "repository": "https://github.com/nitrographtech/agent-native-hashgraph-hiero",
+  "branch": "p06b/native-packaging-isolation",
+  "base_commit": "2ea4c4b88c671ab7402dc558b6517033ad450eb5",
+  "p06b6": {
+    "tested_head": "ec4b9205a07fae22e244e63160e82dbf46e06e23",
+    "ci_run": 30055012999,
+    "merge_commit": "2ea4c4b88c671ab7402dc558b6517033ad450eb5",
+    "merge_method": "merge commit"
+  },
+  "before_inventory": {
+    "library_jar_count": 204,
+    "library_bytes": 128894808,
+    "application_jar_count": 1,
+    "application_bytes": 1777690,
+    "total_artifact_count": 205,
+    "total_artifact_bytes": 130672498,
+    "inventory_path": "docs/nitrograph/P06B_NATIVE_BINARY_INVENTORY_BEFORE.json"
+  },
+  "controlled_classpath_probe": {
+    "method": "Copied the exact native distribution to a temporary workspace, excluded app-service-contract-impl, Besu, EVM, and Tuweni jars, and loaded representative classes from the resulting classpath without modifying repository or distribution inputs.",
+    "excluded_artifact_patterns": [
+      "app-service-contract-impl-*",
+      "besu-*",
+      "evm-*",
+      "tuweni-*"
+    ],
+    "results": [
+      {
+        "class": "com.hedera.node.app.Hedera",
+        "result": "AVAILABLE"
+      },
+      {
+        "class": "com.hedera.node.app.workflows.handle.record.RecordStreamBuilder",
+        "result": "UNAVAILABLE",
+        "error": "java.lang.NoClassDefFoundError: com/hedera/node/app/service/contract/impl/records/ContractCreateStreamBuilder"
+      },
+      {
+        "class": "com.hedera.node.app.services.HistoricalContractRuntimeProvider",
+        "result": "AVAILABLE"
+      },
+      {
+        "class": "com.hedera.node.app.services.FullContractRuntimeProvider",
+        "result": "AVAILABLE"
+      },
+      {
+        "class": "com.hedera.node.app.workflows.standalone.TransactionExecutors",
+        "result": "AVAILABLE"
+      },
+      {
+        "class_category": "representative Besu EVM engine",
+        "result": "UNAVAILABLE"
+      },
+      {
+        "class_category": "representative Tuweni Bytes",
+        "result": "UNAVAILABLE"
+      }
+    ]
+  },
+  "blocking_findings": [
+    {
+      "id": "SHARED_RECORD_INTERFACE_IMPLEMENTATION_COUPLING",
+      "finding": "The native-shared RecordStreamBuilder links to ContractCreateStreamBuilder in the executable contract implementation jar.",
+      "required_change": "Move or split contract record-builder interfaces into a neutral API module before removing the implementation jar from the native classpath."
+    },
+    {
+      "id": "COMBINED_APPLICATION_JAR",
+      "finding": "HederaNode.jar contains HistoricalContractRuntimeProvider, FullContractRuntimeProvider, and TransactionExecutors.",
+      "required_change": "Split native and full/standalone application source sets or application jars before exact class absence can be enforced."
+    }
+  ],
+  "stop_condition": "PBJ or record interfaces are inseparable from executable implementation without a broader API split.",
+  "production_changes_made": false,
+  "after_inventory_produced": false,
+  "requested_next_authorization": "P06B-7A: neutral contract record-builder API extraction and native/full application source-set split"
+}
