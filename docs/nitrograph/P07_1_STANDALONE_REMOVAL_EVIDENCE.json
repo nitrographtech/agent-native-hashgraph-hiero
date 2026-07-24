@@ -1,6 +1,7 @@
 {
   "schema": "nitrograph.p07.1.standalone-removal-evidence.v1",
-  "status": "COMPLETE_PENDING_EXACT_HEAD_CI",
+  "status": "COMPLETE",
+  "validated_evidence_head": "8a478eb14a146e4e6de89229962b807c31af83a8",
   "implementation_validation_head": "c6a86448bccf2ab564a1efa6d01fdef236fda8a0",
   "base": {
     "p06b7_merge_commit": "3e6e6d5ba858d74366eabae2195f493d80831bf1",
@@ -55,7 +56,10 @@
     "state_validator_compile": "PASS",
     "contract_implementation_tests": "1750 PASS",
     "app_tests": "10407 PASS; one unchanged resource-sensitive WrappedRecordBlockHashMigrationTest failed with Java heap exhaustion",
-    "exact_head_ci": "PENDING",
+    "exact_head_ci": {
+      "run": 30110007571,
+      "result": "PASS"
+    },
     "native_lifecycle": "PASS via P06aHistoricalStateReconnectTest",
     "reconnect": {
       "result": "PASS",
