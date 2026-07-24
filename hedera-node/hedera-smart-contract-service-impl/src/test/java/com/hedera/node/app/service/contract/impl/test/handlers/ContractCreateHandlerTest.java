@@ -174,8 +174,6 @@ class ContractCreateHandlerTest extends ContractHandlerTestBase {
         given(streamBuilder.createdEvmAddress(any())).willReturn(streamBuilder);
         given(streamBuilder.evmCreateTransactionResult(any())).willReturn(streamBuilder);
         given(streamBuilder.contractCreateResult(expectedResult)).willReturn(streamBuilder);
-        given(streamBuilder.withCommonFieldsSetFrom(expectedOutcome, context, entityIdFactory))
-                .willReturn(streamBuilder);
         when(storeFactory.serviceApi(TokenServiceApi.class)).thenReturn(tokenServiceApi);
 
         given(context.storeFactory()).willReturn(storeFactory);
@@ -221,8 +219,6 @@ class ContractCreateHandlerTest extends ContractHandlerTestBase {
         given(streamBuilder.contractCreateResult(expectedResult)).willReturn(streamBuilder);
         given(streamBuilder.createdEvmAddress(any())).willReturn(streamBuilder);
         given(streamBuilder.evmCreateTransactionResult(any())).willReturn(streamBuilder);
-        given(streamBuilder.withCommonFieldsSetFrom(expectedOutcome, context, entityIdFactory))
-                .willReturn(streamBuilder);
         assertFailsWith(INVALID_SIGNATURE, () -> subject.handle(context));
     }
 

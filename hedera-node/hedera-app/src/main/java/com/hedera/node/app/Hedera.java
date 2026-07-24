@@ -92,8 +92,7 @@ import com.hedera.node.app.service.token.impl.TokenServiceImpl;
 import com.hedera.node.app.service.util.impl.UtilServiceImpl;
 import com.hedera.node.app.services.AppContextImpl;
 import com.hedera.node.app.services.ContractRuntimeProvider;
-import com.hedera.node.app.services.FullContractRuntimeProvider;
-import com.hedera.node.app.services.HistoricalContractRuntimeProvider;
+import com.hedera.node.app.services.ContractRuntimeProviderFactory;
 import com.hedera.node.app.services.ServiceComposition;
 import com.hedera.node.app.services.ServiceMigrator;
 import com.hedera.node.app.services.ServicesRegistry;
@@ -578,9 +577,8 @@ public final class Hedera
         tokenServiceImpl = new TokenServiceImpl(appContext);
         consensusServiceImpl = new ConsensusServiceImpl();
         networkServiceImpl = new NetworkServiceImpl();
-        contractRuntimeProvider = serviceComposition.contractServiceEnabled()
-                ? FullContractRuntimeProvider.create(appContext, metrics)
-                : new HistoricalContractRuntimeProvider();
+        contractRuntimeProvider = ContractRuntimeProviderFactory.createFor(
+                serviceComposition.contractServiceEnabled(), appContext, metrics);
         scheduleServiceImpl = new ScheduleServiceImpl(appContext);
         final var rosterServiceImpl =
                 new RosterServiceImpl(this::canAdoptRoster, this::onAdoptRoster, this::startupNetworks);

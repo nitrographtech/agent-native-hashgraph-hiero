@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * An intermediary that manages access to the slot and bytecode key/value states.
  */
-public interface ContractStateStore {
+public interface ContractStateStore extends com.hedera.node.app.service.contract.ReadableContractStateStore {
     /**
      * Returns the {@link Bytecode} for the given contract number.
      *

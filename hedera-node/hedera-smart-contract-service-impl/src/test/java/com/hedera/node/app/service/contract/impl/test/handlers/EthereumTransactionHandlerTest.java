@@ -261,8 +261,6 @@ class EthereumTransactionHandlerTest {
         given(callRecordBuilder.contractCallResult(expectedResult)).willReturn(callRecordBuilder);
         given(recordBuilder.ethereumHash(Bytes.wrap(ETH_DATA_WITH_TO_ADDRESS.getEthereumHash())))
                 .willReturn(recordBuilder);
-        given(callRecordBuilder.withCommonFieldsSetFrom(expectedOutcome, context, entityIdFactory))
-                .willReturn(callRecordBuilder);
         givenNoTraceDataSizeLimitExceededForCall();
 
         assertDoesNotThrow(() -> subject.handle(context));
@@ -320,8 +318,6 @@ class EthereumTransactionHandlerTest {
         given(createRecordBuilder.contractCreateResult(expectedResult)).willReturn(createRecordBuilder);
         given(createRecordBuilder.evmCreateTransactionResult(any())).willReturn(createRecordBuilder);
         given(createRecordBuilder.createdEvmAddress(any())).willReturn(createRecordBuilder);
-        given(createRecordBuilder.withCommonFieldsSetFrom(expectedOutcome, context, entityIdFactory))
-                .willReturn(createRecordBuilder);
         given(recordBuilder.ethereumHash(Bytes.wrap(ETH_DATA_WITHOUT_TO_ADDRESS.getEthereumHash())))
                 .willReturn(recordBuilder);
         givenSenderAccountWithNonce(SIGNER_NONCE);
@@ -540,8 +536,6 @@ class EthereumTransactionHandlerTest {
         given(createRecordBuilder.createdContractID(CALLED_CONTRACT_ID)).willReturn(createRecordBuilder);
         given(createRecordBuilder.evmCreateTransactionResult(any())).willReturn(createRecordBuilder);
         given(createRecordBuilder.createdEvmAddress(any())).willReturn(createRecordBuilder);
-        given(createRecordBuilder.withCommonFieldsSetFrom(expectedOutcome, context, entityIdFactory))
-                .willReturn(createRecordBuilder);
         given(recordBuilder.ethereumHash(Bytes.wrap(ETH_DATA_WITHOUT_TO_ADDRESS.getEthereumHash())))
                 .willReturn(recordBuilder);
         givenSenderAccountWithNonce(SIGNER_NONCE);

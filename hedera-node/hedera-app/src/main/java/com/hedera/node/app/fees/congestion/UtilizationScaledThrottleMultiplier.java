@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 import com.hedera.hapi.node.base.HederaFunctionality;
 import com.hedera.hapi.node.transaction.TransactionBody;
 import com.hedera.node.app.service.consensus.ReadableTopicStore;
-import com.hedera.node.app.service.contract.impl.state.ContractStateStore;
+import com.hedera.node.app.service.contract.ReadableContractStateStore;
 import com.hedera.node.app.service.file.ReadableFileStore;
 import com.hedera.node.app.service.token.*;
 import com.hedera.node.app.spi.store.ReadableStoreFactory;
@@ -125,7 +125,7 @@ public class UtilizationScaledThrottleMultiplier {
 
         final var contractsConfig = configuration.getConfigData(ContractsConfig.class);
         final var numContracts = contractsConfig.enabled()
-                ? storeFactory.readableStore(ContractStateStore.class).getNumBytecodes()
+                ? storeFactory.readableStore(ReadableContractStateStore.class).getNumBytecodes()
                 : 0;
         final var numAccounts = numAccountsAndContracts - numContracts;
 
@@ -137,7 +137,7 @@ public class UtilizationScaledThrottleMultiplier {
         final var maxNumOfContracts =
                 configuration.getConfigData(ContractsConfig.class).maxNumber();
 
-        final var contractsStore = storeFactory.readableStore(ContractStateStore.class);
+        final var contractsStore = storeFactory.readableStore(ReadableContractStateStore.class);
         final var numContracts = contractsStore.getNumBytecodes();
 
         return maxNumOfContracts == 0 ? 100 : (int) ((100 * numContracts) / maxNumOfContracts);

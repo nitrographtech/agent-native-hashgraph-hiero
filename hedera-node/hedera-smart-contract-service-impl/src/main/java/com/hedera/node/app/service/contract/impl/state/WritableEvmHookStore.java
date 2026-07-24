@@ -10,6 +10,7 @@ import static com.hedera.node.app.hapi.utils.EntityType.EVM_HOOK_STORAGE;
 import static com.hedera.node.app.hapi.utils.EntityType.HOOK;
 import static com.hedera.node.app.hapi.utils.contracts.HookUtils.leftPad32;
 import static com.hedera.node.app.hapi.utils.contracts.HookUtils.slotKeyOfMappingEntry;
+import static com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils.minimalKey;
 import static com.hedera.node.app.service.contract.impl.schemas.V065ContractSchema.EVM_HOOK_STATES_STATE_ID;
 import static com.hedera.node.app.service.contract.impl.schemas.V065ContractSchema.EVM_HOOK_STORAGE_STATE_ID;
 import static com.hedera.node.app.service.contract.impl.state.StorageAccess.StorageAccessType.INSERTION;
@@ -51,7 +52,8 @@ public class WritableEvmHookStore extends ReadableEvmHookStoreImpl {
      * the cases of a {@code prev} pointer being set to {@code null} (which means "no previous slot"), versus
      * it being set to the zero key.
      */
-    public static final Bytes ZERO_KEY = Bytes.fromHex("00");
+    public static final Bytes ZERO_KEY =
+            com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils.ZERO_KEY;
 
     private final WritableEntityCounters entityCounters;
     private final WritableKVState<HookId, EvmHookState> hookStates;
@@ -332,10 +334,6 @@ public class WritableEvmHookStore extends ReadableEvmHookStoreImpl {
         return minimalKey;
     }
 
-    public static EvmHookSlotKey minimalKey(@NonNull final HookId hookId, @NonNull final Bytes key) {
-        return new EvmHookSlotKey(hookId, minimalKey(key));
-    }
-
     private void updatePrevFor(@NonNull final EvmHookSlotKey key, @NonNull final Bytes newPrevKey) {
         final var value = slotValueFor(key, "Missing next key");
         storage.put(key, value.copyBuilder().previousKey(newPrevKey).build());
@@ -344,25 +342,6 @@ public class WritableEvmHookStore extends ReadableEvmHookStoreImpl {
     private void updateNextFor(@NonNull final EvmHookSlotKey key, @NonNull final Bytes newNextKey) {
         final var value = slotValueFor(key, "Missing prev key");
         storage.put(key, value.copyBuilder().nextKey(newNextKey).build());
-    }
-    /**
-     * Returns a minimal representation of the given key, by stripping leading zeros.
-     * If the key is all zeros, returns {@link #ZERO_KEY}.
-     *
-     * @param key the key to minimize
-     * @return the minimal representation of the key
-     */
-    public static Bytes minimalKey(@NonNull final Bytes key) {
-        final var len = key.length();
-        if (len == 0) {
-            return ZERO_KEY;
-        }
-        int i = 0;
-        while (i < len && key.getByte(i) == 0) {
-            i++;
-        }
-        // All zeros -> ZERO_KEY, otherwise strip leading zeros
-        return (i == len) ? ZERO_KEY : key.slice(i, len - i);
     }
     /**
      * Returns true if the given value is a 32-byte word with all bytes zero.

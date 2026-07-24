@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.services.bdd.suites.integration.hip1195;
 
-import static com.hedera.node.app.service.contract.impl.state.WritableEvmHookStore.minimalKey;
+import static com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils.minimalKey;
 import static com.hedera.services.bdd.junit.EmbeddedReason.NEEDS_STATE_ACCESS;
 import static com.hedera.services.bdd.junit.TestTags.INTEGRATION;
 import static com.hedera.services.bdd.junit.hedera.NodeSelector.byNodeId;

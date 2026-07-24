@@ -8,7 +8,7 @@ import static com.hedera.node.app.hapi.utils.contracts.HookUtils.leftPad32;
 import static com.hedera.node.app.hapi.utils.contracts.HookUtils.slotKeyOfMappingEntry;
 import static com.hedera.node.app.service.contract.impl.schemas.V065ContractSchema.EVM_HOOK_STATES_STATE_ID;
 import static com.hedera.node.app.service.contract.impl.state.WritableEvmHookStore.ZERO_KEY;
-import static com.hedera.node.app.service.contract.impl.state.WritableEvmHookStore.minimalKey;
+import static com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils.minimalKey;
 import static com.hedera.node.app.service.entityid.impl.schemas.V0590EntityIdSchema.ENTITY_COUNTS_STATE_ID;
 import static com.hedera.services.bdd.junit.RepeatableReason.NEEDS_STATE_ACCESS;
 import static com.hedera.services.bdd.junit.TestTags.INTEGRATION;

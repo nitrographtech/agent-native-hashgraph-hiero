@@ -1,16 +1,17 @@
 # P06B Distribution Dependency Matrix
 
-Base: `agent-native@2ea4c4b88c671ab7402dc558b6517033ad450eb5`
+Base: `agent-native@1ffddab00991a695acb62fa5ae7e8fdadfcf359e`
 
 | Module/artifact | Native node | Full node | Standalone | Fixture generation | Tests | Historical compatibility | Stream/mirror role | Required action |
 |---|---|---|---|---|---|---|---|---|
-| `app-service-contract` | yes | yes | yes | yes | yes | schemas/state keys | schema interpretation | RETAIN |
-| `app-service-contract-impl` | currently yes | yes | yes | yes | yes | record/store interfaces only | builder ABI | SPLIT_MODULE |
-| `hedera-app` combined jar | yes | yes | yes | yes | yes | neutral translation | records/blocks | SPLIT_CONFIGURATION/SPLIT_MODULE |
-| `FullContractRuntimeProvider` | packaged, unreachable | yes | yes | yes | yes | none | none | REMOVE_FROM_NATIVE |
-| `TransactionExecutors` | packaged, unreachable | optional | yes | optional | yes | none | none | REMOVE_FROM_NATIVE |
-| contract implementation record builders | yes | yes | yes | yes | yes | data-only ABI | records/blocks | MOVE TO NEUTRAL API |
-| contract implementation state stores | yes | yes | yes | yes | yes | retained map access | state compatibility | MOVE TO COMPATIBILITY API |
+| `app-service-contract` | yes | yes | yes | yes | yes | schemas, state keys, neutral builders/stores | schema and stream interpretation | RETAIN |
+| `app-service-contract-impl` | packaged pending P06B-7, not required by exclusion probe | yes | yes | yes | yes | none in native | executable producer | REMOVE_FROM_NATIVE |
+| native `HederaNode.jar` | yes | no | no | no | yes | neutral translation/orchestration | records/blocks | RETAIN |
+| full `HederaNode.jar` | no | yes | yes | yes | yes | neutral translation | records/blocks | RETAIN_FOR_FULL |
+| `FullContractRuntimeProvider` | absent from native app jar | yes | yes | yes | yes | none | none | REMOVE_FROM_NATIVE_CLASSPATH |
+| `TransactionExecutors` | absent from native app jar | optional | yes | optional | yes | none | none | RETAIN_FOR_STANDALONE |
+| neutral contract record builders | yes | yes | yes | yes | yes | data-only ABI | records/blocks | RETAIN |
+| historical read-only state adapters | yes | yes | yes | yes | yes | retained map access | state compatibility | RETAIN |
 | Besu EVM/datatypes | currently yes | yes | yes | yes | yes | none after neutralization | none | REMOVE_FROM_NATIVE |
 | Tuweni bytes/units | currently yes | yes | yes | yes | yes | remaining API bridges | none | SPLIT_MODULE then REMOVE |
 | Besu native common | currently yes | yes | yes | yes | yes | none | none | REMOVE_FROM_NATIVE |
@@ -21,25 +22,15 @@ Base: `agent-native@2ea4c4b88c671ab7402dc558b6517033ad450eb5`
 
 ## Exact blocking edges
 
-1. `RecordStreamBuilder` implements
-   `contract.impl.records.ContractCreateStreamBuilder` and sibling interfaces.
-2. `BlockStreamBuilder` and `PairedStreamBuilder` implement the same implementation-owned record
-   interfaces and reference implementation-owned EVM hook stores.
-3. application store factories construct implementation-owned contract store adapters required to
-   expose retained historical maps.
-4. `module-info.java` has transitive requirements on the contract implementation and Besu modules.
-5. the combined `HederaNode.jar` contains both `FullContractRuntimeProvider` and the standalone
-   executor packages.
+1. RESOLVED: record builders retain their packages but are owned by `app-service-contract`.
+2. RESOLVED: shared builders use neutral retained-map/key interfaces.
+3. RESOLVED: native store construction uses historical read-only adapters.
+4. REMAINING FOR P06B-7: the full module descriptor and runtime classpath retain executable
+   dependencies.
+5. RESOLVED: the native application jar omits full-provider and standalone classes.
 
 ## Required split
 
-The minimum safe prerequisite is a separately reviewed API extraction:
-
-- move record-builder interfaces into the contract API or a historical compatibility API;
-- move read-only retained-map store interfaces/adapters out of the executable implementation;
-- provide native and full application source sets or jars so full-provider and standalone classes
-  are absent from the native artifact;
-- then remove implementation/Besu/Tuweni/EVM dependencies from the native runtime configuration.
-
-Filtering jar names alone is unsafe and is prohibited by this result.
-
+The API/application prerequisite is complete. P06B-7 may now remove implementation/Besu/Tuweni/EVM
+dependencies from the native runtime configuration, add a native-specific module descriptor, and
+repeat the full binary and lifecycle gates.

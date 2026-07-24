@@ -18,8 +18,6 @@ import com.hedera.node.app.service.addressbook.impl.WritableRegisteredNodeStore;
 import com.hedera.node.app.service.consensus.ConsensusService;
 import com.hedera.node.app.service.consensus.impl.WritableTopicStore;
 import com.hedera.node.app.service.contract.ContractService;
-import com.hedera.node.app.service.contract.impl.state.WritableContractStateStore;
-import com.hedera.node.app.service.contract.impl.state.WritableEvmHookStore;
 import com.hedera.node.app.service.entityid.EntityIdService;
 import com.hedera.node.app.service.entityid.WritableEntityIdStore;
 import com.hedera.node.app.service.entityid.impl.WritableEntityIdStoreImpl;
@@ -47,6 +45,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 import org.hiero.consensus.roster.WritableRosterStore;
 
 /**
@@ -98,11 +97,14 @@ public class WritableStoreFactory {
         newMap.put(
                 WritableUpgradeFileStore.class,
                 new StoreEntry(FileService.NAME, (states, entityCounters) -> new WritableUpgradeFileStore(states)));
-        // ContractService
-        newMap.put(
-                WritableContractStateStore.class,
-                new StoreEntry(ContractService.NAME, WritableContractStateStore::new));
-        newMap.put(WritableEvmHookStore.class, new StoreEntry(ContractService.NAME, WritableEvmHookStore::new));
+        // ContractService construction is profile-specific; native mode exposes no writable contract stores.
+        final var contractStores = ServiceLoader.load(ContractStoreFactory.class).stream()
+                .map(ServiceLoader.Provider::get)
+                .max(java.util.Comparator.comparingInt(ContractStoreFactory::priority))
+                .orElseThrow(() -> new IllegalStateException("No contract store factory is available"));
+        contractStores
+                .writableStores()
+                .forEach((type, factory) -> newMap.put(type, new StoreEntry(ContractService.NAME, factory::apply)));
         // EntityIdService
         newMap.put(
                 WritableEntityIdStore.class,

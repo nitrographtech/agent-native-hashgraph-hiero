@@ -1,6 +1,6 @@
 # P06B-7 Native Packaging Blocker
 
-Status: **BLOCKED — API/source-set split approval required**
+Status: **RESOLVED by P06B-7A**
 
 ## Controlled exclusion probe
 
@@ -39,9 +39,35 @@ No production Gradle, Dagger, module descriptor, runtime assembly, or jar filter
 Proceeding by filename exclusion would make native record construction unloadable and would violate
 the historical stream compatibility gate.
 
-## Required authorization
+## P06B-7A resolution
 
-Authorize a bounded P06B-7A prerequisite:
+The approved prerequisite moved the six record-builder interfaces, with unchanged FQCNs, into
+`app-service-contract`; added neutral read-only adapters for all retained maps; selected contract
+stores and runtime providers through profile-specific factories; and produced a filtered native
+application jar distinct from the full application jar.
+
+The controlled exclusion probe now reports:
+
+| Probe | Result without implementation/Besu/EVM/Tuweni jars |
+|---|---|
+| `Hedera` | available |
+| `RecordStreamBuilder` | available |
+| all six neutral builder interfaces | available |
+| neutral retained-map interfaces/adapters | available |
+| `HistoricalContractRuntimeProvider` | available |
+| `FullContractRuntimeProvider` | unavailable |
+| `TransactionExecutors` | unavailable |
+| implementation `ContractStateStore` | unavailable |
+| Besu `EVM` | unavailable |
+| Tuweni `Bytes` | unavailable |
+
+This resolves the exact `NoClassDefFoundError` blocker. It does not claim completion of P06B-7:
+the native distribution still carries executable dependency jars and the combined full module
+descriptor remains a full-artifact concern.
+
+## Authorized follow-on
+
+P06B-7 may now continue with:
 
 1. extract contract record-builder interfaces into an implementation-neutral API module;
 2. extract retained historical map store interfaces/adapters into the compatibility API;
@@ -49,4 +75,3 @@ Authorize a bounded P06B-7A prerequisite:
    from the native jar;
 4. preserve packages/wire/state identifiers where relocation is not required;
 5. rerun the complete P06A/P06B compatibility matrix before excluding any executable jar.
-

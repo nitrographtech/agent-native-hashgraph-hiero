@@ -4,11 +4,10 @@ Status: plan only; no physical removal authorized
 
 ## Native Gradle and module changes
 
-1. Split the combined application runtime classpath or introduce a native-specific runtime
-   configuration.
-2. Move contract record-builder/store interfaces required for historical compatibility into the
-   implementation-neutral contract API or compatibility module.
-3. Remove native `requires transitive com.hedera.node.app.service.contract.impl`.
+1. DONE in P06B-7A: emit separate native and full application jars.
+2. DONE in P06B-7A: move native-required builder/store contracts to `app-service-contract`.
+3. Add a native-specific module descriptor and remove native
+   `requires transitive com.hedera.node.app.service.contract.impl`.
 4. Remove native `requires transitive org.hyperledger.besu.datatypes` and
    `org.hyperledger.besu.evm`.
 5. Remove the corresponding contract implementation, EVM, Besu, and Tuweni runtime dependencies
@@ -21,6 +20,10 @@ Status: plan only; no physical removal authorized
 - Remove any full-only handler/query bindings once the native and full component graphs are
   separately assembled.
 - Retain no service-loader entry that can discover an executable provider in native mode.
+
+P06B-7A introduced profile-specific runtime and store factories. Native service metadata advertises
+only historical factories; full metadata retains both and selects the executable stores by
+priority.
 
 ## Candidate native jar removals
 
@@ -61,4 +64,3 @@ The binary inventory must prove both removed direct jars and removed transitive 
 7. Full runtime and fixture generation remain reproducible on their explicitly separate graph.
 8. SBOM, license, and notice changes are reviewed without waiver.
 9. Consensus, platform-sdk, persisted identifiers, codecs, and schemas remain unchanged.
-
