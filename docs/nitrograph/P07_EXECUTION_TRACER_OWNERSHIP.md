@@ -1,6 +1,6 @@
 # P07 Execution Tracer Ownership
 
-Status: **P07-3A PREREQUISITE IMPLEMENTED — fixture blocker resolved**
+Status: **P07-3 RUNTIME DELETION BLOCKED — execution callback boundary remains**
 Base: `agent-native@d6c5a7e9b44f32ac5d8f8d7ee686687792c6b2ac`  
 Wave: P07-3
 
@@ -12,8 +12,13 @@ three contract actions and seven sidecar records. P07-3A moved the minimum concr
 Normal native and full distributions contain no fixture tracer implementation or provider.
 Historical interpretation remains unchanged.
 
-The fixture stop gate is now **RESOLVED**. Resumed P07-3 may remove the remaining runtime callback
-SPI and propagation after P07-3A merges.
+P07-3A resolved concrete producer ownership, but the resumed deletion inventory found the runtime
+callback SPI and propagation are not independently removable. `FrameRunner`,
+`CustomMessageCallProcessor`, HEVM, Bonneville, and transaction-result construction invoke or
+consume the Hedera-specific callbacks needed by the fixture producer. Removing this closure either
+reduces authenticated fixture output to zero actions or requires fixture-specific execution
+processors, crossing the system-contract/world-state stop boundary. See
+`P07_RUNTIME_TRACER_DELETION_INVENTORY.md`.
 
 ## Measured ownership
 
