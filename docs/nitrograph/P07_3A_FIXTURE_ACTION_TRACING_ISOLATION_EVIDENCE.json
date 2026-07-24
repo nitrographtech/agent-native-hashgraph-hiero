@@ -54,7 +54,7 @@
     "fixture_tooling_jar": {
       "tracing_classes": 7,
       "bytes": 26456,
-      "sha256": "bd20f99c84b09c1495826b3b02e5ff6bfb7ddd4e812853fe58f968b16d0a6728"
+      "sha256": "46afab10fd28b085d6d119378760ec877231eb6f5f4116c5f1220ed501b81108"
     },
     "native_application_jar": {
       "bytes": 1711488,

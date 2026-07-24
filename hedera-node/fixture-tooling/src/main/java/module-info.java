@@ -8,13 +8,13 @@ module com.hedera.node.fixture.tooling {
     requires com.hedera.node.test.clients;
     requires com.hedera.pbj.runtime;
     requires com.swirlds.platform.core;
-    requires com.github.spotbugs.annotations;
     requires org.hiero.consensus.model;
-    requires org.hyperledger.besu.datatypes;
-    requires org.hyperledger.besu.evm;
+    requires com.github.spotbugs.annotations;
     requires java.base;
     requires org.apache.logging.log4j;
     requires org.bouncycastle.provider;
+    requires org.hyperledger.besu.datatypes;
+    requires org.hyperledger.besu.evm;
     requires org.junit.jupiter.api;
     requires tuweni.bytes;
 
