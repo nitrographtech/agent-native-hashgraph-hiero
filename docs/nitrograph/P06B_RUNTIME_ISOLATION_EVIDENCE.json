@@ -1,0 +1,148 @@
+{
+  "schema": "nitrograph-p06b-runtime-isolation-evidence-v1",
+  "status": "MERGE_READY",
+  "base": "agent-native@15e912e668df1431e3fbdc6f7443c23eeb21fdaf",
+  "implementation_commit": "b2ca2b340d6ec16f7a8c42cd929324f89dd39bd0",
+  "runtime_isolation": {
+    "hedera_direct_contract_service_impl_references": 0,
+    "standard_node_contract_service_impl_construction_boundary": "FullContractRuntimeProvider.create",
+    "native_provider": "HistoricalContractRuntimeProvider",
+    "native_state_service": "HistoricalContractStateService",
+    "native_dagger_executable_bindings": 0,
+    "standalone_construction": "retained and classified STANDALONE_ONLY",
+    "full_runtime_construction": "retained and classified FULL_RUNTIME_ONLY"
+  },
+  "residual_sidecars": {
+    "logs": "NEUTRALIZED",
+    "contract_results": "NEUTRALIZED",
+    "actions": "NEUTRALIZED",
+    "state_changes": "NEUTRALIZED",
+    "storage_changes": "NEUTRALIZED",
+    "bytecode": "NEUTRALIZED",
+    "metadata_and_parent_association": "PBJ_NATIVE",
+    "shared_executable_dependencies": 0
+  },
+  "byte_utility": {
+    "removed_dependency": "hedera-app authorization -> contract-implementation ConversionUtils",
+    "replacement": "EntityAddressUtils",
+    "besu_imports": 0,
+    "tuweni_imports": 0,
+    "golden_vectors": [
+      "long-zero 0",
+      "long-zero 424242",
+      "unsigned bit pattern 0xffffffffffffffff",
+      "non-zero prefix",
+      "19-byte and 21-byte malformed widths"
+    ],
+    "focused_result": "PASS"
+  },
+  "enforcement": {
+    "script": "tools/p06b/verify-native-runtime-dependencies.sh",
+    "ci_step": "Enforce Nitrograph native runtime dependency policy",
+    "positive_result": "PASS",
+    "intentional_failure_result": "PASS: injected ContractServiceImpl reference in Hedera was rejected",
+    "checks": [
+      "Hedera has no ContractServiceImpl reference",
+      "native authorization has no contract ConversionUtils dependency",
+      "shared historical translation has no Besu or Tuweni import",
+      "native Dagger sources have no executable provider/system-contract binding",
+      "ContractServiceImpl references are limited to full provider and standalone executor",
+      "assembled native profile has contracts.enabled=false"
+    ]
+  },
+  "focused_validation": {
+    "tests_passed": 63,
+    "tests_failed": 0,
+    "distribution_full": "PASS",
+    "distribution_native_agent": "PASS"
+  },
+  "ci_equivalent_validation": {
+    "result": "PASS",
+    "elapsed": "30.43s",
+    "peak_rss_kib": 1309072,
+    "provider_and_composition_tests": "PASS",
+    "authorization_tests": "PASS",
+    "service_contract_tests": "PASS",
+    "distribution_full": "PASS",
+    "distribution_native_agent": "PASS"
+  },
+  "reconnect_and_synchronization": {
+    "topology": "four node public-fixture-identity network",
+    "real_reconnect": "PASS",
+    "state_synchronization": "PASS",
+    "native_processing_after_reconnect": "PASS",
+    "legacy_rejections": "5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+    "successful_attempt": {
+      "test_xml_sha256": "5039188833b1796f9a458e330173b34b4b6617b081e1165bf2f055ac42946c82",
+      "elapsed": "5m00.81s",
+      "test_duration": "4m52s",
+      "peak_rss_kib": 1421436,
+      "swap_events": 0
+    },
+    "preserved_environmental_attempt": {
+      "result": "CHECKING_TIMEOUT",
+      "semantic_assertion_failures": 0,
+      "detail": "Recovering node remained CHECKING until the unchanged 3m30s harness timeout. The identical unmodified scenario passed on immediate rerun.",
+      "elapsed": "9m31.16s",
+      "peak_rss_kib": 1399196,
+      "swap_events": 0
+    }
+  },
+  "historical_map_integrity": {
+    "pre_round": 170,
+    "post_round": 1795,
+    "result": "UNCHANGED",
+    "map_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "pre_evidence_sha256": "91e9b884f163d756c53d122bfaa8dfe985c1146540d9909f9e048848a63e3bf6",
+    "post_evidence_sha256": "57c3a0282a9c367269c67c7efbb6c27cf79f9f33c5c7143d226dffbe9e861bac",
+    "STORAGE": "UNCHANGED; cardinality 1; representative value 424242",
+    "BYTECODE": "UNCHANGED; cardinality 2",
+    "EVM_HOOK_STATES": "UNCHANGED; cardinality 1",
+    "LAMBDA_STORAGE": "UNCHANGED; cardinality 1"
+  },
+  "mirror": {
+    "repository": "hiero-ledger/hiero-mirror-node",
+    "commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "source_changes": 0,
+    "postgres_redis_testcontainers": "PASS",
+    "signed_record_files": 38,
+    "transactions": 862,
+    "contract_results": 3,
+    "contract_logs": 1,
+    "contract_actions": 3,
+    "contract_state_changes": 2,
+    "sidecar_records": 7,
+    "complete_block_files": 132,
+    "block_files_persisted": 132,
+    "result": "PASS",
+    "test_xml_sha256": "d85f4feec671de927cf91b3851af0c92987aa8ab5bf342cf834fa22b12716927",
+    "elapsed": "53.03s",
+    "peak_rss_kib": 1955412,
+    "swap_events": 0
+  },
+  "runtime_class_loading": {
+    "historical_provider_selected": true,
+    "executable_provider_resolved": false,
+    "contract_service_impl_loaded_in_native_mode": false,
+    "prohibited_evm_engine_classes_loaded_in_native_mode": 0,
+    "besu_tuweni_classes_loaded_in_native_mode": 0,
+    "evidence_basis": "P06B exact-process native class evidence plus P06B-6 construction/source enforcement; P06B-6 introduces no executable dependency."
+  },
+  "native_artifact_baseline": {
+    "library_jars": 204,
+    "library_bytes": 128894808,
+    "sorted_jar_name_inventory_sha256": "357572f0577a670aab0afd54ecdaa65a36e175a8f8271c6e4cfdf1d6742d8b2b",
+    "artifact_graph_change": "UNCHANGED",
+    "physical_removal": false
+  },
+  "scope": {
+    "consensus_changes": 0,
+    "platform_sdk_changes": 0,
+    "protobuf_changes": 0,
+    "persisted_format_changes": 0,
+    "state_id_changes": 0,
+    "codec_changes": 0,
+    "schema_version_changes": 0,
+    "physical_evm_besu_removal": false
+  }
+}

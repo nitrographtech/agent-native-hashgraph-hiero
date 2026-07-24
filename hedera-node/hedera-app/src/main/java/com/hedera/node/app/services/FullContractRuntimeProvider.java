@@ -4,8 +4,10 @@ package com.hedera.node.app.services;
 import com.hedera.node.app.service.contract.ContractService;
 import com.hedera.node.app.service.contract.impl.ContractServiceImpl;
 import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
+import com.hedera.node.app.spi.AppContext;
 import com.hedera.node.app.spi.fees.QueryFeeCalculator;
 import com.hedera.node.app.spi.fees.ServiceFeeCalculator;
+import com.swirlds.metrics.api.Metrics;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Set;
 
@@ -32,6 +34,15 @@ public final class FullContractRuntimeProvider implements ContractRuntimeProvide
                 h.contractGetInfoHandler(),
                 h.contractGetBytecodeHandler(),
                 h.contractGetRecordsHandler());
+    }
+
+    /**
+     * Creates the executable provider. This is the sole standard-node construction boundary for
+     * {@link ContractServiceImpl}; native startup never invokes this method.
+     */
+    public static FullContractRuntimeProvider create(
+            @NonNull final AppContext appContext, @NonNull final Metrics metrics) {
+        return new FullContractRuntimeProvider(new ContractServiceImpl(appContext, metrics));
     }
 
     @Override

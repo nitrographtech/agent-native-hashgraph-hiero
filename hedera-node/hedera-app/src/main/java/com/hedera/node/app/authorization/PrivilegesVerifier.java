@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.authorization;
 
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.isLongZeroAddress;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.numberOfLongZero;
+import static com.hedera.node.app.authorization.EntityAddressUtils.entityNumberOfLongZero;
+import static com.hedera.node.app.authorization.EntityAddressUtils.isLongZeroAddress;
 import static com.hedera.node.app.spi.authorization.SystemPrivilege.AUTHORIZED;
 import static com.hedera.node.app.spi.authorization.SystemPrivilege.IMPERMISSIBLE;
 import static com.hedera.node.app.spi.authorization.SystemPrivilege.UNAUTHORIZED;
@@ -236,7 +236,7 @@ public class PrivilegesVerifier {
         if (accountID.hasAlias()) {
             final var rawAlias = accountID.aliasOrThrow().toByteArray();
             if (isLongZeroAddress(rawAlias)) {
-                return numberOfLongZero(rawAlias);
+                return entityNumberOfLongZero(rawAlias);
             } else {
                 // Not a system entity, so number is irrelevant for privileges checks
                 return 0L;
@@ -250,7 +250,7 @@ public class PrivilegesVerifier {
         if (contractID.hasEvmAddress()) {
             final var rawAlias = contractID.evmAddressOrThrow().toByteArray();
             if (isLongZeroAddress(rawAlias)) {
-                return numberOfLongZero(rawAlias);
+                return entityNumberOfLongZero(rawAlias);
             } else {
                 // Not a system entity, so number is irrelevant for privileges checks
                 return 0L;
