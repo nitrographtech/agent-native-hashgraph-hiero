@@ -37,7 +37,6 @@ import com.hedera.node.app.service.contract.impl.exec.ContextTransactionProcesso
 import com.hedera.node.app.service.contract.impl.exec.TransactionComponent;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaOperations;
-import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethodRegistry;
 import com.hedera.node.app.service.contract.impl.handlers.ContractCreateHandler;
 import com.hedera.node.app.service.contract.impl.records.ContractCreateStreamBuilder;
 import com.hedera.node.app.service.contract.impl.state.EvmFrameStates;
@@ -126,11 +125,8 @@ class ContractCreateHandlerTest extends ContractHandlerTestBase {
     @Mock
     private EvmFrameStates evmFrameStates;
 
-    private final SystemContractMethodRegistry systemContractMethodRegistry = new SystemContractMethodRegistry();
-
     private final Metrics metrics = new NoOpMetrics();
-    private final ContractMetrics contractMetrics =
-            new ContractMetrics(metrics, () -> contractsConfig, systemContractMethodRegistry);
+    private final ContractMetrics contractMetrics = new ContractMetrics(metrics, () -> contractsConfig);
 
     private ContractCreateHandler subject;
 

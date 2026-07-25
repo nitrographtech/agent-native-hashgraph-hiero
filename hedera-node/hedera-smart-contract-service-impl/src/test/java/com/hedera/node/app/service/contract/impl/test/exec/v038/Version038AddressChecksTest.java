@@ -7,12 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.hedera.node.app.service.contract.impl.exec.v038.Version038AddressChecks;
 import com.hedera.node.app.service.contract.impl.test.TestHelpers;
-import java.util.Map;
 import org.hyperledger.besu.datatypes.Address;
 import org.junit.jupiter.api.Test;
 
 class Version038AddressChecksTest {
-    private Version038AddressChecks subject = new Version038AddressChecks(Map.of(), entityIdFactory);
+    private Version038AddressChecks subject = new Version038AddressChecks(entityIdFactory);
 
     @Test
     void onlyBelow750IsSystem() {

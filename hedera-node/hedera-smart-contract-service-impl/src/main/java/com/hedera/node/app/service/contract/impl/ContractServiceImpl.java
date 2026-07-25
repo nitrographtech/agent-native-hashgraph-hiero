@@ -17,9 +17,6 @@ import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracer
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
 import com.hedera.node.app.service.contract.impl.exec.scope.DefaultVerificationStrategies;
 import com.hedera.node.app.service.contract.impl.exec.scope.VerificationStrategies;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.common.AbstractCallAttempt;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.common.CallTranslator;
-import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethodRegistry;
 import com.hedera.node.app.service.contract.impl.handlers.ContractHandlers;
 import com.hedera.node.app.service.contract.impl.handlers.HookDispatchHandler;
 import com.hedera.node.app.service.contract.impl.handlers.HookStoreHandler;
@@ -34,7 +31,6 @@ import com.swirlds.metrics.api.Metrics;
 import com.swirlds.state.lifecycle.SchemaRegistry;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -78,20 +74,16 @@ public class ContractServiceImpl implements ContractService {
         requireNonNull(metrics);
         final Supplier<ContractsConfig> contractsConfigSupplier =
                 () -> appContext.configSupplier().get().getConfigData(ContractsConfig.class);
-        final var systemContractMethodRegistry = new SystemContractMethodRegistry();
-        final var contractMetrics = new ContractMetrics(metrics, contractsConfigSupplier, systemContractMethodRegistry);
+        final var contractMetrics = new ContractMetrics(metrics, contractsConfigSupplier);
         final var nativeLibVerifier = new NativeLibVerifier(contractsConfigSupplier);
 
         this.component = DaggerContractServiceComponent.factory()
                 .create(
                         appContext.instantSource(),
-                        // (FUTURE) Inject the signature verifier instance into the IsAuthorizedSystemContract
-                        // C.f. https://github.com/hashgraph/hedera-services/issues/14248
                         appContext.signatureVerifier(),
                         Optional.ofNullable(verificationStrategies).orElseGet(DefaultVerificationStrategies::new),
                         addOnTracers,
                         contractMetrics,
-                        systemContractMethodRegistry,
                         customOps,
                         contractsConfigSupplier,
                         appContext.idFactory(),
@@ -142,13 +134,7 @@ public class ContractServiceImpl implements ContractService {
     public void createMetrics() {
         final var contractMetrics = requireNonNull(component.contractMetrics());
 
-        // Force call translators to be instantiated now, so that all the system contract methods
-        // will be registered, so the secondary metrics can be created.  (Left to its own devices
-        // Dagger would delay instantiating them until transactions started flowing.)
-        final var allTranslators = allCallTranslators();
-
         contractMetrics.createContractPrimaryMetrics();
-        contractMetrics.createContractSecondaryMetrics();
     }
 
     /**
@@ -165,13 +151,5 @@ public class ContractServiceImpl implements ContractService {
      */
     public NativeLibVerifier nativeLibVerifier() {
         return component.nativeLibVerifier();
-    }
-
-    private @NonNull List<CallTranslator<? extends AbstractCallAttempt<?>>> allCallTranslators() {
-        final var allCallTranslators = new ArrayList<CallTranslator<? extends AbstractCallAttempt<?>>>();
-        allCallTranslators.addAll(component.hasCallTranslators().get());
-        allCallTranslators.addAll(component.hssCallTranslators().get());
-        allCallTranslators.addAll(component.htsCallTranslators().get());
-        return allCallTranslators;
     }
 }

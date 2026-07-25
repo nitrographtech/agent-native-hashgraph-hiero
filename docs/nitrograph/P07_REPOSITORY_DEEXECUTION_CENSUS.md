@@ -66,7 +66,7 @@ These values are a checkout census, not a Git pack-size estimate.
 
 | Package subtree | Production files | Classification |
 |---|---:|---|
-| `exec/systemcontracts` | 183 | SYSTEM_CONTRACT |
+| `exec/systemcontracts` | 0 (183 deleted in P07-4) | SYSTEM_CONTRACT — removed |
 | `exec/operations` | 21 | EVM_ENGINE |
 | `exec/scope` | 16 | EXECUTABLE_RUNTIME / WORLD_STATE |
 | `exec/processors` | 11 | EVM_ENGINE |

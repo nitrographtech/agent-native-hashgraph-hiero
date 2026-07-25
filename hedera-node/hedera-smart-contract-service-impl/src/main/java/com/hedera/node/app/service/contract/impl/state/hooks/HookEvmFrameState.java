@@ -3,7 +3,7 @@ package com.hedera.node.app.service.contract.impl.state.hooks;
 
 import static com.hedera.hapi.util.HapiUtils.CONTRACT_ID_COMPARATOR;
 import static com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils.minimalKey;
-import static com.hedera.node.app.service.contract.impl.exec.systemcontracts.HtsSystemContract.HTS_HOOKS_CONTRACT_ADDRESS;
+import static com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils.HOOK_CONTRACT_ADDRESS;
 import static com.hedera.node.app.service.contract.impl.state.WritableEvmHookStore.ZERO_KEY;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pbjToTuweniBytes;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pbjToTuweniUInt256;
@@ -67,7 +67,7 @@ public class HookEvmFrameState extends DispatchingEvmFrameState {
      */
     @Override
     public @Nullable AbstractMutableEvmAccount getMutableAccount(@NonNull Address address) {
-        if (address.equals(HTS_HOOKS_CONTRACT_ADDRESS)) {
+        if (address.equals(HOOK_CONTRACT_ADDRESS)) {
             return new ProxyEvmHook(this, hook, codeFactory, entityIdFactory);
         }
         return super.getMutableAccount(address);
@@ -76,7 +76,7 @@ public class HookEvmFrameState extends DispatchingEvmFrameState {
     @Override
     public @Nullable Address getAddress(final long number) {
         if (number == hooksContractId.contractNumOrThrow()) {
-            return HTS_HOOKS_CONTRACT_ADDRESS;
+            return HOOK_CONTRACT_ADDRESS;
         }
         return super.getAddress(number);
     }

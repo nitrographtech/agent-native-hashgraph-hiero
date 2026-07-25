@@ -2,9 +2,7 @@
 package com.hedera.node.app.service.contract.impl.exec.v030;
 
 import com.hedera.node.app.service.contract.impl.exec.AddressChecks;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.HederaSystemContract;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.hyperledger.besu.datatypes.Address;
@@ -15,19 +13,8 @@ import org.hyperledger.besu.evm.frame.MessageFrame;
  */
 @Singleton
 public class Version030AddressChecks implements AddressChecks {
-    private final int[] systemContractNumbers;
-
     @Inject
-    public Version030AddressChecks(@NonNull final Map<Address, HederaSystemContract> systemContracts) {
-        systemContractNumbers = new int[systemContracts.size()];
-        int i = 0;
-        for (final var address : systemContracts.keySet()) {
-            if (address.numberOfLeadingZeroBytes() != 18) {
-                throw new IllegalArgumentException("Precompile address " + address + " is outside system range");
-            }
-            systemContractNumbers[i++] = address.getInt(16);
-        }
-    }
+    public Version030AddressChecks() {}
 
     @Override
     public boolean isPresent(@NonNull final Address address, @NonNull final MessageFrame frame) {
@@ -46,15 +33,6 @@ public class Version030AddressChecks implements AddressChecks {
 
     @Override
     public boolean isHederaPrecompile(@NonNull final Address address) {
-        return address.numberOfLeadingZeroBytes() >= 18 && isPrecompile(address.getInt(16));
-    }
-
-    private boolean isPrecompile(final int number) {
-        for (final var precompileNumber : systemContractNumbers) {
-            if (precompileNumber == number) {
-                return true;
-            }
-        }
         return false;
     }
 }

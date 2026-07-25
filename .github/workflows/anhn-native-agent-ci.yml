@@ -54,6 +54,8 @@ jobs:
           tools/p07/test-standalone-removal-policy.sh
           tools/p07/verify-fixture-tooling-isolated.sh
           tools/p07/test-fixture-tooling-policy.sh
+          tools/p07/verify-system-contracts-removed.sh
+          tools/p07/test-system-contract-removal-policy.sh
 
       - name: Enforce protected-layer boundary
         run: |

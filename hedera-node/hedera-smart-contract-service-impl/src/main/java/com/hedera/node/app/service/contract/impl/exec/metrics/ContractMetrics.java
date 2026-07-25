@@ -9,23 +9,17 @@ import static java.util.stream.Collectors.toMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.hedera.hapi.node.base.HederaFunctionality;
-import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethod;
-import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethod.Category;
-import com.hedera.node.app.service.contract.impl.exec.utils.SystemContractMethodRegistry;
 import com.hedera.node.config.data.ContractsConfig;
 import com.swirlds.metrics.api.*;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hiero.consensus.metrics.platform.prometheus.NameConverter;
-import org.hyperledger.besu.evm.frame.MessageFrame;
-import org.hyperledger.besu.evm.frame.MessageFrame.State;
 
 /**
  * Metrics collection management for Smart Contracts service
@@ -40,8 +34,6 @@ public class ContractMetrics {
     private final Metrics metrics;
     private final Supplier<ContractsConfig> contractsConfigSupplier;
     private boolean p1MetricsEnabled;
-    private boolean p2MetricsEnabled;
-    private final SystemContractMethodRegistry systemContractMethodRegistry;
 
     private CountAccumulateAverageMetricTriplet transactionDuration;
     private CountAccumulateAverageMetricTriplet successfulTransactionDuration;
@@ -58,48 +50,8 @@ public class ContractMetrics {
             new ConcurrentHashMap<>();
     private Counter rejectedEthType3Counter;
 
-    private enum MethodMetricType {
-        TOTAL(0, "total"),
-        FAILED(1, "failed");
-        public final int index;
-        public final String name;
-
-        MethodMetricType(final int index, @NonNull final String name) {
-            this.index = index;
-            this.name = name;
-        }
-
-        public @NonNull String toString() {
-            return this.name;
-        }
-    }
-
     public record TransactionProcessingSummary(
             long durationNanos, long opsDurationUnitsConsumed, long gasUsed, OptionalLong gasPrice, boolean success) {}
-
-    // Counters that are the P2 metrics, and maps that take `SystemContractMethods` into the specific counters
-
-    // Counters for SystemContract usage (i.e., calls to HAS, HSS, HTS)
-    private final Map<SystemContractMethod.SystemContract, Counter[]> systemContractMethodCounters =
-            new ConcurrentHashMap<>();
-
-    // Counters for DIRECT vs PROXY usage
-    private final Map<SystemContractMethod.CallVia, Counter[]> systemContractMethodCountersVia =
-            new ConcurrentHashMap<>();
-
-    // Counters for ERC-20 and ERC-721 usage (there's overlap as some methods are defined in _both_), plus the map
-    // that takes a `SystemContract` to the ERC types (if any)
-    private final Map<SystemContractMethod, EnumSet<SystemContractMethod.Category>> systemContractMethodErcMembers =
-            new ConcurrentHashMap<>();
-    private final Map<SystemContractMethod.Category, Counter[]> systemContractERCTypeCounters =
-            new ConcurrentHashMap<>();
-
-    // Counters for the "method groups" (e.g., transfers vs creates vs burns etc), plus the map that takes a
-    // `SystemContract` to the method group(s) it is part of
-    private final Map<SystemContractMethod, EnumSet<SystemContractMethod.Category>> systemContractMethodGroupMembers =
-            new ConcurrentHashMap<>();
-    private final Map<SystemContractMethod.Category, Counter[]> systemContractMethodGroupCounters =
-            new ConcurrentHashMap<>();
 
     private static final Map<HederaFunctionality, String> POSSIBLE_FAILING_TX_TYPES = Map.of(
             CONTRACT_CALL, "contractCallTx", CONTRACT_CREATE, "contractCreateTx", ETHEREUM_TRANSACTION, "ethereumTx");
@@ -122,29 +74,12 @@ public class ContractMetrics {
     private static final String REJECTED_FOR_GAS_SHORT_DESCR = "txns with not even intrinsic gas";
     private static final String REJECTED_TYPE3_FUNCTIONALITY = "ethType3BlobTransaction";
 
-    // The `SystemContractMethod.Category` enum has "categories" for both ERC-20/ERC-721, and method groups:
-    // These maps distinguish them
-
-    private static final EnumSet<SystemContractMethod.Category> ERC_TYPES = EnumSet.of(Category.ERC20, Category.ERC721);
-    private static final EnumSet<SystemContractMethod.Category> METHOD_GROUPS = EnumSet.complementOf(ERC_TYPES);
-
-    //             %1$s - metric name (system contract name or method category (group))
-    //             %2$s = METRIC_SERVICE
-    //             %3$s - METHOD_METRIC_TYPE
-    //             %4%s - clarification
-    private static final String METHOD_METRIC_NAME_TEMPLATE = "%2$s:SystemContractMethodCall_%1$s_%3$s";
-    private static final String METHOD_METRIC_DESCR_TEMPLATE = "system contract method %1$s %3$s %4$s";
-
     @Inject
     public ContractMetrics(
-            @NonNull final Metrics metrics,
-            @NonNull final Supplier<ContractsConfig> contractsConfigSupplier,
-            @NonNull final SystemContractMethodRegistry systemContractMethodRegistry) {
+            @NonNull final Metrics metrics, @NonNull final Supplier<ContractsConfig> contractsConfigSupplier) {
         this.metrics = requireNonNull(metrics, "metrics (from platform via ServicesMain/Hedera must not be null");
         this.contractsConfigSupplier =
                 requireNonNull(contractsConfigSupplier, "contracts configuration supplier must not be null");
-        this.systemContractMethodRegistry =
-                requireNonNull(systemContractMethodRegistry, "systemContractMethodRegistry must not be null");
         this.opsDurationMetrics = new OpsDurationMetrics(metrics);
     }
 
@@ -221,83 +156,6 @@ public class ContractMetrics {
         }
     }
 
-    private @NonNull Counter makeCounter(
-            @NonNull final MethodMetricType metricType,
-            @NonNull final String name,
-            @NonNull final String clarification) {
-        final var metricName = toMethodMetricName(name, metricType);
-        final var descr = toMethodMetricDescr(name, metricType, clarification);
-        final var config = new Counter.Config(METRIC_CATEGORY, metricName)
-                .withDescription(descr)
-                .withUnit(METRIC_TXN_UNIT);
-        return newCounter(metrics, config);
-    }
-
-    private @NonNull Counter[] makeCounterPair(@NonNull final String name, @NonNull final String clarification) {
-        final var metricPair = new Counter[2];
-        metricPair[MethodMetricType.TOTAL.index] = makeCounter(MethodMetricType.TOTAL, name, clarification);
-        metricPair[MethodMetricType.FAILED.index] = makeCounter(MethodMetricType.FAILED, name, clarification);
-        return metricPair;
-    }
-
-    /**
-     * Secondary metrics are based on the system contract methods themselves, split into various categories that
-     * are based on their attributes.
-     */
-    public void createContractSecondaryMetrics() {
-
-        if (systemContractMethodRegistry.size() == 0) {
-            // Something went wrong with the order in which components were initialized
-            log.warn("no system contract methods registered when trying to create secondary metrics");
-        }
-
-        final var contractsConfig = requireNonNull(contractsConfigSupplier.get());
-        this.p2MetricsEnabled = contractsConfig.metricsSmartContractSecondaryEnabled();
-
-        if (p2MetricsEnabled) {
-
-            // P2 metrics come in pairs:  a total count of something, and the error count for that same thing
-
-            // By system contract
-            // Collect all system contracts in use and create counters
-            final var allSystemContracts = systemContractMethodRegistry.allMethods().stream()
-                    .map(m -> m.systemContract().orElseThrow())
-                    .collect(Collectors.toSet());
-            for (final var systemContract : allSystemContracts) {
-                systemContractMethodCounters.put(systemContract, makeCounterPair(systemContract.name(), ""));
-            }
-
-            // By via: DIRECT vs PROXY
-
-            for (final var callVia : SystemContractMethod.CallVia.values()) {
-                systemContractMethodCountersVia.put(callVia, makeCounterPair(callVia.name(), ""));
-            }
-
-            // By ERC type
-
-            for (final var method : systemContractMethodRegistry.allMethods()) {
-                final var ercMembership = intersect(method.categories(), ERC_TYPES);
-                systemContractMethodErcMembers.put(method, ercMembership);
-            }
-
-            for (final var ercType : ERC_TYPES) {
-                systemContractERCTypeCounters.put(ercType, makeCounterPair(ercType.name(), ercType.clarification()));
-            }
-
-            // By Method Group
-
-            for (final var method : systemContractMethodRegistry.allMethods()) {
-                final var groupMembership = intersect(method.categories(), METHOD_GROUPS);
-                systemContractMethodGroupMembers.put(method, groupMembership);
-            }
-
-            for (final var methodGroup : METHOD_GROUPS) {
-                systemContractMethodGroupCounters.put(
-                        methodGroup, makeCounterPair(methodGroup.name(), methodGroup.clarification()));
-            }
-        }
-    }
-
     // ---------------------------------
     // P1 metrics:  `pureCheck` failures
 
@@ -327,71 +185,6 @@ public class ContractMetrics {
     public void bumpRejectedType3EthTx(final long bumpBy) {
         if (p1MetricsEnabled) {
             rejectedEthType3Counter.add(bumpBy);
-        }
-    }
-
-    // ---------------------------------------------
-    // P2 metrics: System contract per-method counts
-
-    enum MethodResult {
-        SUCCESS,
-        FAILURE;
-
-        public static @NonNull MethodResult from(@NonNull final MessageFrame.State state) {
-            return switch (state) {
-                case State.CODE_SUCCESS, State.COMPLETED_SUCCESS -> SUCCESS;
-                default -> FAILURE;
-            };
-        }
-    }
-
-    public void incrementSystemMethodCall(
-            @NonNull SystemContractMethod systemContractMethod, @NonNull final MessageFrame.State state) {
-        systemContractMethod =
-                systemContractMethodRegistry.fromMissingContractGetWithContract(requireNonNull(systemContractMethod));
-        requireNonNull(state);
-
-        final var result = MethodResult.from(state);
-        if (p2MetricsEnabled) {
-            // Handle each of the P2 metrics kinds
-
-            try {
-                final Consumer<Counter[]> bumpMetricsPair = metricsPair -> {
-                    metricsPair[MethodMetricType.TOTAL.index].increment();
-                    if (MethodResult.FAILURE == result) {
-                        metricsPair[MethodMetricType.FAILED.index].increment();
-                    }
-                };
-
-                bumpMetricsPair.accept(systemContractMethodCounters.get(
-                        systemContractMethod.systemContract().orElse(null)));
-                bumpMetricsPair.accept(systemContractMethodCountersVia.get(systemContractMethod.via()));
-                systemContractMethodErcMembers
-                        .get(systemContractMethod)
-                        .forEach(ercType -> bumpMetricsPair.accept(systemContractERCTypeCounters.get(ercType)));
-                systemContractMethodGroupMembers
-                        .get(systemContractMethod)
-                        .forEach(group -> bumpMetricsPair.accept(systemContractMethodGroupCounters.get(group)));
-            } catch (final NullPointerException e) {
-                // ignore: should never happen, but ... just in case ... don't fail tx because of bad
-                // metrics code
-                // FUTURE: Log a warning (since should never happen) but take care to log only _once_
-                // per missing member and system contract method.  (So logs don't get spammed over and over.)
-            }
-        }
-    }
-
-    private final ConcurrentHashMap<SystemContractMethod, SystemContractMethod> methodsThatHaveCallsWithNullMethod =
-            new ConcurrentHashMap<>(50);
-
-    public void logWarnMissingSystemContractMethodOnCall(@NonNull final SystemContractMethod systemContractMethod) {
-        // Log, but only first time you see it for a specific method (to avoid spew)
-        requireNonNull(systemContractMethod);
-        if (methodsThatHaveCallsWithNullMethod.containsKey(systemContractMethod)) {
-            log.warn("Found `Call` without `SystemContractMethod`,  %s"
-                    .formatted(systemContractMethod.fullyDecoratedMethodName()));
-        } else {
-            methodsThatHaveCallsWithNullMethod.put(systemContractMethod, systemContractMethod);
         }
     }
 
@@ -429,28 +222,8 @@ public class ContractMetrics {
     }
 
     @VisibleForTesting
-    public @NonNull Set<Counter> getAllP2Counters() {
-        final var allCounters = new HashSet<Counter>(200);
-
-        final Consumer<Map<?, Counter[]>> adder = map -> {
-            map.values().forEach(counterPair -> {
-                allCounters.add(counterPair[MethodMetricType.TOTAL.index]);
-                allCounters.add(counterPair[MethodMetricType.FAILED.index]);
-            });
-        };
-        adder.accept(systemContractMethodCounters);
-        adder.accept(systemContractMethodCountersVia);
-        adder.accept(systemContractERCTypeCounters);
-        adder.accept(systemContractMethodGroupCounters);
-
-        return allCounters;
-    }
-
-    @VisibleForTesting
     public @NonNull Set<Counter> getAllCounters() {
-        final var allCounters = getAllP1Counters();
-        allCounters.addAll(getAllP2Counters());
-        return allCounters;
+        return getAllP1Counters();
     }
 
     @VisibleForTesting
@@ -524,31 +297,11 @@ public class ContractMetrics {
         return toString(REJECTED_DESCR_TEMPLATE, functionality, shortDescription);
     }
 
-    private static @NonNull String toMethodMetricName(
-            @NonNull final String name, @NonNull final MethodMetricType type) {
-        return toString(METHOD_METRIC_NAME_TEMPLATE, name, type, "");
-    }
-
-    private static @NonNull String toMethodMetricDescr(
-            @NonNull final String name, @NonNull final MethodMetricType type, @NonNull final String clarification) {
-        return toString(METHOD_METRIC_DESCR_TEMPLATE, name, type, clarification);
-    }
-
     private static @NonNull String toString(
             @NonNull final String template,
             @NonNull final String functionality,
             @NonNull final String shortDescription) {
         final var possiblyUnacceptableName = template.formatted(functionality, METRIC_SERVICE, shortDescription);
-        final var definitelyAcceptableName = NameConverter.fix(possiblyUnacceptableName);
-        return definitelyAcceptableName;
-    }
-
-    private static @NonNull String toString(
-            @NonNull final String template,
-            @NonNull final String name,
-            @NonNull final MethodMetricType type,
-            @NonNull final String clarification) {
-        final var possiblyUnacceptableName = template.formatted(name, METRIC_SERVICE, type, clarification);
         final var definitelyAcceptableName = NameConverter.fix(possiblyUnacceptableName);
         return definitelyAcceptableName;
     }

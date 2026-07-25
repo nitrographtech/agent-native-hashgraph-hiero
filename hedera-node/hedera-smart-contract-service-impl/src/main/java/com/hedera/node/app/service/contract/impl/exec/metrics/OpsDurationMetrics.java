@@ -7,14 +7,12 @@ import com.swirlds.metrics.api.Metrics;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 public class OpsDurationMetrics {
-    private final SystemContractOpsDurationMetric systemContractOpsDurationMetric;
     private final PrecompileOpsDurationMetric precompileOpsDurationMetric;
     private final TransactionThrottledByOpsDurationMetric transactionThrottledByOpsDurationMetric;
     private final CountAccumulateAverageMetricTriplet perTransactionOpsDuration;
 
     public OpsDurationMetrics(@NonNull final Metrics metrics) {
         requireNonNull(metrics, "Metrics cannot be null");
-        this.systemContractOpsDurationMetric = new SystemContractOpsDurationMetric(metrics);
         this.precompileOpsDurationMetric = new PrecompileOpsDurationMetric(metrics);
         this.transactionThrottledByOpsDurationMetric = new TransactionThrottledByOpsDurationMetric(metrics);
         this.perTransactionOpsDuration = CountAccumulateAverageMetricTriplet.create(
@@ -22,21 +20,6 @@ public class OpsDurationMetrics {
                 ContractMetrics.METRIC_CATEGORY,
                 String.format("%s:OpsDuration_PerTxn", ContractMetrics.METRIC_SERVICE),
                 "Ops duration of all transaction in nanoseconds");
-    }
-
-    /**
-     * Records the duration of a system contract operation in nanoseconds
-     *
-     * @param systemContractName the system contract name
-     * @param systemContractAddress the system contract address
-     * @param durationNanos the duration in nanoseconds
-     */
-    public void recordSystemContractOpsDuration(
-            @NonNull final String systemContractName,
-            @NonNull final String systemContractAddress,
-            final long durationNanos) {
-        systemContractOpsDurationMetric.recordOperationDuration(
-                systemContractName, systemContractAddress, durationNanos);
     }
 
     /**

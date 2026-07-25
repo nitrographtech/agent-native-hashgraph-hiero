@@ -7,7 +7,6 @@ import com.hedera.hapi.streams.CallOperationType;
 import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracer;
 import com.hedera.node.app.service.contract.impl.exec.failure.CustomExceptionalHaltReason;
 import com.hedera.node.app.service.contract.impl.exec.processors.PublicMessageProcessor;
-import com.hedera.node.app.service.contract.impl.exec.systemcontracts.HtsSystemContract;
 import com.hedera.node.app.service.contract.impl.exec.utils.FrameUtils;
 import com.hedera.node.app.service.contract.impl.hevm.HevmPropagatedCallFailure;
 import com.hedera.node.app.service.contract.impl.state.AbstractMutableEvmAccount;
@@ -358,7 +357,7 @@ public abstract class CallManager {
     }
 
     private static Address hookSender(BEVM bevm) {
-        return bevm._recvAddr.equals(HtsSystemContract.HTS_HOOKS_CONTRACT_ADDRESS)
+        return bevm._recvAddr.equals(FrameUtils.HOOK_CONTRACT_ADDRESS)
             ? bevm._top._hookOwner
             : bevm._recvAddr;
     }

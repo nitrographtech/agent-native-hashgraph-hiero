@@ -42,7 +42,7 @@ flowchart TD
     FULL_PROVIDER[FullContractRuntimeProvider]
     FULL_JAR[Full HederaNode application jar]
     CSI[ContractServiceImpl]
-    EVM[Besu/EVM/system contracts]
+    EVM[Besu/EVM legacy runtime; system-contract façades removed in P07-4]
     FULL_JAR --> FULL_PROVIDER --> CSI --> EVM
   end
 

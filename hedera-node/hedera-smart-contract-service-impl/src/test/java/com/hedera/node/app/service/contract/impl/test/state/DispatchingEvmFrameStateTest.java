@@ -16,7 +16,6 @@ import static com.hedera.node.app.service.contract.impl.test.TestHelpers.entityI
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pbjToTuweniBytes;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.pbjToTuweniUInt256;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.tuweniToPbjBytes;
-import static org.hyperledger.besu.evm.frame.ExceptionalHaltReason.ILLEGAL_STATE_CHANGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -28,8 +27,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -38,13 +35,10 @@ import com.hedera.hapi.node.base.ContractID;
 import com.hedera.hapi.node.base.Key;
 import com.hedera.hapi.node.base.KeyList;
 import com.hedera.hapi.node.base.ResponseCodeEnum;
-import com.hedera.hapi.node.base.TokenID;
 import com.hedera.hapi.node.state.contract.Bytecode;
 import com.hedera.hapi.node.state.contract.SlotKey;
 import com.hedera.hapi.node.state.contract.SlotValue;
-import com.hedera.hapi.node.state.schedule.Schedule;
 import com.hedera.hapi.node.state.token.Account;
-import com.hedera.hapi.node.state.token.Token;
 import com.hedera.node.app.service.contract.impl.exec.failure.CustomExceptionalHaltReason;
 import com.hedera.node.app.service.contract.impl.exec.scope.ActiveContractVerificationStrategy;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaNativeOperations;
@@ -54,10 +48,8 @@ import com.hedera.node.app.service.contract.impl.state.DispatchingEvmFrameState;
 import com.hedera.node.app.service.contract.impl.state.ProxyEvmAccount;
 import com.hedera.node.app.service.contract.impl.state.ProxyEvmContract;
 import com.hedera.node.app.service.contract.impl.state.RentFactors;
-import com.hedera.node.app.service.contract.impl.state.ScheduleEvmAccount;
 import com.hedera.node.app.service.contract.impl.state.StorageAccess;
 import com.hedera.node.app.service.contract.impl.state.StorageAccesses;
-import com.hedera.node.app.service.contract.impl.state.TokenEvmAccount;
 import com.hedera.node.app.service.contract.impl.state.TxStorageUsage;
 import com.hedera.node.config.testfixtures.HederaTestConfigBuilder;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
@@ -563,23 +555,21 @@ class DispatchingEvmFrameStateTest {
     }
 
     @Test
-    void cannotTransferToTokenAccount() {
+    void cannotTransferToFormerTokenRedirectAddress() {
         givenWellKnownAccount(contractWith(A_ACCOUNT_ID).smartContract(true));
-        givenWellKnownToken();
         given(nativeOperations.entityIdFactory()).willReturn(entityIdFactory);
         final var reasonToHaltDeletion = subject.tryTransfer(LONG_ZERO_ADDRESS, TOKEN_ADDRESS, 123L, true);
         assertTrue(reasonToHaltDeletion.isPresent());
-        assertEquals(ILLEGAL_STATE_CHANGE, reasonToHaltDeletion.get());
+        assertEquals(INVALID_SOLIDITY_ADDRESS, reasonToHaltDeletion.get());
     }
 
     @Test
-    void cannotTransferToScheduleAccount() {
+    void cannotTransferToFormerScheduleRedirectAddress() {
         givenWellKnownAccount(contractWith(A_ACCOUNT_ID).smartContract(true));
-        givenWellKnownSchedule();
         given(nativeOperations.entityIdFactory()).willReturn(entityIdFactory);
         final var reasonToHaltDeletion = subject.tryTransfer(LONG_ZERO_ADDRESS, SCHEDULE_ADDRESS, 123L, true);
         assertTrue(reasonToHaltDeletion.isPresent());
-        assertEquals(ILLEGAL_STATE_CHANGE, reasonToHaltDeletion.get());
+        assertEquals(INVALID_SOLIDITY_ADDRESS, reasonToHaltDeletion.get());
     }
 
     @Test
@@ -725,8 +715,7 @@ class DispatchingEvmFrameStateTest {
     }
 
     @Test
-    void tokenAccountsCannotBeBeneficiaries() {
-        givenWellKnownToken();
+    void formerTokenRedirectAddressesCannotBeBeneficiaries() {
         given(nativeOperations.entityIdFactory()).willReturn(entityIdFactory);
 
         final var reasonToHaltDeletion = subject.tryTrackingSelfDestructBeneficiary(EVM_ADDRESS, TOKEN_ADDRESS, frame);
@@ -736,8 +725,7 @@ class DispatchingEvmFrameStateTest {
     }
 
     @Test
-    void scheduleAccountsCannotBeBeneficiaries() {
-        givenWellKnownSchedule();
+    void formerScheduleRedirectAddressesCannotBeBeneficiaries() {
         given(nativeOperations.entityIdFactory()).willReturn(entityIdFactory);
 
         final var reasonToHaltDeletion =
@@ -822,35 +810,6 @@ class DispatchingEvmFrameStateTest {
     }
 
     @Test
-    void choosesTokenAccountIfApplicable() {
-        givenWellKnownToken();
-        given(nativeOperations.entityIdFactory()).willReturn(entityIdFactory);
-        final var account = subject.getAccount(TOKEN_ADDRESS);
-        assertInstanceOf(TokenEvmAccount.class, account);
-    }
-
-    @Test
-    void choosesScheduleAccountIfApplicable() {
-        givenWellKnownSchedule();
-        given(nativeOperations.entityIdFactory()).willReturn(entityIdFactory);
-        final var account = subject.getAccount(SCHEDULE_ADDRESS);
-        assertInstanceOf(ScheduleEvmAccount.class, account);
-    }
-
-    @Test
-    void getAccountDelegatesToGetMutableAccount() {
-        final var mockSubject = mock(DispatchingEvmFrameState.class);
-        final var mockAccount = mock(TokenEvmAccount.class);
-
-        given(mockSubject.getMutableAccount(TOKEN_ADDRESS)).willReturn(mockAccount);
-        doCallRealMethod().when(mockSubject).getAccount(TOKEN_ADDRESS);
-
-        final var account = mockSubject.getAccount(TOKEN_ADDRESS);
-
-        assertSame(mockAccount, account);
-    }
-
-    @Test
     void delegatesSizeOfKvState() {
         given(contractStateStore.getNumSlots()).willReturn(123L);
         assertEquals(123L, subject.getKvStateSize());
@@ -870,16 +829,6 @@ class DispatchingEvmFrameStateTest {
 
     private void givenWellKnownContract(final ContractID contractID, final Account.Builder builder) {
         given(nativeOperations.getAccount(contractID)).willReturn(builder.build());
-    }
-
-    private void givenWellKnownToken() {
-        given(nativeOperations.getToken(any(TokenID.class)))
-                .willReturn(Token.newBuilder().build());
-    }
-
-    private void givenWellKnownSchedule() {
-        given(nativeOperations.getSchedule(entityIdFactory.newScheduleId(SCHEDULE_NUM)))
-                .willReturn(Schedule.newBuilder().build());
     }
 
     private Account.Builder accountWith(final AccountID accountID, final Bytes alias) {
