@@ -1,0 +1,40 @@
+{
+  "phase": "P07-7",
+  "status": "BLOCKED_AND_SUPERSEDED_BY_P07_8",
+  "base": {
+    "p07_6_final_evidence_head": "d626d73c8c770c977d9abf458ef97950ca8b9f12",
+    "p07_6_exact_head_ci_run": 30143838354,
+    "p07_6_merge_commit": "d41e7c2cb3e710b37f095cd68e46284a0f4fd9bf"
+  },
+  "production_changes": 0,
+  "measurements": {
+    "state_production_files": 27,
+    "state_production_bytes": 148189,
+    "state_files_with_besu_imports": 15,
+    "state_files_with_tuweni_imports": 12,
+    "direct_world_state_closure_files": 40,
+    "direct_world_state_closure_bytes": 448448,
+    "state_test_files": 10,
+    "state_test_bytes": 92420
+  },
+  "ordinary_execution_proof": [
+    "ContextTransactionProcessor requires RootProxyWorldUpdater for every ordinary create/call",
+    "FrameBuilder supplies HederaWorldUpdater.updater() to the Besu MessageFrame",
+    "RootProxyWorldUpdater.commit() validates and persists storage changes and commits the nested updater",
+    "ordinary create/call results obtain created IDs, nonces, addresses, and storage usage from the root updater",
+    "fixture full-node execution uses the same mutable world-state closure"
+  ],
+  "historical_isolation": {
+    "neutral_interfaces": [
+      "ReadableContractStateStore",
+      "HistoricalReadableContractStateStore",
+      "HistoricalReadableEvmHookStore"
+    ],
+    "adapter": "HistoricalContractStoreFactory",
+    "runtime_provider": "HistoricalContractRuntimeProvider",
+    "mutable_world_state_required": false
+  },
+  "protected_assets_changed": 0,
+  "deletion_decision": "STOP: removing executable world state while preserving ordinary EVM execution requires a replacement executable world state and would broaden into EVM redesign/removal",
+  "recommended_next_authorization": "Combine executable world-state deletion with retirement of ordinary EVM execution; keep neutral historical interfaces, adapters, schemas, and persisted maps"
+}
