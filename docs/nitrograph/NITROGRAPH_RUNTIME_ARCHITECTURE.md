@@ -110,6 +110,12 @@ compatibility side of the boundary. Mutable world state, EVM processors, live tr
 and executable contract handlers are absent.
 
 The immutable P06A release is a one-node activation fixture. It must not be treated as a
-multi-node reconnect fixture or mutated to supply a four-node roster. Exact-head activation
-reaches ACTIVE without the engine; the remaining reconnect gate is blocked by fixture ownership,
-not runtime construction.
+multi-node reconnect fixture or mutated to supply a four-node roster. The additive
+`p07-four-node-postwrite-v065-storage424242-v1` fixture owns restart and reconnect validation.
+
+## P07-9 neutral schema ownership
+
+`app-service-contract-impl` is removed. Its two deprecated V0.49/V0.65 schema forwarders now live
+in `app-service-contract` with unchanged `com.hedera.node.app.service.contract.impl.schemas`
+FQNs. Their neutral parent schemas continue owning persisted state definitions. Test-client EVM
+conversion helpers remain tooling-only; neither Besu nor Tuweni enters the neutral contract API.

@@ -2,9 +2,9 @@
 package com.hedera.services.bdd.junit.support.translators.impl;
 
 import static com.hedera.hapi.node.base.ResponseCodeEnum.SUCCESS;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.bloomForAll;
 import static com.hedera.services.bdd.junit.support.translators.BaseTranslator.mapTracesToVerboseLogs;
 import static com.hedera.services.bdd.junit.support.translators.BaseTranslator.resultBuilderFrom;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.bloomForAll;
 import static java.util.Objects.requireNonNull;
 
 import com.hedera.hapi.block.stream.output.StateChange;

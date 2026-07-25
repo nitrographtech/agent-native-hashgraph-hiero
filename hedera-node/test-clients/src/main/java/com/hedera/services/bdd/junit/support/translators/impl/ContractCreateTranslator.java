@@ -6,10 +6,10 @@ import static com.hedera.hapi.node.base.ResponseCodeEnum.ERROR_DECODING_BYTESTRI
 import static com.hedera.hapi.node.base.ResponseCodeEnum.FILE_DELETED;
 import static com.hedera.hapi.node.base.ResponseCodeEnum.SUCCESS;
 import static com.hedera.node.app.hapi.utils.EntityType.ACCOUNT;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.bloomForAll;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.removeIfAnyLeading0x;
 import static com.hedera.services.bdd.junit.support.translators.BaseTranslator.mapTracesToVerboseLogs;
 import static com.hedera.services.bdd.junit.support.translators.BaseTranslator.resultBuilderFrom;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.bloomForAll;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.removeIfAnyLeading0x;
 import static java.util.Objects.requireNonNull;
 
 import com.hedera.hapi.block.stream.output.StateChange;

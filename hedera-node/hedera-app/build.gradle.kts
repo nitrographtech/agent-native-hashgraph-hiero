@@ -40,14 +40,12 @@ testModuleInfo {
     requires("com.swirlds.base.test.fixtures")
     requires("org.hiero.consensus.roster.test.fixtures")
     requires("org.hiero.base.crypto.test.fixtures")
-    requires("com.esaulpaugh.headlong")
     requires("org.assertj.core")
     requires("org.bouncycastle.provider")
     requires("org.junit.jupiter.api")
     requires("org.junit.jupiter.params")
     requires("org.mockito")
     requires("org.mockito.junit.jupiter")
-    requires("tuweni.bytes")
     requires("uk.org.webcompere.systemstubs.core")
     requires("uk.org.webcompere.systemstubs.jupiter")
 
@@ -145,7 +143,6 @@ val nativeAppJar =
                     inputs.files
                         .filter {
                             it.extension == "jar" &&
-                                !it.name.startsWith("app-service-contract-impl-") &&
                                 !it.name.startsWith("besu-") &&
                                 !it.name.startsWith("evm-") &&
                                 !it.name.startsWith("tuweni-") &&
@@ -278,7 +275,6 @@ tasks.register<Sync>("distributionNativeAgent") {
     dependsOn(copyNodeData, nativeAppJar, nativeBaseCryptoJar)
     from(nodeWorkingDir) {
         exclude("data/apps/HederaNode.jar")
-        exclude("data/lib/app-service-contract-impl-*")
         exclude("data/lib/base-crypto-*")
         exclude("data/lib/besu-*")
         exclude("data/lib/evm-*")

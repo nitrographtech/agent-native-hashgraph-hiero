@@ -33,7 +33,7 @@ module com.hedera.node.app {
     requires transitive org.hiero.base.crypto;
     requires transitive org.hiero.base.utility;
     requires transitive org.hiero.consensus.model;
-    requires transitive org.hiero.consensus.platformstate;
+    requires org.hiero.consensus.platformstate;
     requires transitive org.hiero.consensus.utility;
     requires transitive dagger;
     requires transitive io.grpc.stub;
@@ -44,8 +44,6 @@ module com.hedera.node.app {
     requires transitive java.net.http;
     requires transitive javax.inject;
     requires transitive org.apache.logging.log4j;
-    requires transitive org.hyperledger.besu.datatypes;
-    requires transitive org.hyperledger.besu.evm;
     requires com.hedera.node.app.service.addressbook;
     requires com.hedera.node.app.service.consensus;
     requires com.hedera.node.app.service.entityid.impl;
