@@ -24,7 +24,7 @@ import com.hedera.node.app.metrics.StoreMetricsServiceImpl;
 import com.hedera.node.app.records.BlockRecordService;
 import com.hedera.node.app.service.addressbook.impl.AddressBookServiceImpl;
 import com.hedera.node.app.service.consensus.impl.ConsensusServiceImpl;
-import com.hedera.node.app.service.contract.impl.ContractServiceImpl;
+import com.hedera.node.app.service.contract.history.HistoricalContractStateService;
 import com.hedera.node.app.service.entityid.impl.AppEntityIdFactory;
 import com.hedera.node.app.service.entityid.impl.EntityIdServiceImpl;
 import com.hedera.node.app.service.file.impl.FileServiceImpl;
@@ -242,7 +242,7 @@ public final class StateUtils {
         Set.of(
                         new EntityIdServiceImpl(),
                         new ConsensusServiceImpl(),
-                        new ContractServiceImpl(appContext, new NoOpMetrics()),
+                        new HistoricalContractStateService(),
                         new FileServiceImpl(),
                         new FreezeServiceImpl(),
                         new ScheduleServiceImpl(appContext),

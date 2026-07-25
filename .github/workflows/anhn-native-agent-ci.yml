@@ -42,7 +42,7 @@ jobs:
 
       - name: Verify distribution profiles
         run: |
-          test "$(grep -Fx 'contracts.enabled=true' hedera-node/hedera-app/build/distributions/distribution-full/data/config/application.properties)" = "contracts.enabled=true"
+          test "$(grep -Fx 'contracts.enabled=false' hedera-node/hedera-app/build/distributions/distribution-full/data/config/application.properties)" = "contracts.enabled=false"
           test "$(grep -Fx 'contracts.enabled=false' hedera-node/hedera-app/build/distributions/distribution-native-agent/data/config/application.properties)" = "contracts.enabled=false"
 
       - name: Enforce Nitrograph native runtime dependency policy
@@ -60,6 +60,8 @@ jobs:
           tools/p07/test-dead-solidity-asset-policy.sh
           tools/p07/verify-ethereum-execution-removed.sh
           tools/p07/test-ethereum-execution-removal-policy.sh
+          tools/p07/verify-executable-contract-engine-removed.sh
+          tools/p07/test-executable-engine-removal-policy.sh
 
       - name: Enforce protected-layer boundary
         run: |

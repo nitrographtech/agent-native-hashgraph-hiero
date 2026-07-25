@@ -276,6 +276,20 @@ removable from full/repository build graphs after Wave 10.
 No Git pack-size, clone-time, or build-time reduction is claimed until a deletion branch measures it
 against this base.
 
+## Wave 8 implementation status
+
+P07-8 retires ordinary executable contract processing and mutable world state as the single
+cohesive subsystem identified by P07-7. The immutable
+`p07-executable-fixture-compat-v1` release preserves executable fixture reproduction at source
+commit `64da043f766da29d0fd3e20e3f51051fdd31f5a1`; production application composition now selects
+historical compatibility only. Executable handlers, processors, mutable accounts and storage,
+world updaters, the residual live tracer seam, and full-runtime provider/store factories are
+deleted. The former full distribution is a non-executable alias of the native application.
+
+The remaining `app-service-contract-impl` module contains only historical schema forwarders and
+two test-client compatibility utilities. Its Besu/Tuweni residue, along with the separately
+protected `platform-sdk/base-crypto` secp256k1 boundary, is assigned to measured P07-9 cleanup.
+
 ## Stop gates
 
 Stop the affected route immediately if a wave requires:

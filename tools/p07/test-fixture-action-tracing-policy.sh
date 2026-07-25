@@ -22,9 +22,10 @@ expect_rejection() {
 reset_fixture() {
   rm -rf "$tmp_root/repo" "$tmp_root/artifacts" "$tmp_root/classes"
   mkdir -p "$tmp_root/repo/hedera-node/fixture-tooling/src/main/java" \
-    "$tmp_root/repo/runtime/src/main/java" "$tmp_root/artifacts" "$tmp_root/classes"
-  printf 'public class EvmActionTracer {}\n' \
-    >"$tmp_root/repo/hedera-node/fixture-tooling/src/main/java/EvmActionTracer.java"
+    "$tmp_root/repo/runtime/src/main/java" "$tmp_root/repo/docs/nitrograph" \
+    "$tmp_root/artifacts" "$tmp_root/classes"
+  printf 'p07-executable-fixture-compat-v1\n' \
+    >"$tmp_root/repo/docs/nitrograph/P07_EXECUTABLE_FIXTURE_COMPATIBILITY_RELEASE.md"
 }
 
 reset_fixture

@@ -1,0 +1,45 @@
+{
+  "phase": "P07-8",
+  "status": "IMPLEMENTED_VALIDATION_IN_PROGRESS",
+  "baseMerge": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
+  "fixtureCompatibilityRelease": {
+    "tag": "p07-executable-fixture-compat-v1",
+    "sourceCommit": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
+    "archiveBytes": 46374065,
+    "archiveSha256": "6af7596d365e62561df913032daaaf4437c3eafeb75e567e33057e8eab5b7a7a",
+    "cleanExtractionBuild": "PASS",
+    "authoritativeFixtureChanged": false,
+    "privateMaterialPublished": false
+  },
+  "deletion": {
+    "filesDeleted": 336,
+    "productionJavaFilesDeleted": 226,
+    "productionBytesDeleted": 1455420,
+    "testJavaFilesDeleted": 110,
+    "testBytesDeleted": 932298,
+    "totalDeletedBytes": 2387718,
+    "engineClassesRemaining": 0,
+    "mutableWorldStateClassesRemaining": 0,
+    "runtimeTracerSeamClassesRemaining": 0
+  },
+  "composition": {
+    "fullExecutableProvider": "ABSENT",
+    "fullExecutableStoreFactory": "ABSENT",
+    "productionContractProvider": "HistoricalContractRuntimeProvider",
+    "formerFullDistribution": "NON_EXECUTABLE_ALIAS",
+    "contractsEnabledDefault": false
+  },
+  "protectedHistoricalInventorySha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+  "validation": {
+    "focusedCompilation": "PASS",
+    "nativeDistribution": "PASS",
+    "formerFullProfileRetirementBuild": "PASS",
+    "fixtureToolingBuild": "PASS",
+    "engineRemovalPolicy": "PASS",
+    "intentionalFailureControls": "PASS",
+    "lifecycle": "PENDING",
+    "reconnect": "PENDING",
+    "mirror": "PENDING",
+    "ci": "PENDING"
+  }
+}

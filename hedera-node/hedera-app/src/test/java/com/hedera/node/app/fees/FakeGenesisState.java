@@ -31,7 +31,7 @@ import com.hedera.node.app.service.addressbook.ReadableNodeStore;
 import com.hedera.node.app.service.addressbook.impl.AddressBookServiceImpl;
 import com.hedera.node.app.service.addressbook.impl.ReadableNodeStoreImpl;
 import com.hedera.node.app.service.consensus.impl.ConsensusServiceImpl;
-import com.hedera.node.app.service.contract.impl.ContractServiceImpl;
+import com.hedera.node.app.service.contract.history.HistoricalContractStateService;
 import com.hedera.node.app.service.entityid.EntityIdFactory;
 import com.hedera.node.app.service.entityid.EntityIdService;
 import com.hedera.node.app.service.entityid.impl.AppEntityIdFactory;
@@ -216,7 +216,7 @@ public class FakeGenesisState {
         Set.of(
                         new EntityIdServiceImpl(),
                         new ConsensusServiceImpl(),
-                        new ContractServiceImpl(appContext, NO_OP_METRICS),
+                        new HistoricalContractStateService(),
                         new FileServiceImpl(),
                         new FreezeServiceImpl(),
                         new ScheduleServiceImpl(appContext),

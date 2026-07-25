@@ -73,3 +73,10 @@ created.
 
 No production source, test, Dagger, Gradle, JPMS, service metadata, PBJ model, persisted state, or
 fixture was changed at this checkpoint.
+
+## P07-8 disposition
+
+The deferred protocol is now deleted with its owning engine processors: runtime
+`ActionSidecarContentTracer`, its factory, `NoTracer`, frame/message/HEVM/Bonneville propagation,
+and live result action extraction are absent. Historical `ContractAction` interpretation remains;
+fixture action reproduction remains available only from the frozen compatibility release.

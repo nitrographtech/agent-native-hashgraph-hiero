@@ -59,18 +59,27 @@ for artifact_root in "${roots[@]}"; do
     jar_hits=$("$jar_bin" tf "$jar_file" 2>/dev/null | grep -E "$tracer_path_pattern" || true)
     [[ -z "$jar_hits" ]] || fail "fixture tracer packaged in runtime jar $jar_file:\n$jar_hits"
 
-    service_hits=$(
-      unzip -p "$jar_file" 'META-INF/services/*' 2>/dev/null |
-        grep -En "$service_pattern" || true
-    )
-    [[ -z "$service_hits" ]] ||
-      fail "fixture tracer service packaged in runtime jar $jar_file:\n$service_hits"
+    service_entries=$("$jar_bin" tf "$jar_file" | grep -E '^META-INF/services/' || true)
+    if [[ -n "$service_entries" ]]; then
+      extract_dir=$(mktemp -d)
+      (
+        cd "$extract_dir"
+        while IFS= read -r entry; do "$jar_bin" xf "$jar_file" "$entry"; done <<<"$service_entries"
+      )
+      service_hits=$(grep -REn "$service_pattern" "$extract_dir/META-INF/services" || true)
+      find "$extract_dir" -depth -delete
+      [[ -z "$service_hits" ]] ||
+        fail "fixture tracer service packaged in runtime jar $jar_file:\n$service_hits"
+    fi
   done < <(find "$artifact_root" -type f -name '*.jar' -print0)
 done
 
-if [[ -d "$tooling_root/src/main/java" ]]; then
-  tooling_sources=$(grep -REl "$tracer_source_pattern" "$tooling_root/src/main/java" 2>/dev/null || true)
-  [[ -n "$tooling_sources" ]] || fail "fixture tooling does not own a live action tracer"
+release_manifest="$repo_root/docs/nitrograph/P07_EXECUTABLE_FIXTURE_COMPATIBILITY_RELEASE.md"
+if [[ -f "$release_manifest" ]]; then
+  grep -Fq 'p07-executable-fixture-compat-v1' "$release_manifest" ||
+    fail "fixture compatibility release manifest does not identify the immutable release"
+else
+  fail "fixture compatibility release manifest is absent"
 fi
 
 if (( failures > 0 )); then exit 1; fi

@@ -87,3 +87,15 @@ flowchart TD
 
 The frozen invariant is: historical contract state remains readable and migratable but is never
 executable on Nitrograph.
+
+## P07-8 production architecture
+
+The production repository no longer has a full executable legacy profile. Both distribution
+tasks assemble the non-executable Nitrograph application, whose only contract runtime and store
+factories are historical. Executable fixture reproduction is frozen outside production ownership
+in the immutable `p07-executable-fixture-compat-v1` release.
+
+PBJ models, neutral stream-builder interfaces, historical schemas, read-only adapters, record and
+sidecar translation, block translation, and mirror interpretation remain on the permanent
+compatibility side of the boundary. Mutable world state, EVM processors, live tracer callbacks,
+and executable contract handlers are absent.

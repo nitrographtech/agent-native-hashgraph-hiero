@@ -74,3 +74,7 @@ The authoritative regression cardinalities remain `STORAGE=1`, `BYTECODE=2`,
 - Solidity compiler/runtime fixtures after the final reproducible corpus is frozen.
 - Executable tracers.
 
+P07-8 applies this distinction directly: the items above are removed from production ownership,
+while every persisted identifier, neutral API FQN, schema, codec, PBJ/protobuf model, historical
+adapter, authenticated fixture, and record/sidecar/block/mirror interpretation listed in this
+inventory remains protected.
