@@ -12,12 +12,12 @@ import com.hedera.hapi.block.stream.output.TransactionOutput;
 import com.hedera.hapi.block.stream.trace.TraceData;
 import com.hedera.hapi.node.base.HookId;
 import com.hedera.node.app.state.SingleTransactionRecord;
+import com.hedera.services.bdd.junit.support.fixtures.HistoricalContractResultFixtures;
 import com.hedera.services.bdd.junit.support.translators.BaseTranslator;
 import com.hedera.services.bdd.junit.support.translators.BlockTransactionPartsTranslator;
 import com.hedera.services.bdd.junit.support.translators.ScopedTraceData;
 import com.hedera.services.bdd.junit.support.translators.inputs.BlockTransactionParts;
 import com.hedera.services.bdd.junit.support.translators.inputs.HookMetadata;
-import com.hedera.services.bdd.suites.contract.records.RecordsSuite;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.List;
@@ -78,7 +78,7 @@ public class ContractCallTranslator implements BlockTransactionPartsTranslator {
     }
 
     private static boolean needsClippedTraceBloomFallback(@NonNull final BlockTransactionParts parts) {
-        return RecordsSuite.OVERSIZED_CONTRACT_ACTIONS_MEMO.equals(parts.memo())
+        return HistoricalContractResultFixtures.OVERSIZED_CONTRACT_ACTIONS_MEMO.equals(parts.memo())
                 && (parts.traces() == null || parts.traces().stream().noneMatch(ContractCallTranslator::impliesBloom));
     }
 

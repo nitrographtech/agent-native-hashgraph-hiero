@@ -71,7 +71,6 @@ import org.junit.jupiter.api.Tag;
 public class RecordsSuite {
     public static final String LOG_NOW = "logNow";
     public static final String AUTO_ACCOUNT = "autoAccount";
-    public static final String OVERSIZED_CONTRACT_ACTIONS_MEMO = "RecordsSuite.oversizedContractActionsAreClipped";
 
     @HapiTest
     final Stream<DynamicTest> bigCall() {

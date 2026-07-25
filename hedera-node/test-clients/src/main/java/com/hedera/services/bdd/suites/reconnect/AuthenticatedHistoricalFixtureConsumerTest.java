@@ -34,8 +34,7 @@ public class AuthenticatedHistoricalFixtureConsumerTest {
                         cryptoCreate("p07FixtureConsumerAccount"),
                         tokenCreate("p07FixtureConsumerAsset").treasury(DEFAULT_PAYER),
                         createTopic("p07FixtureConsumerCoordinationTopic"),
-                        submitMessageTo("p07FixtureConsumerCoordinationTopic")
-                                .message("p07-fixture-consumer"))
+                        submitMessageTo("p07FixtureConsumerCoordinationTopic").message("p07-fixture-consumer"))
                 .when(rejectedBodies())
                 .then();
     }

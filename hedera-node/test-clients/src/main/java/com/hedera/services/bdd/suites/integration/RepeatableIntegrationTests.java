@@ -74,7 +74,7 @@ import com.hedera.services.bdd.spec.dsl.entities.SpecNonFungibleToken;
 import com.hedera.services.bdd.spec.keys.KeyShape;
 import com.hedera.services.bdd.spec.keys.TrieSigMapGenerator;
 import com.hedera.services.bdd.spec.utilops.CustomSpecAssert;
-import com.hedera.services.bdd.utils.Signing;
+import com.hedera.services.bdd.suites.utils.NativeEcdsaSigning;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ScheduleID;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -336,7 +336,7 @@ public class RepeatableIntegrationTests {
             final var messageHash = new Keccak.Digest256().digest(message.toByteArray());
             final var privateKey = getEcdsaPrivateKeyFromSpec(spec, keyName);
             final var publicKey = spec.registry().getKey(keyName).getECDSASecp256K1();
-            final var signedBytes = Signing.signMessage(messageHash, privateKey);
+            final var signedBytes = NativeEcdsaSigning.signMessage(messageHash, privateKey);
             final var signatureMap = SignatureMap.newBuilder()
                     .sigPair(SignaturePair.newBuilder()
                             .ecdsaSecp256k1(Bytes.wrap(signedBytes))

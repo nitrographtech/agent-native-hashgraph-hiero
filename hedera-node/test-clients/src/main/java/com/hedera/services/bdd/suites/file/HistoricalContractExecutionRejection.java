@@ -39,23 +39,20 @@ public final class HistoricalContractExecutionRejection extends HapiSuite {
     }
 
     Stream<DynamicTest> rejectsEveryExecutableBodyAndContinuesNatively() {
-        final HapiSpecOperation rejectedCreate =
-                explicitContractCreate("p06aRejectedCreate", (spec, body) -> body.setGas(100_000L))
-                        .hasPrecheck(INVALID_TRANSACTION_BODY);
-        final HapiSpecOperation rejectedCall = contractCall(HISTORICAL_CONTRACT)
-                .gas(100_000L)
+        final HapiSpecOperation rejectedCreate = explicitContractCreate(
+                        "p06aRejectedCreate", (spec, body) -> body.setGas(100_000L))
                 .hasPrecheck(INVALID_TRANSACTION_BODY);
-        final HapiSpecOperation rejectedUpdate = contractUpdate(HISTORICAL_CONTRACT)
-                .memo("must-not-mutate")
-                .hasPrecheck(INVALID_TRANSACTION_BODY);
+        final HapiSpecOperation rejectedCall =
+                contractCall(HISTORICAL_CONTRACT).gas(100_000L).hasPrecheck(INVALID_TRANSACTION_BODY);
+        final HapiSpecOperation rejectedUpdate =
+                contractUpdate(HISTORICAL_CONTRACT).memo("must-not-mutate").hasPrecheck(INVALID_TRANSACTION_BODY);
         final HapiSpecOperation rejectedDelete = contractDelete(HISTORICAL_CONTRACT)
                 .transferAccount(DEFAULT_PAYER)
                 .hasPrecheck(INVALID_TRANSACTION_BODY);
-        final HapiSpecOperation rejectedEthereum =
-                explicitEthereumTransaction(
-                                "p06aRejectedEthereum",
-                                (spec, body) -> body.setEthereumData(ByteString.copyFrom(new byte[] {1})))
-                        .hasPrecheck(INVALID_TRANSACTION_BODY);
+        final HapiSpecOperation rejectedEthereum = explicitEthereumTransaction(
+                        "p06aRejectedEthereum",
+                        (spec, body) -> body.setEthereumData(ByteString.copyFrom(new byte[] {1})))
+                .hasPrecheck(INVALID_TRANSACTION_BODY);
         return hapiTest(
                 rejectedCreate,
                 rejectedCall,

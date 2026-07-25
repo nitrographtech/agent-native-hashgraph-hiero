@@ -47,6 +47,9 @@ import static com.hedera.services.bdd.suites.contract.Utils.mirrorAddrParamFunct
 import static com.hedera.services.bdd.suites.contract.Utils.mirrorAddrWith;
 import static com.hedera.services.bdd.suites.contract.Utils.nonMirrorAddrWith;
 import static com.hedera.services.bdd.suites.crypto.AutoCreateUtils.updateSpecFor;
+import static com.hedera.services.bdd.suites.utils.NativeAccountTestVectors.callOperationsSuccessSystemAccounts;
+import static com.hedera.services.bdd.suites.utils.NativeAccountTestVectors.existingSystemAccounts;
+import static com.hedera.services.bdd.suites.utils.NativeAccountTestVectors.nonExistingSystemAccounts;
 import static com.hedera.services.bdd.suites.utils.contracts.ErrorMessageResult.errorMessageResult;
 import static com.hedera.services.bdd.suites.utils.contracts.SimpleBytesResult.bigIntResult;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.CONTRACT_REVERT_EXECUTED;
@@ -107,11 +110,6 @@ public class Evm46ValidationSuite {
     private static final String BENEFICIARY = "beneficiary";
     private static final String SIMPLE_UPDATE_CONTRACT = "SimpleUpdate";
     private static final String BALANCE_OF = "balanceOf";
-    public static final List<Long> nonExistingSystemAccounts = List.of(351L, 352L, 353L, 354L, 355L, 356L, 357L, 358L);
-    public static final List<Long> existingSystemAccounts = List.of(800L, 999L, 1000L);
-    public static final List<Long> systemAccounts =
-            List.of(0L, 1L, 9L, 10L, 358L, 359L, 360L, 361L, 750L, 751L, 799L, 800L, 999L, 1000L);
-    public static final List<Long> callOperationsSuccessSystemAccounts = List.of(0L, 1L, 358L, 750L, 751L, 999L, 1000L);
 
     @HapiTest
     final Stream<DynamicTest> directCallToDeletedContractResultsInSuccessfulNoop() {

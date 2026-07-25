@@ -55,8 +55,8 @@ import com.hedera.services.bdd.junit.HapiTestLifecycle;
 import com.hedera.services.bdd.junit.support.TestLifecycle;
 import com.hedera.services.bdd.spec.keys.KeyShape;
 import com.hedera.services.bdd.spec.keys.RepeatableKeyGenerator;
+import com.hedera.services.bdd.suites.utils.NativeEcdsaSigning;
 import com.hedera.services.bdd.suites.utils.contracts.BoolResult;
-import com.hedera.services.bdd.utils.Signing;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -130,7 +130,7 @@ class AtomicIsAuthorizedTest {
 
                         final var privateKey = getEcdsaPrivateKeyFromSpec(spec, ECDSA_KEY);
                         final var addressBytes = recoverAddressFromPrivateKey(privateKey);
-                        final var signedBytes = Signing.signMessage(messageHash, privateKey);
+                        final var signedBytes = NativeEcdsaSigning.signMessage(messageHash, privateKey);
 
                         final var call = atomicBatch(contractCall(
                                                 HRC632_CONTRACT,
@@ -162,7 +162,7 @@ class AtomicIsAuthorizedTest {
 
                         final var privateKey = getEcdsaPrivateKeyFromSpec(spec, ECDSA_KEY);
                         final var addressBytes = recoverAddressFromPrivateKey(privateKey);
-                        final var signedBytes = Signing.signMessage(messageHash, privateKey);
+                        final var signedBytes = NativeEcdsaSigning.signMessage(messageHash, privateKey);
 
                         final var call = atomicBatch(contractCall(
                                                 HRC632_CONTRACT,
@@ -193,7 +193,7 @@ class AtomicIsAuthorizedTest {
 
                         final var privateKey = getEcdsaPrivateKeyFromSpec(spec, ECDSA_KEY);
                         final var addressBytes = recoverAddressFromPrivateKey(privateKey);
-                        final var signedBytes = Signing.signMessage(messageHash, privateKey);
+                        final var signedBytes = NativeEcdsaSigning.signMessage(messageHash, privateKey);
 
                         final var call = atomicBatch(contractCall(
                                                 HRC632_CONTRACT,
@@ -429,7 +429,7 @@ class AtomicIsAuthorizedTest {
                     withOpContext((spec, opLog) -> {
                         final var messageHash = new Digest().digest("submit".getBytes());
                         final var privateKey = getEcdsaPrivateKeyFromSpec(spec, ECDSA_KEY);
-                        final var signedBytes = Signing.signMessage(messageHash, privateKey);
+                        final var signedBytes = NativeEcdsaSigning.signMessage(messageHash, privateKey);
 
                         final var call = atomicBatch(contractCall(
                                                 HRC632_CONTRACT,
@@ -548,7 +548,8 @@ class AtomicIsAuthorizedTest {
                         Assertions.assertFalse(
                                 Arrays.equals(privateKeyECDSA, privateKeyECDSAAnother), "Keys must be different");
                         final var addressBytes = recoverAddressFromPrivateKey(privateKeyECDSAAnother);
-                        final var signedBytesECDSA = Signing.signMessage(messageHash32Bytes, privateKeyECDSA);
+                        final var signedBytesECDSA =
+                                NativeEcdsaSigning.signMessage(messageHash32Bytes, privateKeyECDSA);
 
                         // Perform test calls
                         final var callECDSADifferent = atomicBatch(contractCall(
@@ -647,7 +648,7 @@ class AtomicIsAuthorizedTest {
 
                             final var privateKey = getEcdsaPrivateKeyFromSpec(spec, ECDSA_KEY);
                             final var addressBytes = recoverAddressFromPrivateKey(privateKey);
-                            final var signedBytes = Signing.signMessage(messageHash, privateKey);
+                            final var signedBytes = NativeEcdsaSigning.signMessage(messageHash, privateKey);
 
                             final var call = atomicBatch(contractCall(
                                                     HRC632_CONTRACT,
@@ -765,7 +766,7 @@ class AtomicIsAuthorizedTest {
                         final var privateKey = getEcdsaPrivateKeyFromSpec(spec, ECDSA_KEY);
                         final var publicKey = spec.registry().getKey(ECDSA_KEY).getECDSASecp256K1();
                         final var addressBytes = recoverAddressFromPrivateKey(privateKey);
-                        final var signedBytes = Signing.signMessage(messageHash, privateKey);
+                        final var signedBytes = NativeEcdsaSigning.signMessage(messageHash, privateKey);
 
                         final var signatureMap = SignatureMap.newBuilder()
                                 .sigPair(SignaturePair.newBuilder()
@@ -861,7 +862,7 @@ class AtomicIsAuthorizedTest {
                         final var publicKeyEcdsa =
                                 spec.registry().getKey(ECDSA_KEY).getECDSASecp256K1();
                         final var addressBytesEcdsa = recoverAddressFromPrivateKey(privateKeyEcdsa);
-                        final var signedBytesEcdsa = Signing.signMessage(messageHash, privateKeyEcdsa);
+                        final var signedBytesEcdsa = NativeEcdsaSigning.signMessage(messageHash, privateKeyEcdsa);
 
                         final var privateKeyEd = getEd25519PrivateKeyFromSpec(spec, ED25519_KEY);
                         final var publicKeyEd =
@@ -920,7 +921,7 @@ class AtomicIsAuthorizedTest {
                         final var publicKeyEcdsa =
                                 spec.registry().getKey(ECDSA_KEY).getECDSASecp256K1();
                         final var addressBytesEcdsa = recoverAddressFromPrivateKey(privateKeyEcdsa);
-                        final var signedBytesEcdsa = Signing.signMessage(messageHash, privateKeyEcdsa);
+                        final var signedBytesEcdsa = NativeEcdsaSigning.signMessage(messageHash, privateKeyEcdsa);
 
                         final var privateKeyEd = getEd25519PrivateKeyFromSpec(spec, ED25519_KEY);
                         final var publicKeyEd =
@@ -981,7 +982,7 @@ class AtomicIsAuthorizedTest {
                         final var publicKeyEcdsa =
                                 spec.registry().getKey(ECDSA_KEY).getECDSASecp256K1();
                         final var addressBytesEcdsa = recoverAddressFromPrivateKey(privateKeyEcdsa);
-                        final var signedBytesEcdsa = Signing.signMessage(messageHash, privateKeyEcdsa);
+                        final var signedBytesEcdsa = NativeEcdsaSigning.signMessage(messageHash, privateKeyEcdsa);
 
                         final var privateKeyEd = getEd25519PrivateKeyFromSpec(spec, ED25519_KEY);
                         final var publicKeyEd =

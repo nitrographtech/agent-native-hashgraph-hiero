@@ -72,5 +72,4 @@ public final class P06aPublicFixtureIdentity {
         random.setSeed(seed);
         return random;
     }
-
 }
