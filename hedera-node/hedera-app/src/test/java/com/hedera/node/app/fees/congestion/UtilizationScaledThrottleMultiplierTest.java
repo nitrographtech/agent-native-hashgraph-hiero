@@ -41,7 +41,8 @@ import com.hedera.node.app.fixtures.state.FakeState;
 import com.hedera.node.app.service.consensus.ConsensusService;
 import com.hedera.node.app.service.consensus.impl.schemas.V0490ConsensusSchema;
 import com.hedera.node.app.service.contract.ContractService;
-import com.hedera.node.app.service.contract.impl.schemas.V0490ContractSchema;
+import com.hedera.node.app.service.contract.history.V0490ContractSchema;
+import com.hedera.node.app.service.contract.history.V065ContractSchema;
 import com.hedera.node.app.service.entityid.EntityIdService;
 import com.hedera.node.app.service.entityid.impl.schemas.V0490EntityIdSchema;
 import com.hedera.node.app.service.entityid.impl.schemas.V0590EntityIdSchema;
@@ -161,7 +162,9 @@ class UtilizationScaledThrottleMultiplierTest {
                                 V0490ContractSchema.BYTECODE_STATE_ID,
                                 Map.of(
                                         new EntityNumber(4L), Bytecode.DEFAULT,
-                                        new EntityNumber(5L), Bytecode.DEFAULT)))
+                                        new EntityNumber(5L), Bytecode.DEFAULT),
+                                V065ContractSchema.EVM_HOOK_STORAGE_STATE_ID,
+                                new HashMap<>()))
                 .addService(
                         EntityIdService.NAME,
                         Map.of(
@@ -177,7 +180,9 @@ class UtilizationScaledThrottleMultiplierTest {
         var storeFactory = new ReadableStoreFactoryImpl(state);
         long multiplier = utilizationScaledThrottleMultiplier.currentMultiplier(txnInfo, storeFactory);
 
-        assertEquals(SOME_MULTIPLIER * ENTITY_SCALE_FACTOR, multiplier);
+        // Historical contract bytecodes are counted as contracts by the sole retained store
+        // provider, so they are excluded from native account utilization.
+        assertEquals(SOME_MULTIPLIER, multiplier);
     }
 
     @Test
@@ -240,7 +245,9 @@ class UtilizationScaledThrottleMultiplierTest {
                                 V0490ContractSchema.BYTECODE_STATE_ID,
                                 Map.of(
                                         new EntityNumber(4L), Bytecode.DEFAULT,
-                                        new EntityNumber(5L), Bytecode.DEFAULT)))
+                                        new EntityNumber(5L), Bytecode.DEFAULT),
+                                V065ContractSchema.EVM_HOOK_STORAGE_STATE_ID,
+                                new HashMap<>()))
                 .addService(
                         EntityIdService.NAME,
                         Map.of(

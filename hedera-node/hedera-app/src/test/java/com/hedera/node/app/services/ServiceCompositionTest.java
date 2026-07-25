@@ -55,15 +55,13 @@ class ServiceCompositionTest {
         given(configProvider.getConfiguration()).willReturn(configuration);
         given(configuration.getConfigData(ContractsConfig.class)).willReturn(contractsConfig);
         given(contractsConfig.enabled()).willReturn(false);
-        final var dispatcher = new TransactionDispatcher(
-                mock(TransactionHandlers.class), mock(FeeManager.class), configProvider);
+        final var dispatcher =
+                new TransactionDispatcher(mock(TransactionHandlers.class), mock(FeeManager.class), configProvider);
 
-        for (final var removedOperation : new TransactionBody[] {
-            contractCreate(), contractCall(), ethereumTransaction()
-        }) {
+        for (final var removedOperation :
+                new TransactionBody[] {contractCreate(), contractCall(), ethereumTransaction()}) {
             given(context.body()).willReturn(removedOperation);
-            assertThatThrownBy(() -> dispatcher.dispatchPureChecks(context))
-                    .hasMessage("INVALID_TRANSACTION_BODY");
+            assertThatThrownBy(() -> dispatcher.dispatchPureChecks(context)).hasMessage("INVALID_TRANSACTION_BODY");
         }
     }
 

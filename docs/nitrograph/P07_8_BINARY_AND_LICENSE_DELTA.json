@@ -1,0 +1,29 @@
+{
+  "phase": "P07-8",
+  "productionRuntimeArtifactsRemoved": [
+    "full executable HederaNode application profile",
+    "executable app-service-contract-impl contents"
+  ],
+  "formerFullProfile": "retired; distributionFull aliases the non-executable native distribution",
+  "retainedRepositoryResidue": {
+    "app-service-contract-impl": [
+      "two deprecated schema forwarding classes",
+      "ConversionUtils for test-clients",
+      "OpcodeUtils for test-clients"
+    ],
+    "besuImporters": 12,
+    "tuweniImporters": 37,
+    "justification": "test-client compatibility residue plus protected platform/base-crypto; measured for P07-9"
+  },
+  "compatibilityRelease": {
+    "tag": "p07-executable-fixture-compat-v1",
+    "sourceCommit": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
+    "assetSha256": "6af7596d365e62561df913032daaaf4437c3eafeb75e567e33057e8eab5b7a7a",
+    "license": "Apache-2.0 source; transitive licenses remain those of the pinned build"
+  },
+  "licenseFindings": {
+    "removedClaims": [],
+    "unresolved": [],
+    "note": "P07-8 does not claim repository-wide Besu/Tuweni or license removal."
+  }
+}

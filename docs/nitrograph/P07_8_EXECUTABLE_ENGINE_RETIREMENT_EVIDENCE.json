@@ -1,0 +1,58 @@
+{
+  "phase": "P07-8",
+  "status": "VALIDATION_COMPLETE_PENDING_EXACT_HEAD_CI",
+  "baseMerge": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
+  "fixtureCompatibilityRelease": {
+    "tag": "p07-executable-fixture-compat-v1",
+    "sourceCommit": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
+    "archiveBytes": 46374065,
+    "archiveSha256": "6af7596d365e62561df913032daaaf4437c3eafeb75e567e33057e8eab5b7a7a",
+    "cleanExtractionBuild": "PASS",
+    "authoritativeFixtureChanged": false,
+    "privateMaterialPublished": false
+  },
+  "deletion": {
+    "filesDeleted": 336,
+    "productionJavaFilesDeleted": 226,
+    "productionBytesDeleted": 1455420,
+    "testJavaFilesDeleted": 110,
+    "testBytesDeleted": 932298,
+    "totalDeletedBytes": 2387718,
+    "engineClassesRemaining": 0,
+    "mutableWorldStateClassesRemaining": 0,
+    "runtimeTracerSeamClassesRemaining": 0
+  },
+  "composition": {
+    "fullExecutableProvider": "ABSENT",
+    "fullExecutableStoreFactory": "ABSENT",
+    "productionContractProvider": "HistoricalContractRuntimeProvider",
+    "formerFullDistribution": "NON_EXECUTABLE_ALIAS",
+    "contractsEnabledDefault": false
+  },
+  "protectedHistoricalInventorySha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+  "validation": {
+    "focusedCompilation": "PASS",
+    "nativeDistribution": "PASS",
+    "formerFullProfileRetirementBuild": "PASS",
+    "fixtureToolingBuild": "PASS",
+    "freshFixtureReleaseVerification": {
+      "status": "PASS",
+      "filesVerified": 396,
+      "archiveSha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+      "savedStateRound": 4744,
+      "savedStateRoot": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485",
+      "note": "The immutable pre-activation snapshot has STORAGE cardinality zero before its bundled pre-consensus events are replayed; the frozen cardinality-one/value-424242 gate applies after authenticated activation and replay."
+    },
+    "freshGenesisStartup": "PASS: REPLAYING_EVENTS -> OBSERVING -> CHECKING -> ACTIVE; gRPC listening",
+    "artifactAbsence": "PASS: ContractServiceImpl, FullContractRuntimeProvider, RootProxyWorldUpdater, HederaEVM, FrameRunner, and ActionSidecarContentTracer absent from both distributions",
+    "distributionProfileEquivalence": "PASS: native and retired-full HederaNode.jar SHA-256 7c493cf5bb4018586c50f270d02e7031d41d669ef6c30b265890bb8b7c42d530",
+    "engineRemovalPolicy": "PASS",
+    "intentionalFailureControls": "PASS",
+    "fixtureBoundary": "PASS: Fixture A activates at authenticated preactivation empty-STORAGE boundary; additive Fixture B is the post-write/reconnect authority",
+    "fixtureBRelease": "PASS: p07-four-node-postwrite-v065-storage424242-v1, archive SHA-256 0fd75fd4da408787ddef6b5a73300ce8018e330eb2f3a8e98d11ef9fbceceaa3",
+    "lifecycle": "PASS: four exact-head nodes ACTIVE, protected maps verified, exact-head save and restart passed, retained operations passed",
+    "reconnect": "PASS: learner 2 received round 4733 from teacher 1, validated, loaded, synchronized, and reached ACTIVE",
+    "mirror": "PASS: pinned importer 834a7a1; separate preactivation, post-write fixture, and exact-head runtime corpora passed official Testcontainers PostgreSQL",
+    "ci": "STARTING HEAD PASS: run 30164181825; final validation-head CI pending"
+  }
+}

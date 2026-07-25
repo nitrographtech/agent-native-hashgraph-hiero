@@ -105,7 +105,7 @@ plan removes the EVM integration source first, then removes the now-unused Besu/
 | 5 | Solidity execution assets | Remove full-only Solidity execution/query handlers and compiler/source fixtures no longer needed after Wave 2 | Retain wire names such as `getBySolidityID`, address widths, PBJ fields, and historical query rejection | Medium. Do not cosmetically rename historical fields |
 | 6 | Ethereum execution | **COMPLETE (P07-6).** Live handler, hydration, signature cache, fee/gas branches, dispatch, and runtime parser ownership removed. Test-client corpus helpers remain until their mixed-suite consumers retire. | Retain Ethereum PBJ bodies/results for decoding, rejection, and mirror | Closed: historical and exact-head runtime importer regressions pass; new runtime actions are deterministically zero |
 | 7 | Separate world-state implementation removal | **BLOCKED AND SUPERSEDED.** Mutable stores, updaters, frame state, proxy accounts and commit/rollback are inseparable from ordinary executable EVM processing | Neutral historical interfaces and read-only adapters are already separate and remain protected | Replaced by P07-8: retire executable contract execution and mutable world state atomically |
-| 8 | EVM engine integration | Remove HEVM, frame runners, processors, custom operations, versioned EVM modules, gas/executable metrics, Bonneville, and native-lib verifier | Remove associated implementation tests and full provider construction | Very high. This retires the full executable application profile |
+| 8 | EVM engine integration | **IMPLEMENTATION AND LOCAL VALIDATION COMPLETE.** HEVM, frame runners, processors, mutable world state, tracer seam, executable handlers, and full provider construction are absent. | Two immutable fixtures now distinguish preactivation loading from four-node post-write restart/reconnect; three separate mirror corpora pass. | Awaiting final validation-head CI and PR merge |
 | 9 | Besu/Tuweni and executable native dependencies | Remove app/test-client JPMS edges and version-catalog/dependency metadata after source scans are zero | Remove notices/SBOM components only when no retained artifact carries them | Blocked at `platform-sdk/base-crypto` without upstream neutral verifier or separate platform authorization |
 | 10 | `app-service-contract-impl` module | Delete the now-empty source/test tree, Gradle project mapping, full provider/factory, and remaining implementation tests | `RecordStreamBuilder`, six builder interfaces, historical schemas/stores remain in neutral API | High structural gate. Repository-wide implementation import and class scans must be zero |
 | 11 | Gradle cleanup | Remove full distribution task/profile, implementation dependency edges, fixture-only configurations, unused versions/plugins | Preserve native distribution and neutral API publications | Medium. Run all builds and dependency analysis |
@@ -275,6 +275,26 @@ removable from full/repository build graphs after Wave 10.
 
 No Git pack-size, clone-time, or build-time reduction is claimed until a deletion branch measures it
 against this base.
+
+## Wave 8 implementation status
+
+P07-8 retires ordinary executable contract processing and mutable world state as the single
+cohesive subsystem identified by P07-7. The immutable
+`p07-executable-fixture-compat-v1` release preserves executable fixture reproduction at source
+commit `64da043f766da29d0fd3e20e3f51051fdd31f5a1`; production application composition now selects
+historical compatibility only. Executable handlers, processors, mutable accounts and storage,
+world updaters, the residual live tracer seam, and full-runtime provider/store factories are
+deleted. The former full distribution is a non-executable alias of the native application.
+
+The remaining `app-service-contract-impl` module contains only historical schema forwarders and
+two test-client compatibility utilities. Its Besu/Tuweni residue, along with the separately
+protected `platform-sdk/base-crypto` secp256k1 boundary, is assigned to measured P07-9 cleanup.
+
+P07-8 is not merge-ready. The published authenticated fixture is a one-node round-4744 state with
+empty `STORAGE`; exact-head PCES replay reaches ACTIVE but does not produce value 424242. The
+existing four-node reconnect test creates the required state through retired live contract
+execution. A new authenticated multi-node, post-write fixture would be required, but fixture
+regeneration or replacement is outside the approved P07-8 boundary.
 
 ## Stop gates
 

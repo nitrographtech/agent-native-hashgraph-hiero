@@ -7,6 +7,8 @@ plugins {
 
 description = "Hedera Application - Implementation"
 
+tasks.test { maxHeapSize = "2g" }
+
 mainModuleInfo {
     annotationProcessor("dagger.compiler")
 
@@ -176,9 +178,7 @@ val compileNativeCrypto by
     }
 
 val baseCryptoJar =
-    providers.provider {
-        project(":base-crypto").tasks.named<Jar>("jar").get().archiveFile.get()
-    }
+    providers.provider { project(":base-crypto").tasks.named<Jar>("jar").get().archiveFile.get() }
 
 val nativeBaseCryptoJar =
     tasks.register<Jar>("nativeBaseCryptoJar") {
@@ -266,10 +266,9 @@ tasks.register<JavaExec>("run") {
 val distributionFull =
     tasks.register<Sync>("distributionFull") {
         group = "distribution"
-        description =
-            "Assemble the behavioral-control distribution with every upstream service enabled."
-        dependsOn(copyNodeData)
-        from(nodeWorkingDir)
+        description = "Assemble the retired full profile as the non-executable Nitrograph node."
+        dependsOn("distributionNativeAgent")
+        from(layout.buildDirectory.dir("distributions/distribution-native-agent"))
         into(layout.buildDirectory.dir("distributions/distribution-full"))
     }
 
@@ -299,9 +298,6 @@ tasks.register<Sync>("distributionNativeAgent") {
     }
     from(nativeBaseCryptoJar) { into("data/lib") }
     into(layout.buildDirectory.dir("distributions/distribution-native-agent"))
-    filesMatching("data/config/application.properties") {
-        filter { line -> if (line == "contracts.enabled=true") "contracts.enabled=false" else line }
-    }
 }
 
 val cleanRun =

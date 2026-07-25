@@ -1,0 +1,27 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "data",
+      "name": "p07-four-node-postwrite-v065-storage424242-v1",
+      "version": "1"
+    }
+  },
+  "components": [],
+  "properties": [
+    {
+      "name": "nitrograph:generator",
+      "value": "p07-executable-fixture-compat-v1@64da043f766da29d0fd3e20e3f51051fdd31f5a1"
+    },
+    {
+      "name": "nitrograph:containsExecutableSoftware",
+      "value": "false"
+    },
+    {
+      "name": "nitrograph:containsPrivateKeyMaterial",
+      "value": "false"
+    }
+  ]
+}

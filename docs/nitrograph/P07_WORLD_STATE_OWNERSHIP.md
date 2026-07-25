@@ -113,3 +113,10 @@ behaviorally incomplete execution pipeline.
 
 The bounded P07-7 deletion plan is rejected. Physical deletion must be combined with an authorized
 retirement of ordinary EVM execution in the engine-removal wave.
+
+## P07-8 disposition
+
+P07-8 follows that decision and deletes the executable updater, frame-state, mutable account,
+storage journal, commit/rollback, rent, and slot-validation closure atomically with its EVM
+processors. Historical read-only adapters and the four retained maps remain owned by the neutral
+compatibility path; no executable behavior moved into them.

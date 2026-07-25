@@ -4,7 +4,6 @@ package com.hedera.node.app.workflows;
 import static com.hedera.hapi.node.base.HederaFunctionality.CONSENSUS_CREATE_TOPIC;
 import static com.hedera.hapi.node.base.HederaFunctionality.CRYPTO_CREATE;
 import static com.hedera.hapi.node.base.HederaFunctionality.CRYPTO_TRANSFER;
-import static com.hedera.hapi.node.base.HederaFunctionality.ETHEREUM_TRANSACTION;
 import static com.hedera.node.app.spi.fixtures.workflows.ExceptionConditions.estimatedFee;
 import static com.hedera.node.app.spi.fixtures.workflows.ExceptionConditions.responseCode;
 import static com.hedera.node.app.workflows.handle.dispatch.DispatchValidator.WorkflowCheck.INGEST;
@@ -23,7 +22,6 @@ import com.hedera.hapi.node.base.ResponseCodeEnum;
 import com.hedera.hapi.node.base.SignatureMap;
 import com.hedera.hapi.node.base.TransactionID;
 import com.hedera.hapi.node.base.TransferList;
-import com.hedera.hapi.node.contract.EthereumTransactionBody;
 import com.hedera.hapi.node.token.CryptoCreateTransactionBody;
 import com.hedera.hapi.node.token.CryptoTransferTransactionBody;
 import com.hedera.hapi.node.transaction.SignedTransaction;
@@ -396,42 +394,6 @@ class SolvencyPreCheckTest extends AppTestBase {
     @DisplayName("Tests related to checkSolvency()")
     final class CheckSolvencyTestsWithContractCall {
         // TODO: Add tests for ContractCall once the requirements are clear
-    }
-
-    @Nested
-    @DisplayName("Tests related to checkSolvency()")
-    final class CheckSolvencyTestsWithEthereumTransaction {
-        @Test
-        void testEthereumTransactionSucceeds() {
-            // given
-            final var builder = TransactionBody.newBuilder()
-                    .ethereumTransaction(EthereumTransactionBody.newBuilder().maxGasAllowance(1L));
-            final var txInfo = createTransactionInfo(FEE.totalFee(), START, ETHEREUM_TRANSACTION, builder);
-            final var payer = ALICE.account()
-                    .copyBuilder()
-                    .tinybarBalance(FEE.totalFee() + 1L)
-                    .build();
-
-            // then
-            assertThatCode(() -> subject.checkSolvency(txInfo, payer, FEE, NOT_INGEST))
-                    .doesNotThrowAnyException();
-        }
-
-        @Test
-        void testEthereumTransactionWithInsufficientBalanceFails() {
-            // given
-            final var builder = TransactionBody.newBuilder()
-                    .ethereumTransaction(EthereumTransactionBody.newBuilder().maxGasAllowance(1L));
-            final var txInfo = createTransactionInfo(FEE.totalFee(), START, ETHEREUM_TRANSACTION, builder);
-            final var payer =
-                    ALICE.account().copyBuilder().tinybarBalance(FEE.totalFee()).build();
-
-            // then
-            assertThatThrownBy(() -> subject.checkSolvency(txInfo, payer, FEE, INGEST))
-                    .isInstanceOf(InsufficientBalanceException.class)
-                    .has(responseCode(ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE))
-                    .has(estimatedFee(FEE.totalFee()));
-        }
     }
 
     private TransactionInfo createTransactionInfo(

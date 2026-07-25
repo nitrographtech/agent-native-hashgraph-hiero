@@ -91,3 +91,11 @@ manifests are permanent consumers, not generators, and may remain in the reposit
 
 `tools/p07/test-fixture-tooling-policy.sh` proves rejection of injected source, native/full jar
 classes, service metadata, and JPMS edges using temporary artifacts.
+
+## Post-P07-8 execution ownership
+
+In-tree fixture tooling now owns only public fixture identity and immutable-release verification.
+The last executable generator and its action tracer are frozen in
+`p07-executable-fixture-compat-v1`, built from the final executable baseline. Neither production
+distribution nor any production JPMS, Dagger, service-loader, or Gradle runtime edge depends on
+that release.

@@ -1,0 +1,59 @@
+{
+  "fixtureId": "p07-four-node-postwrite-v065-storage424242-v1",
+  "class": "POST_WRITE_MULTI_NODE",
+  "purpose": [
+    "post-write historical map validation",
+    "save and restart",
+    "four-node reconnect and synchronization",
+    "official mirror ingestion"
+  ],
+  "generator": {
+    "tag": "p07-executable-fixture-compat-v1",
+    "sourceCommit": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
+    "sourceArchiveSha256": "6af7596d365e62561df913032daaaf4437c3eafeb75e567e33057e8eab5b7a7a",
+    "jdk": "Eclipse Temurin 25.0.3+9",
+    "gradle": "9.5.0",
+    "os": "Linux x86_64"
+  },
+  "state": {
+    "round": 2143,
+    "root": "0c3b973439f127093ad1d64bd9777d9a365a6d18522e6e46c6bd0fa41fa9f4e8eba8b4eac33b0cda2bfa82cf175a0894",
+    "softwareVersion": "0.75.0-SNAPSHOT+1",
+    "combinedInventorySha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+  },
+  "maps": {
+    "STORAGE": {
+      "cardinality": 1,
+      "decodedValue": 424242,
+      "sha256": "4498f1861935388100d439abcd8124cb906dc479f990c91a4b5a3d6995dd892f"
+    },
+    "BYTECODE": {
+      "cardinality": 2,
+      "sha256": "204633a18de2a97441e56adae79ce51656496582833a906a69471e24b87091ab"
+    },
+    "EVM_HOOK_STATES": {
+      "cardinality": 1,
+      "sha256": "32ffae8553e2c27c2a85e6071b9d6eddb85bc07a4a175ed9047d0c2cdb9484f1"
+    },
+    "LAMBDA_STORAGE": {
+      "cardinality": 1,
+      "sha256": "6359602eb1ab3cb0ef54e1eeddfb8bfd5bcd89a52d86afb191b1cc8cf419056b"
+    }
+  },
+  "roster": {
+    "nodeCount": 4,
+    "nodeIds": [0, 1, 2, 3],
+    "weights": [1, 1, 1, 1],
+    "publicCertificateSha256": [
+      "4f6d63a2fa8e8920c3b88324dc259984e170385cbb255a433f651eedbea550e1",
+      "46ca08d1f934d2cb8906ca663c1b7507f466c6f741536137833806135f7e37a9",
+      "4dcf7d27b8de24935e6869459193804e105fac534b134236d729238a3865e52e",
+      "38ac72592d03be846fa95d886c87a295633f9104a0727400073e892e4173b67d"
+    ]
+  },
+  "immutability": {
+    "replacesFixture": false,
+    "productionGenesis": false,
+    "privateMaterialIncluded": false
+  }
+}

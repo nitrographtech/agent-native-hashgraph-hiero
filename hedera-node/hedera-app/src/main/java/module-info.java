@@ -9,7 +9,7 @@ module com.hedera.node.app {
     requires transitive com.hedera.node.app.hapi.utils;
     requires transitive com.hedera.node.app.service.addressbook.impl;
     requires transitive com.hedera.node.app.service.consensus.impl;
-    requires transitive com.hedera.node.app.service.contract.impl;
+    requires transitive com.hedera.node.app.service.contract;
     requires transitive com.hedera.node.app.service.entityid;
     requires transitive com.hedera.node.app.service.file.impl;
     requires transitive com.hedera.node.app.service.network.admin.impl;
@@ -48,7 +48,6 @@ module com.hedera.node.app {
     requires transitive org.hyperledger.besu.evm;
     requires com.hedera.node.app.service.addressbook;
     requires com.hedera.node.app.service.consensus;
-    requires com.hedera.node.app.service.contract;
     requires com.hedera.node.app.service.entityid.impl;
     requires com.hedera.node.app.service.file;
     requires com.hedera.node.app.service.network.admin;
@@ -142,9 +141,7 @@ module com.hedera.node.app {
     provides com.swirlds.config.api.ConfigurationExtension with
             com.hedera.node.app.config.ServicesConfigExtension;
     provides com.hedera.node.app.services.ContractRuntimeProviderFactory with
-            com.hedera.node.app.services.HistoricalContractRuntimeProviderFactory,
-            com.hedera.node.app.services.FullContractRuntimeProviderFactory;
+            com.hedera.node.app.services.HistoricalContractRuntimeProviderFactory;
     provides com.hedera.node.app.store.ContractStoreFactory with
-            com.hedera.node.app.store.HistoricalContractStoreFactory,
-            com.hedera.node.app.store.FullContractStoreFactory;
+            com.hedera.node.app.store.HistoricalContractStoreFactory;
 }
