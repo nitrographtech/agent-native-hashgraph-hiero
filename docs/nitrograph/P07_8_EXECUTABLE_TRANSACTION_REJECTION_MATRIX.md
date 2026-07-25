@@ -14,3 +14,7 @@ is fail-closed and performs no mutation, sidecar production, bytecode creation, 
 
 Fee behavior follows the existing invalid-body path. Wire bodies remain parseable and historical
 records remain readable. No body is reinterpreted as a native operation.
+
+The authenticated fixture-consumer probe did not submit new executable bodies. Its two bundled
+PCES transactions produced zero replayed consensus rounds and did not populate `STORAGE`; this is
+recorded as a fixture stop-gate result, not as successful rejection-matrix validation.

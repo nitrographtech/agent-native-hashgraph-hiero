@@ -99,3 +99,8 @@ PBJ models, neutral stream-builder interfaces, historical schemas, read-only ada
 sidecar translation, block translation, and mirror interpretation remain on the permanent
 compatibility side of the boundary. Mutable world state, EVM processors, live tracer callbacks,
 and executable contract handlers are absent.
+
+The immutable P06A release is a one-node activation fixture. It must not be treated as a
+multi-node reconnect fixture or mutated to supply a four-node roster. Exact-head activation
+reaches ACTIVE without the engine; the remaining reconnect gate is blocked by fixture ownership,
+not runtime construction.

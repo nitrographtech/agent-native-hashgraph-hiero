@@ -290,6 +290,12 @@ The remaining `app-service-contract-impl` module contains only historical schema
 two test-client compatibility utilities. Its Besu/Tuweni residue, along with the separately
 protected `platform-sdk/base-crypto` secp256k1 boundary, is assigned to measured P07-9 cleanup.
 
+P07-8 is not merge-ready. The published authenticated fixture is a one-node round-4744 state with
+empty `STORAGE`; exact-head PCES replay reaches ACTIVE but does not produce value 424242. The
+existing four-node reconnect test creates the required state through retired live contract
+execution. A new authenticated multi-node, post-write fixture would be required, but fixture
+regeneration or replacement is outside the approved P07-8 boundary.
+
 ## Stop gates
 
 Stop the affected route immediately if a wave requires:

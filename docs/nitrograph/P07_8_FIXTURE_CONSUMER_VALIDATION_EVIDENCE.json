@@ -1,0 +1,62 @@
+{
+  "phase": "P07-8 fixture-consumer validation",
+  "status": "BLOCKED_AT_AUTHENTICATED_FIXTURE_CONTRACT",
+  "implementationHead": "46ecfbb61e3618bccaeb17e54f6f4eebd373fb5d",
+  "exactHeadCi": {
+    "run": 30163481681,
+    "result": "PASS"
+  },
+  "fixture": {
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "archiveSha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "manifestSha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2",
+    "verifiedFiles": 396,
+    "networkId": 123,
+    "nodeId": 0,
+    "rosterEntries": 1,
+    "round": 4744,
+    "root": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485"
+  },
+  "activation": {
+    "artifact": "P07-8 non-executable distribution-native-agent",
+    "contractsEnabled": false,
+    "savedStateLoad": "PASS",
+    "pcesEventsReplayed": 29,
+    "pcesTransactionsObserved": 2,
+    "consensusRoundsProducedByReplay": 0,
+    "transitions": [
+      "REPLAYING_EVENTS",
+      "OBSERVING",
+      "CHECKING",
+      "ACTIVE"
+    ],
+    "newSignedState": "PASS",
+    "latestObservedRound": 5833,
+    "swirldsLogSha256": "c4da6f2042282936f90a06dd409fd687f52e69c390255455d90e4697ed6e906b"
+  },
+  "historicalState": {
+    "preActivationStorageCardinality": 0,
+    "postReplayStorageCardinality": 0,
+    "requiredStorageCardinality": 1,
+    "requiredStorageValue": 424242,
+    "bytecodeCardinality": 2,
+    "evmHookStatesCardinality": 1,
+    "lambdaStorageCardinality": 1,
+    "postReplayFingerprintFileSha256": "604e023255f5966630da6241cc5d45ae32cc1b98c110dcc298bf86b3804d9999"
+  },
+  "reconnect": {
+    "status": "NOT_RUN",
+    "reason": "The authenticated saved state has a one-node signed roster. A four-node reconnect requires generating or replacing the authenticated fixture."
+  },
+  "mirror": {
+    "status": "NOT_RUN",
+    "reason": "The mandatory post-replay state gate failed before output promotion to the official importer."
+  },
+  "stopConditionsTriggered": [
+    "STORAGE does not reach value 424242",
+    "reconnect requires fixture generation"
+  ],
+  "productionChanges": 0,
+  "fixtureChanges": 0,
+  "privateMaterialTracked": false
+}

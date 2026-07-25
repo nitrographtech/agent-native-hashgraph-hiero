@@ -40,3 +40,9 @@ now satisfied solely by the immutable release.
 classes, two test-client conversion utilities, and a minimal module descriptor. These are
 non-runtime residue for P07-9. No handler, processor, mutable world-state class, executable account,
 executable store, or tracer callback remains.
+## Validation ownership after retirement
+
+The production engine remains deleted. The exact-head activation probe proved that restoring it
+would only mask an authenticated-fixture ownership mismatch: the immutable release has a
+one-node roster and does not contain the required post-write storage state. Resolving that mismatch
+requires separate authority over fixture publication, not production engine ownership.

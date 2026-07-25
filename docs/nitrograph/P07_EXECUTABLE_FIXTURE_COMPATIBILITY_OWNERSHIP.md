@@ -27,3 +27,10 @@ fixture material in the compatibility release.
 Production and historical compatibility have no dependency on this release. The repository-local
 fixture-tooling module now verifies identity/release provenance only; executable generation is
 performed by checking out or unpacking the frozen release.
+## P07-8 consumer validation finding
+
+The published fixture owns one node and one signed roster entry. It is sufficient for exact-head
+one-node activation, PCES replay, and restart-state production, but it cannot seed a real
+four-node reconnect. Its round-4744 `STORAGE` map is empty and remains empty after exact-head
+replay. The former four-node harness produced value 424242 through live contract execution and is
+therefore fixture generation, not fixture consumption.

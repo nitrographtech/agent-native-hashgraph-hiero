@@ -1,6 +1,6 @@
 {
   "phase": "P07-8",
-  "status": "IMPLEMENTED_AWAITING_EXACT_LIFECYCLE_RECONNECT_AND_MIRROR",
+  "status": "BLOCKED_BY_AUTHENTICATED_FIXTURE_TOPOLOGY_AND_POST_REPLAY_STATE",
   "baseMerge": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
   "fixtureCompatibilityRelease": {
     "tag": "p07-executable-fixture-compat-v1",
@@ -48,9 +48,9 @@
     "distributionProfileEquivalence": "PASS: native and retired-full HederaNode.jar SHA-256 7c493cf5bb4018586c50f270d02e7031d41d669ef6c30b265890bb8b7c42d530",
     "engineRemovalPolicy": "PASS",
     "intentionalFailureControls": "PASS",
-    "lifecycle": "PENDING authenticated activation/restart/replay on exact implementation head",
-    "reconnect": "PENDING exact-head four-node reconnect and synchronization",
-    "mirror": "PENDING exact-head official importer regression; prior P07-6 XML is not represented as exact-head validation",
-    "ci": "PENDING"
+    "lifecycle": "PARTIAL PASS: exact-head state load, PCES replay, ACTIVE, and new signed-state production passed; STORAGE remained cardinality zero",
+    "reconnect": "BLOCKED: authenticated fixture has a one-node signed roster; creating a four-node state is fixture generation",
+    "mirror": "NOT RUN because the mandatory post-replay STORAGE gate failed; prior P07-6 XML is not represented as exact-head validation",
+    "ci": "PASS: run 30163481681"
   }
 }

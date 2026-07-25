@@ -16,3 +16,8 @@ The following remain permanent:
 - deterministic rejection of legacy executable bodies.
 
 Historical adapters remain read-only. No executable behavior may move into them.
+## Fixture boundary
+
+The authenticated round-4744 state, its one-node roster, manifest, PCES, hashes, and publication
+identity are protected as published. They must not be rewritten into a four-node or post-write
+fixture merely to satisfy P07-8 validation.
