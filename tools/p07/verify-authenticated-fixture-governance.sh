@@ -12,20 +12,20 @@ for required in \
   '"decodedValue": 424242' \
   '"replacesFixture": false' \
   '"privateMaterialIncluded": false'; do
-  rg -Fq "$required" "$new_metadata"
+  grep -Fq "$required" "$new_metadata"
 done
 
 test -f "$old_metadata"
-rg -q 'p06a-fixture-preactivation-v065-ff6490d-round4744' "$repo_root/docs/nitrograph"
+grep -Rqs 'p06a-fixture-preactivation-v065-ff6490d-round4744' "$repo_root/docs/nitrograph"
 
 for prohibited in ContractServiceImpl FullContractRuntimeProvider HederaEVM FrameRunner RootProxyWorldUpdater; do
-  if rg -q "$prohibited" "$consumer"; then
+  if grep -q "$prohibited" "$consumer"; then
     echo "Consumer harness imports executable infrastructure: $prohibited" >&2
     exit 1
   fi
 done
 
-if rg -q '\b(contractCreate|contractCall)\(' "$consumer"; then
+if grep -Eq '\b(contractCreate|contractCall)\(' "$consumer"; then
   echo "Consumer harness must use explicit rejected bodies, never live deployment helpers" >&2
   exit 1
 fi

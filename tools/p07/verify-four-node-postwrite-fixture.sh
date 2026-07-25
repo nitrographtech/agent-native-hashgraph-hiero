@@ -19,12 +19,12 @@ for required in \
   '"nodeIds": [0, 1, 2, 3]' \
   '"weights": [1, 1, 1, 1]' \
   '"privateMaterialIncluded": false'; do
-  rg -Fq "$required" "$metadata"
+  grep -Fq "$required" "$metadata"
 done
 
-if rg -l --hidden --glob '!SHA256SUMS' --glob '!verify.sh' \
-    '(BEGIN (RSA |EC |ENCRYPTED )?PRIVATE KEY|PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,})' \
-    "$fixture_dir"; then
+if find "$fixture_dir" -type f ! -name SHA256SUMS ! -name verify.sh -print0 \
+    | xargs -0 grep -IlE \
+      '(BEGIN (RSA |EC |ENCRYPTED )?PRIVATE KEY|PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,})'; then
   echo "Fixture contains prohibited private material" >&2
   exit 1
 fi
