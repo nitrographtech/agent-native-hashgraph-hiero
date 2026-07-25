@@ -6,14 +6,12 @@ import static com.hedera.hapi.node.base.HederaFunctionality.CONTRACT_CALL;
 import static com.hedera.hapi.node.base.HederaFunctionality.CONTRACT_CREATE;
 import static com.hedera.hapi.node.base.HederaFunctionality.CRYPTO_CREATE;
 import static com.hedera.hapi.node.base.HederaFunctionality.CRYPTO_TRANSFER;
-import static com.hedera.hapi.node.base.HederaFunctionality.ETHEREUM_TRANSACTION;
 import static com.hedera.hapi.node.base.ResponseCodeEnum.CONSENSUS_GAS_EXHAUSTED;
 import static com.hedera.hapi.node.base.ResponseCodeEnum.INVALID_ACCOUNT_AMOUNTS;
 import static com.hedera.hapi.node.base.ResponseCodeEnum.SUCCESS;
 import static com.hedera.hapi.node.base.ResponseCodeEnum.THROTTLED_AT_CONSENSUS;
 import static com.hedera.node.app.spi.workflows.HandleContext.ConsensusThrottling.OFF;
 import static com.hedera.node.app.spi.workflows.HandleContext.ConsensusThrottling.ON;
-import static java.util.Objects.requireNonNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -28,10 +26,8 @@ import com.hedera.hapi.node.base.SignatureMap;
 import com.hedera.hapi.node.base.TransactionID;
 import com.hedera.hapi.node.contract.ContractCallTransactionBody;
 import com.hedera.hapi.node.contract.ContractCreateTransactionBody;
-import com.hedera.hapi.node.contract.EthereumTransactionBody;
 import com.hedera.hapi.node.transaction.SignedTransaction;
 import com.hedera.hapi.node.transaction.TransactionBody;
-import com.hedera.node.app.hapi.utils.ethereum.EthTxData;
 import com.hedera.node.app.service.token.ReadableAccountStore;
 import com.hedera.node.app.spi.info.NetworkInfo;
 import com.hedera.node.app.spi.info.NodeInfo;
@@ -61,10 +57,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DispatchUsageManagerTest {
     private static final long GAS_USED = 123L;
     private static final long GAS_LIMIT = 456L;
-    public static final Bytes ETH_WITH_TO_ADDRESS = Bytes.fromHex(
-            "02f8ad82012a80a000000000000000000000000000000000000000000000000000000000000003e8a0000000000000000000000000000000000000000000000000000000746a528800831e848094fee687d5088faff48013a6767505c027e2742536880de0b6b3a764000080c080a0f5ddf2394311e634e2147bf38583a017af45f4326bdf5746cac3a1110f973e4fa025bad52d9a9f8b32eb983c9fb8959655258bd75e2826b2c6a48d4c26ec30d112");
-    public static final EthTxData ETH_DATA_WITH_TO_ADDRESS =
-            requireNonNull(EthTxData.populateEthTxData(ETH_WITH_TO_ADDRESS.toByteArray()));
     private static final Instant CONSENSUS_NOW = Instant.ofEpochSecond(1_234_567L, 890);
     public static final Configuration DEFAULT_CONFIG = HederaTestConfigBuilder.create()
             .withValue("contracts.throttle.throttleByGas", "true")
@@ -92,15 +84,6 @@ class DispatchUsageManagerTest {
             .contractCreateInstance(
                     ContractCreateTransactionBody.newBuilder().gas(GAS_LIMIT).build())
             .build();
-    private static final TransactionBody ETH_TXN_BODY = TransactionBody.newBuilder()
-            .transactionID(
-                    TransactionID.newBuilder().accountID(PAYER_ACCOUNT_ID).build())
-            .ethereumTransaction(EthereumTransactionBody.newBuilder()
-                    .ethereumData(ETH_WITH_TO_ADDRESS)
-                    .build())
-            .build();
-    private static final TransactionInfo ETH_TXN_INFO = new TransactionInfo(
-            SignedTransaction.DEFAULT, ETH_TXN_BODY, SignatureMap.DEFAULT, Bytes.EMPTY, ETHEREUM_TRANSACTION, null);
     private static final TransactionInfo CRYPTO_TRANSFER_TXN_INFO = new TransactionInfo(
             SignedTransaction.DEFAULT, NONDESCRIPT_TXN_BODY, SignatureMap.DEFAULT, Bytes.EMPTY, CRYPTO_TRANSFER, null);
     private static final TransactionInfo CONTRACT_CALL_TXN_INFO = new TransactionInfo(
@@ -272,26 +255,6 @@ class DispatchUsageManagerTest {
         verify(opWorkflowMetrics).addGasUsed(GAS_USED);
         verify(networkUtilizationManager)
                 .leakUnusedGasPreviouslyReserved(CONTRACT_CREATE_TXN_INFO, GAS_LIMIT - GAS_USED);
-        verify(throttleServiceManager).saveThrottleSnapshotsAndCongestionLevelStartsTo(stack);
-    }
-
-    @Test
-    void leaksUnusedGasForEthTx() {
-        given(dispatch.txnCategory()).willReturn(HandleContext.TransactionCategory.USER);
-        given(dispatch.txnInfo()).willReturn(ETH_TXN_INFO);
-        given(recordBuilder.hasContractResult()).willReturn(true);
-        given(recordBuilder.getGasUsedForContractTxn()).willReturn(GAS_USED);
-        given(dispatch.streamBuilder()).willReturn(recordBuilder);
-        given(dispatch.config()).willReturn(DEFAULT_CONFIG);
-        given(dispatch.stack()).willReturn(stack);
-        given(dispatch.readableStoreFactory()).willReturn(readableStoreFactory);
-        given(readableStoreFactory.readableStore(ReadableAccountStore.class)).willReturn(readableAccountStore);
-
-        subject.finalizeAndSaveUsage(dispatch);
-
-        verify(opWorkflowMetrics).addGasUsed(GAS_USED);
-        verify(networkUtilizationManager)
-                .leakUnusedGasPreviouslyReserved(ETH_TXN_INFO, ETH_DATA_WITH_TO_ADDRESS.gasLimit() - GAS_USED);
         verify(throttleServiceManager).saveThrottleSnapshotsAndCongestionLevelStartsTo(stack);
     }
 

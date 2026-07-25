@@ -9,7 +9,6 @@ import com.hedera.hapi.node.base.Key;
 import com.hedera.hapi.node.base.SubType;
 import com.hedera.hapi.node.transaction.ExchangeRate;
 import com.hedera.node.app.service.contract.impl.annotations.ChildTransactionResourcePrices;
-import com.hedera.node.app.service.contract.impl.annotations.InitialState;
 import com.hedera.node.app.service.contract.impl.annotations.TopLevelResourcePrices;
 import com.hedera.node.app.service.contract.impl.annotations.TransactionScope;
 import com.hedera.node.app.service.contract.impl.exec.gas.CanonicalDispatchPrices;
@@ -28,13 +27,9 @@ import com.hedera.node.app.service.contract.impl.hevm.HederaEvmBlocks;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmContext;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmVersion;
 import com.hedera.node.app.service.contract.impl.hevm.HederaWorldUpdater;
-import com.hedera.node.app.service.contract.impl.hevm.HydratedEthTxData;
-import com.hedera.node.app.service.contract.impl.infra.EthTxSigsCache;
-import com.hedera.node.app.service.contract.impl.infra.EthereumCallDataHydration;
 import com.hedera.node.app.service.contract.impl.records.ContractOperationStreamBuilder;
 import com.hedera.node.app.service.contract.impl.state.EvmFrameStateFactory;
 import com.hedera.node.app.service.contract.impl.state.EvmFrameStates;
-import com.hedera.node.app.service.file.ReadableFileStore;
 import com.hedera.node.app.spi.info.NetworkInfo;
 import com.hedera.node.app.spi.validation.AttributeValidator;
 import com.hedera.node.app.spi.validation.ExpiryValidator;
@@ -42,8 +37,6 @@ import com.hedera.node.app.spi.workflows.ComputeDispatchFeesAsTopLevel;
 import com.hedera.node.app.spi.workflows.FunctionalityResourcePrices;
 import com.hedera.node.app.spi.workflows.HandleContext;
 import com.hedera.node.config.data.ContractsConfig;
-import com.hedera.node.config.data.HederaConfig;
-import com.hedera.pbj.runtime.io.buffer.Bytes;
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
@@ -119,41 +112,12 @@ public interface TransactionModule {
         return context.exchangeRateInfo().activeRate(now);
     }
 
+    /** Ordinary HAPI contract execution has no external Ethereum sender key. */
     @Provides
     @Nullable
     @TransactionScope
-    static HydratedEthTxData maybeProvideHydratedEthTxData(
-            @NonNull final HandleContext context,
-            @NonNull final EthereumCallDataHydration hydration,
-            @NonNull final HederaConfig hederaConfig,
-            @NonNull @InitialState final ReadableFileStore fileStore) {
-        final var body = context.body();
-        return body.hasEthereumTransaction()
-                ? hydration.tryToHydrate(body.ethereumTransactionOrThrow(), fileStore, hederaConfig.firstUserEntity())
-                : null;
-    }
-
-    /**
-     * If the top-level transaction is an {@code EthereumTransaction}, provides an ECDSA {@link Key} with
-     * the public key of the sender address; otherwise returns {@code null}.
-     *
-     * @param ethTxSigsCache the cache of Ethereum transaction signatures
-     * @param hydratedEthTxData the hydrated Ethereum transaction data, if this is an {@code EthereumTransaction}
-     * @return the ECDSA {@link Key} with the public key of the sender address, or {@code null}
-     */
-    @Provides
-    @Nullable
-    @TransactionScope
-    static Key provideSenderEcdsaKey(
-            @NonNull final EthTxSigsCache ethTxSigsCache, @Nullable final HydratedEthTxData hydratedEthTxData) {
-        if (hydratedEthTxData != null && hydratedEthTxData.isAvailable()) {
-            final var ethTxSigs = ethTxSigsCache.computeIfAbsent(hydratedEthTxData.ethTxDataOrThrow());
-            return Key.newBuilder()
-                    .ecdsaSecp256k1(Bytes.wrap(ethTxSigs.publicKey()))
-                    .build();
-        } else {
-            return null;
-        }
+    static Key provideAbsentEthereumSenderKey() {
+        return null;
     }
 
     @Provides

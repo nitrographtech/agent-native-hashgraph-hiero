@@ -51,7 +51,6 @@ import com.hedera.hapi.node.transaction.TransactionBody;
 import com.hedera.node.app.fees.AppFeeCharging;
 import com.hedera.node.app.fees.ExchangeRateManager;
 import com.hedera.node.app.fees.FeeAccumulator;
-import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.signature.AppKeyVerifier;
 import com.hedera.node.app.signature.impl.SignatureVerificationImpl;
 import com.hedera.node.app.spi.authorization.Authorizer;
@@ -120,9 +119,6 @@ class DispatchProcessorTest {
             SignedTransaction.DEFAULT, TXN_BODY, SignatureMap.DEFAULT, Bytes.EMPTY, NODE_CREATE, null);
 
     @Mock
-    private EthereumTransactionHandlerFacade ethereumTransactionHandler;
-
-    @Mock
     private Authorizer authorizer;
 
     @Mock
@@ -189,7 +185,6 @@ class DispatchProcessorTest {
                 dispatchUsageManager,
                 exchangeRateManager,
                 dispatcher,
-                ethereumTransactionHandler,
                 networkInfo,
                 opWorkflowMetrics,
                 new AppFeeCharging(solvencyPreCheck));
@@ -526,37 +521,6 @@ class DispatchProcessorTest {
         verify(feeAccumulator).chargeFee(PAYER_ACCOUNT_ID, FEES.totalFee(), null);
         verify(opWorkflowMetrics).incrementThrottled(CRYPTO_TRANSFER);
         assertFinished(IsRootStack.NO);
-    }
-
-    @Test
-    void consGasExhaustedForEthTxnDoesExtraWork() throws ThrottleException {
-        given(dispatch.fees()).willReturn(FEES);
-        given(dispatch.handleContext()).willReturn(context);
-        given(dispatch.feeAccumulator()).willReturn(feeAccumulator);
-        given(dispatchValidator.validateFeeChargingScenario(dispatch))
-                .willReturn(newSuccess(CREATOR_ACCOUNT_ID, PAYER));
-        given(dispatch.payerId()).willReturn(PAYER_ACCOUNT_ID);
-        given(dispatch.txnInfo()).willReturn(ETH_TXN_INFO);
-        givenAuthorization(ETH_TXN_INFO);
-        doThrow(ThrottleException.newGasThrottleException())
-                .when(dispatchUsageManager)
-                .screenForCapacity(dispatch);
-        given(dispatch.txnCategory()).willReturn(USER);
-        doCallRealMethod().when(dispatch).charge(any(), any(), any(), any());
-        doCallRealMethod().when(dispatch).category();
-        doCallRealMethod().when(dispatch).feeChargingOrElse(any());
-        given(dispatch.nodeAccountId()).willReturn(CREATOR_ACCOUNT_ID);
-
-        subject.processDispatch(dispatch);
-
-        verifyTrackedFeePayments();
-        verify(dispatcher, never()).dispatchHandle(context);
-        verify(recordBuilder).status(CONSENSUS_GAS_EXHAUSTED);
-        verify(feeAccumulator).chargeFees(PAYER_ACCOUNT_ID, CREATOR_ACCOUNT_ID, FEES, null);
-        verify(feeAccumulator).chargeFees(PAYER_ACCOUNT_ID, CREATOR_ACCOUNT_ID, FEES.withoutServiceComponent(), null);
-        verify(ethereumTransactionHandler).handleThrottled(context);
-        verify(opWorkflowMetrics).incrementThrottled(ETHEREUM_TRANSACTION);
-        assertFinished();
     }
 
     @Test

@@ -24,7 +24,6 @@ import com.hedera.hapi.node.contract.ContractDeleteTransactionBody;
 import com.hedera.hapi.node.contract.ContractGetBytecodeQuery;
 import com.hedera.hapi.node.contract.ContractGetInfoQuery;
 import com.hedera.hapi.node.contract.ContractUpdateTransactionBody;
-import com.hedera.hapi.node.contract.EthereumTransactionBody;
 import com.hedera.hapi.node.hooks.HookCreationDetails;
 import com.hedera.hapi.node.state.contract.Bytecode;
 import com.hedera.hapi.node.transaction.Query;
@@ -38,7 +37,6 @@ import com.hedera.node.app.service.contract.impl.calculator.ContractDeleteFeeCal
 import com.hedera.node.app.service.contract.impl.calculator.ContractGetByteCodeFeeCalculator;
 import com.hedera.node.app.service.contract.impl.calculator.ContractGetInfoFeeCalculator;
 import com.hedera.node.app.service.contract.impl.calculator.ContractUpdateFeeCalculator;
-import com.hedera.node.app.service.contract.impl.calculator.EthereumFeeCalculator;
 import com.hedera.node.app.service.contract.impl.state.ContractStateStore;
 import com.hedera.node.app.spi.fees.FeeContext;
 import com.hedera.node.app.spi.workflows.QueryContext;
@@ -75,8 +73,7 @@ public class ContractServiceFeeCalculatorsTest {
                         new ContractCreateFeeCalculator(),
                         new ContractUpdateFeeCalculator(),
                         new ContractDeleteFeeCalculator(),
-                        new ContractCallFeeCalculator(),
-                        new EthereumFeeCalculator()),
+                        new ContractCallFeeCalculator()),
                 Set.of(
                         new ContractCallLocalFeeCalculator(),
                         new ContractGetInfoFeeCalculator(),
@@ -216,21 +213,6 @@ public class ContractServiceFeeCalculatorsTest {
         assertThat(result.getNodeTotalTinycents()).isEqualTo(0L);
         assertThat(result.getServiceTotalTinycents()).isEqualTo(0L);
         assertThat(result.getNetworkTotalTinycents()).isEqualTo(0L);
-    }
-
-    @Test
-    void testEthereum() {
-        final var body = TransactionBody.newBuilder()
-                .ethereumTransaction(EthereumTransactionBody.newBuilder().build())
-                .build();
-        when(feeContext.numTxnSignatures()).thenReturn(1);
-        when(feeContext.functionality()).thenReturn(ETHEREUM_TRANSACTION);
-
-        final var result = feeCalculator.calculateTxFee(body, new SimpleFeeContextImpl(feeContext, null));
-
-        assertThat(result.getNodeTotalTinycents()).isEqualTo(100000L);
-        assertThat(result.getServiceTotalTinycents()).isEqualTo(0L);
-        assertThat(result.getNetworkTotalTinycents()).isEqualTo(200000L);
     }
 
     @Test

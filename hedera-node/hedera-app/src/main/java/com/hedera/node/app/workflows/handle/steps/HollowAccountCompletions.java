@@ -1,36 +1,26 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.workflows.handle.steps;
 
-import static com.hedera.hapi.node.base.HederaFunctionality.ETHEREUM_TRANSACTION;
 import static com.hedera.hapi.node.base.ResponseCodeEnum.SUCCESS;
-import static com.hedera.hapi.util.HapiUtils.isHollow;
 import static com.hedera.node.app.hapi.utils.keys.KeyUtils.IMMUTABILITY_SENTINEL_KEY;
 import static com.hedera.node.app.spi.fees.NoopFeeCharging.UNIVERSAL_NOOP_FEE_CHARGING;
 import static com.hedera.node.app.spi.workflows.DispatchOptions.setupDispatch;
 import static java.util.Objects.requireNonNull;
 
 import com.hedera.hapi.node.base.AccountID;
-import com.hedera.hapi.node.base.Key;
 import com.hedera.hapi.node.state.token.Account;
 import com.hedera.hapi.node.token.CryptoUpdateTransactionBody;
 import com.hedera.hapi.node.transaction.TransactionBody;
-import com.hedera.node.app.service.file.ReadableFileStore;
-import com.hedera.node.app.service.token.ReadableAccountStore;
 import com.hedera.node.app.service.token.records.CryptoUpdateStreamBuilder;
-import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.signature.AppKeyVerifier;
-import com.hedera.node.app.signature.impl.SignatureVerificationImpl;
 import com.hedera.node.app.spi.signatures.SignatureVerification;
 import com.hedera.node.app.spi.workflows.HandleContext;
 import com.hedera.node.app.spi.workflows.HandleContext.ConsensusThrottling;
 import com.hedera.node.app.spi.workflows.HandleException;
 import com.hedera.node.app.workflows.handle.Dispatch;
-import com.hedera.node.config.data.HederaConfig;
-import com.hedera.pbj.runtime.io.buffer.Bytes;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
@@ -45,13 +35,8 @@ import org.apache.logging.log4j.Logger;
 public class HollowAccountCompletions {
     private static final Logger logger = LogManager.getLogger(HollowAccountCompletions.class);
 
-    private final EthereumTransactionHandlerFacade ethereumTransactionHandler;
-
     @Inject
-    public HollowAccountCompletions(@NonNull final EthereumTransactionHandlerFacade ethereumTransactionHandler) {
-        // Dagger2
-        this.ethereumTransactionHandler = requireNonNull(ethereumTransactionHandler);
-    }
+    public HollowAccountCompletions() {}
 
     /**
      * Finalizes the hollow accounts by updating the key on the hollow accounts that need to be finalized.
@@ -69,50 +54,9 @@ public class HollowAccountCompletions {
         requireNonNull(dispatch);
         // Any hollow accounts that must sign to have all needed signatures, need to be finalized
         // as a result of transaction being handled.
-        Set<Account> hollowAccounts = parentTxn.preHandleResult().getHollowAccounts();
-        SignatureVerification maybeEthTxVerification = null;
-        if (parentTxn.functionality() == ETHEREUM_TRANSACTION) {
-            final var ethFinalization = findEthHollowAccount(parentTxn);
-            if (ethFinalization != null) {
-                hollowAccounts = new LinkedHashSet<>(parentTxn.preHandleResult().getHollowAccounts());
-                hollowAccounts.add(ethFinalization.hollowAccount());
-                maybeEthTxVerification = ethFinalization.ethVerification();
-            }
-        }
+        final Set<Account> hollowAccounts = parentTxn.preHandleResult().getHollowAccounts();
         return finalizeHollowAccounts(
-                dispatch.handleContext(), hollowAccounts, dispatch.keyVerifier(), maybeEthTxVerification, parentTxn);
-    }
-
-    /**
-     * Finds the hollow account that needs to be finalized for the Ethereum transaction.
-     * @param parentTxn the user transaction component
-     * @return the hollow account that needs to be finalized for the Ethereum transaction
-     */
-    @Nullable
-    private EthFinalization findEthHollowAccount(@NonNull final ParentTxn parentTxn) {
-        final var fileStore = parentTxn.readableStoreFactory().readableStore(ReadableFileStore.class);
-        final var maybeEthTxSigs = ethereumTransactionHandler.maybeEthTxSigsFor(
-                parentTxn.txnInfo().txBody().ethereumTransactionOrThrow(), fileStore, parentTxn.config());
-        if (maybeEthTxSigs != null) {
-            final var alias = Bytes.wrap(maybeEthTxSigs.address());
-            final var accountStore = parentTxn.readableStoreFactory().readableStore(ReadableAccountStore.class);
-            final var config = parentTxn.config().getConfigData(HederaConfig.class);
-            final var maybeHollowAccountId = accountStore.getAccountIDByAlias(config.shard(), config.realm(), alias);
-            if (maybeHollowAccountId != null) {
-                final var maybeHollowAccount = requireNonNull(accountStore.getAccountById(maybeHollowAccountId));
-                if (isHollow(maybeHollowAccount)) {
-                    return new EthFinalization(
-                            maybeHollowAccount,
-                            new SignatureVerificationImpl(
-                                    Key.newBuilder()
-                                            .ecdsaSecp256k1(Bytes.wrap(maybeEthTxSigs.publicKey()))
-                                            .build(),
-                                    alias,
-                                    true));
-                }
-            }
-        }
-        return null;
+                dispatch.handleContext(), hollowAccounts, dispatch.keyVerifier(), null, parentTxn);
     }
 
     /**
@@ -234,11 +178,4 @@ public class HollowAccountCompletions {
             requireNonNull(syntheticUpdateTxn);
         }
     }
-
-    /**
-     * A record that contains the hollow account and the Ethereum verification.
-     * @param hollowAccount the hollow account
-     * @param ethVerification the Ethereum verification
-     */
-    private record EthFinalization(Account hollowAccount, SignatureVerification ethVerification) {}
 }

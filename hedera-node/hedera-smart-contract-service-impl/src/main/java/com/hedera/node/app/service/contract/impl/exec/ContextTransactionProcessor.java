@@ -8,7 +8,6 @@ import com.hedera.hapi.node.base.AccountID;
 import com.hedera.hapi.node.base.ContractID;
 import com.hedera.hapi.node.base.TransactionID;
 import com.hedera.hapi.streams.ContractBytecode;
-import com.hedera.node.app.hapi.utils.ethereum.EthTxData;
 import com.hedera.node.app.service.contract.impl.annotations.TransactionScope;
 import com.hedera.node.app.service.contract.impl.exec.gas.CustomGasCharging;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
@@ -25,7 +24,6 @@ import com.hedera.node.app.spi.workflows.ResourceExhaustedException;
 import com.hedera.node.config.data.ContractsConfig;
 import com.hedera.node.config.data.JumboTransactionsConfig;
 import com.hedera.node.config.data.OpsDurationConfig;
-import com.hedera.pbj.runtime.io.buffer.Bytes;
 import com.swirlds.config.api.Configuration;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -44,9 +42,6 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
     private final Configuration configuration;
     private final HederaEvmContext hederaEvmContext;
 
-    @Nullable
-    private final HydratedEthTxData hydratedEthTxData;
-
     private final TransactionProcessor processor;
     private final ActionSidecarContentTracer actionTracer;
     private final RootProxyWorldUpdater rootProxyWorldUpdater;
@@ -55,7 +50,6 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
     private final ContractMetrics contractMetrics;
 
     /**
-     * @param hydratedEthTxData the hydrated Ethereum transaction data
      * @param context the context of the transaction
      * @param contractsConfig the contracts configuration to use
      * @param configuration the configuration to use
@@ -68,7 +62,6 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
      */
     @Inject
     public ContextTransactionProcessor(
-            @Nullable final HydratedEthTxData hydratedEthTxData,
             @NonNull final HandleContext context,
             @NonNull final ContractsConfig contractsConfig,
             @NonNull final Configuration configuration,
@@ -80,7 +73,6 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
             @NonNull final CustomGasCharging customGasCharging,
             @NonNull final ContractMetrics contractMetrics) {
         this.context = requireNonNull(context);
-        this.hydratedEthTxData = hydratedEthTxData;
         this.actionTracer = requireNonNull(actionTracer);
         this.processor = requireNonNull(processor);
         this.rootProxyWorldUpdater = requireNonNull(worldUpdater);
@@ -97,9 +89,6 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
         // ONLY USED FOR METRICS: Measure the actual execution time.
         final var startTimeNanos = System.nanoTime();
 
-        // Ensure that if this is an EthereumTransaction, we have a valid EthTxData
-        assertEthTxDataValidIfApplicable();
-
         // Try to translate the HAPI operation to a Hedera EVM transaction, throw HandleException on failure
         // if an exception occurs during a ContractCall, charge fees to the sender and return a CallOutcome reflecting
         // the error.
@@ -113,8 +102,8 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
                         requireNonNull(hevmTransaction.exception()).getStatus());
                 final var hookId = hevmTransaction.maybeHookId();
                 outcome = CallOutcome.fromResultsWithoutSidecars(
-                        result.asProtoResultOf(null, rootProxyWorldUpdater, null),
-                        result.asEvmTxResultOf(null, rootProxyWorldUpdater, null, hookId),
+                        result.asProtoResultOf(rootProxyWorldUpdater),
+                        result.asEvmTxResultOf(rootProxyWorldUpdater, hookId),
                         null,
                         null,
                         null,
@@ -177,11 +166,6 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
                     configuration,
                     opsDurationCounter);
 
-            if (hydratedEthTxData != null) {
-                final var sender = requireNonNull(rootProxyWorldUpdater.getHederaAccount(hevmTransaction.senderId()));
-                result = result.withSignerNonce(sender.getNonce());
-            }
-
             // For mono-service fidelity, externalize an initcode-only sidecar when a top-level creation fails
             if (!result.isSuccess() && hevmTransaction.needsInitcodeExternalizedOnFailure()) {
                 // (FUTURE) Remove after switching to block stream
@@ -192,12 +176,9 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
             }
 
             final var hookId = hevmTransaction.maybeHookId();
-            final var callData = (hydratedEthTxData != null && hydratedEthTxData.ethTxData() != null)
-                    ? Bytes.wrap(hydratedEthTxData.ethTxData().callData())
-                    : null;
             final var outcome = CallOutcome.fromResultsWithMaybeSidecars(
-                    result.asProtoResultOf(ethTxDataIfApplicable(), rootProxyWorldUpdater, callData),
-                    result.asEvmTxResultOf(ethTxDataIfApplicable(), rootProxyWorldUpdater, callData, hookId),
+                    result.asProtoResultOf(rootProxyWorldUpdater),
+                    result.asEvmTxResultOf(rootProxyWorldUpdater, hookId),
                     result.isSuccess() ? rootProxyWorldUpdater.getUpdatedContractNonces() : null,
                     result.isSuccess() ? rootProxyWorldUpdater.getCreatedContractIds() : null,
                     result.isSuccess() ? result.evmAddressIfCreatedIn(rootProxyWorldUpdater) : null,
@@ -284,29 +265,13 @@ public class ContextTransactionProcessor implements Callable<CallOutcome> {
 
         var result = HederaEvmTransactionResult.fromAborted(senderId, recipientId, status);
 
-        if (context.body().hasEthereumTransaction() && sender != null) {
-            result = result.withSignerNonce(sender.getNonce());
-        }
         final var hookId = hevmTransaction.maybeHookId();
-        final var ethCallData = (hydratedEthTxData != null && hydratedEthTxData.ethTxData() != null)
-                ? Bytes.wrap(hydratedEthTxData.ethTxData().callData())
-                : null;
         return CallOutcome.fromResultsWithoutSidecars(
-                result.asProtoResultOf(ethTxDataIfApplicable(), rootProxyWorldUpdater, ethCallData),
-                result.asEvmTxResultOf(ethTxDataIfApplicable(), rootProxyWorldUpdater, ethCallData, hookId),
+                result.asProtoResultOf(rootProxyWorldUpdater),
+                result.asEvmTxResultOf(rootProxyWorldUpdater, hookId),
                 null,
                 null,
                 null,
                 result);
-    }
-
-    private void assertEthTxDataValidIfApplicable() {
-        if (hydratedEthTxData != null && !hydratedEthTxData.isAvailable()) {
-            throw new HandleException(hydratedEthTxData.status());
-        }
-    }
-
-    private @Nullable EthTxData ethTxDataIfApplicable() {
-        return hydratedEthTxData == null ? null : hydratedEthTxData.ethTxData();
     }
 }

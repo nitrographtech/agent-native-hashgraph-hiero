@@ -58,6 +58,8 @@ jobs:
           tools/p07/test-system-contract-removal-policy.sh
           tools/p07/verify-dead-solidity-assets-removed.sh
           tools/p07/test-dead-solidity-asset-policy.sh
+          tools/p07/verify-ethereum-execution-removed.sh
+          tools/p07/test-ethereum-execution-removal-policy.sh
 
       - name: Enforce protected-layer boundary
         run: |

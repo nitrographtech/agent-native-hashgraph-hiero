@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import com.hedera.hapi.node.base.AccountID;
 import com.hedera.node.app.service.contract.impl.exec.CallOutcome;
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaOperations.GasChargingEvent;
-import com.hedera.node.app.service.contract.impl.utils.EthereumTransactionRollbackHandler;
+import com.hedera.node.app.service.contract.impl.utils.BatchTransactionRollbackHandler;
 import com.hedera.node.app.service.token.api.TokenServiceApi;
 import com.hedera.node.app.spi.fees.FeeCharging;
 import com.hedera.node.app.spi.fees.Fees;
@@ -22,7 +22,7 @@ import com.hedera.node.app.spi.workflows.HandleContext;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public final class EthereumTransactionRollbackHandlerTest {
+public final class BatchTransactionRollbackHandlerTest {
 
     @Test
     public void gasChargesWithNonceIncrementAreCorrectlyReplayed() {
@@ -40,7 +40,7 @@ public final class EthereumTransactionRollbackHandlerTest {
                 new GasChargingEvent(CHARGE, chargeOnlyAccount, chargeOnlyAmount, false),
                 new GasChargingEvent(REFUND, chargeAndRefundAccount, refundAmount, false));
 
-        final var subject = new EthereumTransactionRollbackHandler(mock(CallOutcome.class), gasChargingEvents);
+        final var subject = new BatchTransactionRollbackHandler(mock(CallOutcome.class), gasChargingEvents);
 
         final var feeChargingContext = mock(FeeCharging.Context.class);
         final var handleContext = mock(HandleContext.class);

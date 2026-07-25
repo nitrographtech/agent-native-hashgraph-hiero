@@ -13,7 +13,7 @@ public record ContractRuntimeHandlers(
         @NonNull TransactionHandler contractDeleteHandler,
         @NonNull TransactionHandler contractSystemDeleteHandler,
         @NonNull TransactionHandler contractSystemUndeleteHandler,
-        @NonNull EthereumTransactionHandlerFacade ethereumTransactionHandler,
+        @NonNull TransactionHandler ethereumTransactionHandler,
         @NonNull TransactionHandler hookStoreHandler,
         @NonNull TransactionHandler hookDispatchHandler,
         @NonNull QueryHandler contractGetBySolidityIdHandler,

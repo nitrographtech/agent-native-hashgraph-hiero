@@ -103,7 +103,7 @@ plan removes the EVM integration source first, then removes the now-unused Besu/
 | 3C | Remove residual callback protocol | **DEFERRED TO WAVES 4–8.** `ActionSidecarContentTracer`, factory seam, `NoTracer`, and propagation remain only in executable legacy source. | Delete each callback with its owning system-contract, Ethereum, world-state, Bonneville, or EVM processor. No fixture-specific EVM processor duplication. | `LEGACY_EXECUTION_SEAM_DEFERRED_TO_ENGINE_REMOVAL` |
 | 4 | System contracts | Remove `exec/systemcontracts/**`, its Dagger bindings, executable precompile tests, and full-only service hooks | Retain token/account/schedule native APIs; remove smart-contract precompile CI partitions | Very high. Native token/account suites and protected historical streams must pass |
 | 5 | Solidity execution assets | Remove full-only Solidity execution/query handlers and compiler/source fixtures no longer needed after Wave 2 | Retain wire names such as `getBySolidityID`, address widths, PBJ fields, and historical query rejection | Medium. Do not cosmetically rename historical fields |
-| 6 | Ethereum execution | Remove Ethereum handler, hydration, transaction factories/processors, signature cache used only for execution, and executable Ethereum suites | Retain Ethereum PBJ bodies/results for decoding, rejection, and mirror | High. Historical Ethereum mirror counts and five-body rejection must pass |
+| 6 | Ethereum execution | **COMPLETE (P07-6).** Live handler, hydration, signature cache, fee/gas branches, dispatch, and runtime parser ownership removed. Test-client corpus helpers remain until their mixed-suite consumers retire. | Retain Ethereum PBJ bodies/results for decoding, rejection, and mirror | Closed: historical and exact-head runtime importer regressions pass; new runtime actions are deterministically zero |
 | 7 | World-state implementation | Remove mutable stores, `WorldUpdater`, frame state, proxy accounts, writable EVM hook stores, and `FullContractStoreFactory` | First move any remaining validator schema references to neutral history API; retain historical read-only adapters | Very high. All four retained map inventories must be unchanged |
 | 8 | EVM engine integration | Remove HEVM, frame runners, processors, custom operations, versioned EVM modules, gas/executable metrics, Bonneville, and native-lib verifier | Remove associated implementation tests and full provider construction | Very high. This retires the full executable application profile |
 | 9 | Besu/Tuweni and executable native dependencies | Remove app/test-client JPMS edges and version-catalog/dependency metadata after source scans are zero | Remove notices/SBOM components only when no retained artifact carries them | Blocked at `platform-sdk/base-crypto` without upstream neutral verifier or separate platform authorization |
@@ -214,6 +214,24 @@ system-contract-only Solidity inputs, 43 paired ABI files, and 43 paired bytecod
 716,068 bytes). No shared compiler task is removed: retained general-contract, fixture, Ethereum,
 and EVM vectors still use the common compiler paths. Wave 6 should census and then remove
 Ethereum-transaction execution while retaining generic EVM execution until its later wave.
+
+Wave 6 is implemented on `p07/remove-ethereum-transaction-execution`. Live Ethereum handlers,
+RLP/signature recovery, call-data hydration, fee/gas special cases, dispatch, and result
+externalization have been removed from runtime ownership. The same parser FQNs remain only in
+`test-clients` for mixed corpus construction; PBJ/protobuf and historical Ethereum models remain
+protected. Ordinary HAPI contract create/call, the EVM engine, world state, Besu, and generic
+cryptography remain. Builds, policies, fixture verification, and the exact-head reconnect pass;
+official mirror database ingestion passes at the pinned importer commit after refreshing the
+validation user's already-configured Docker group with `sg docker`. The historical corpus retains
+three actions; the exact-head runtime corpus has zero actions under the intended `NoTracer`
+composition. Wave 6 is **COMPLETE**.
+
+Wave 7 should begin with a world-state ownership census. It should distinguish executable
+`RootProxyWorldUpdater`/`ProxyWorldUpdater`/account-storage mutation implementations from the
+permanent neutral retained-map interfaces and read-only historical adapters. The first bounded
+implementation should remove only world-state implementations with no ordinary EVM execution
+consumer; if ordinary create/call still requires the entire world-state closure, record an
+architecture blocker rather than broadening into EVM-engine removal.
 
 ## Risk assessment
 

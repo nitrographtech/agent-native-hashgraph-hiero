@@ -11,7 +11,6 @@ import com.hedera.node.app.service.contract.impl.calculator.ContractDeleteFeeCal
 import com.hedera.node.app.service.contract.impl.calculator.ContractGetByteCodeFeeCalculator;
 import com.hedera.node.app.service.contract.impl.calculator.ContractGetInfoFeeCalculator;
 import com.hedera.node.app.service.contract.impl.calculator.ContractUpdateFeeCalculator;
-import com.hedera.node.app.service.contract.impl.calculator.EthereumFeeCalculator;
 import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracer;
 import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracerFactory;
 import com.hedera.node.app.service.contract.impl.exec.metrics.ContractMetrics;
@@ -119,8 +118,7 @@ public class ContractServiceImpl implements ContractService {
                 new ContractCreateFeeCalculator(),
                 new ContractCallFeeCalculator(),
                 new ContractDeleteFeeCalculator(),
-                new ContractUpdateFeeCalculator(),
-                new EthereumFeeCalculator());
+                new ContractUpdateFeeCalculator());
     }
 
     @Override

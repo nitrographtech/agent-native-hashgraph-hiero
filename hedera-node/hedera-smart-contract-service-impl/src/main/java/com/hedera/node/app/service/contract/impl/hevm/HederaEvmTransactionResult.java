@@ -28,10 +28,8 @@ import com.hedera.hapi.node.base.HookId;
 import com.hedera.hapi.node.base.ResponseCodeEnum;
 import com.hedera.hapi.node.contract.ContractFunctionResult;
 import com.hedera.hapi.node.contract.EvmTransactionResult;
-import com.hedera.hapi.node.contract.InternalCallContext;
 import com.hedera.hapi.streams.ContractAction;
 import com.hedera.hapi.streams.ContractActionType;
-import com.hedera.node.app.hapi.utils.ethereum.EthTxData;
 import com.hedera.node.app.service.contract.impl.exec.ActionSidecarContentTracer;
 import com.hedera.node.app.service.contract.impl.exec.failure.CustomExceptionalHaltReason;
 import com.hedera.node.app.service.contract.impl.state.ProxyWorldUpdater;
@@ -81,55 +79,46 @@ public record HederaEvmTransactionResult(
 
     /**
      * Converts this result to a {@link ContractFunctionResult} for a transaction based on the given
-     * {@link RootProxyWorldUpdater} and maybe {@link EthTxData}.
+     * {@link RootProxyWorldUpdater}.
      *
-     * @param ethTxData the Ethereum transaction data if relevant
      * @param updater the world updater
-     * @param callData the call data if relevant
      * @return the result
      */
-    public ContractFunctionResult asProtoResultOf(
-            @Nullable final EthTxData ethTxData,
-            @NonNull final RootProxyWorldUpdater updater,
-            @Nullable final Bytes callData) {
+    public ContractFunctionResult asProtoResultOf(@NonNull final RootProxyWorldUpdater updater) {
         if (haltReason != null) {
-            return withMaybeEthFields(asUncommittedFailureResult(errorMessageFor(haltReason)), ethTxData, callData);
+            return asUncommittedFailureResult(errorMessageFor(haltReason)).build();
         } else if (revertReason != null) {
             // This curious presentation of the revert reason is needed for backward compatibility
-            return withMaybeEthFields(
-                    asUncommittedFailureResult(errorMessageForRevert(revertReason)), ethTxData, callData);
+            return asUncommittedFailureResult(errorMessageForRevert(revertReason))
+                    .build();
         } else {
-            return withMaybeEthFields(asSuccessResultForCommitted(updater), ethTxData, callData);
+            return asSuccessResultForCommitted(updater).build();
         }
     }
 
     /**
      * Converts this result to a {@link ContractFunctionResult} for a transaction based on the given
-     * {@link RootProxyWorldUpdater} and maybe {@link EthTxData}.
+     * {@link RootProxyWorldUpdater}.
      *
-     * @param ethTxData the Ethereum transaction data if relevant
      * @param updater the world updater
-     * @param callData the call data if relevant
+     * @param hookId the executed hook, if relevant
      * @return the result
      */
     public EvmTransactionResult asEvmTxResultOf(
-            @Nullable final EthTxData ethTxData,
-            @NonNull final RootProxyWorldUpdater updater,
-            @Nullable final Bytes callData,
-            @Nullable final HookId hookId) {
+            @NonNull final RootProxyWorldUpdater updater, @Nullable final HookId hookId) {
+        final EvmTransactionResult.Builder builder;
         if (haltReason != null) {
-            return txWithMaybeEthFields(
-                    asUncommittedFailureResultBuilder(errorMessageFor(haltReason)), ethTxData, callData, hookId);
+            builder = asUncommittedFailureResultBuilder(errorMessageFor(haltReason));
         } else if (revertReason != null) {
             // This curious presentation of the revert reason is needed for backward compatibility
-            return txWithMaybeEthFields(
-                    asUncommittedFailureResultBuilder(errorMessageForRevert(revertReason)),
-                    ethTxData,
-                    callData,
-                    hookId);
+            builder = asUncommittedFailureResultBuilder(errorMessageForRevert(revertReason));
         } else {
-            return txWithMaybeEthFields(asSuccessResultForCommittedBuilder(updater), ethTxData, callData, hookId);
+            builder = asSuccessResultForCommittedBuilder(updater);
         }
+        if (hookId != null) {
+            builder.executedHookId(hookId);
+        }
+        return builder.build();
     }
 
     /**
@@ -351,41 +340,6 @@ public record HederaEvmTransactionResult(
      */
     public @Nullable Bytes evmAddressIfCreatedIn(@NonNull final RootProxyWorldUpdater updater) {
         return recipientEvmAddressIfCreatedIn(updater.getCreatedContractIds());
-    }
-
-    private ContractFunctionResult withMaybeEthFields(
-            @NonNull final ContractFunctionResult.Builder builder,
-            @Nullable final EthTxData ethTxData,
-            @Nullable final Bytes callData) {
-        if (ethTxData != null) {
-            builder.gas(ethTxData.gasLimit())
-                    .amount(ethTxData.getAmount())
-                    .senderId(senderId)
-                    .functionParameters(requireNonNull(callData));
-        }
-        return builder.build();
-    }
-
-    private EvmTransactionResult txWithMaybeEthFields(
-            @NonNull final EvmTransactionResult.Builder builder,
-            @Nullable final EthTxData ethTxData,
-            @Nullable final Bytes callData,
-            @Nullable final HookId hookId) {
-        if (ethTxData != null) {
-            builder.senderId(senderId)
-                    .internalCallContext(new InternalCallContext(
-                            ethTxData.gasLimit(), ethTxData.getAmount(), requireNonNull(callData)));
-            if (signerNonce != null) {
-                builder.signerNonce(signerNonce);
-            }
-        }
-        if (hookId != null) {
-            builder.executedHookId(hookId);
-        }
-        if (hookId != null) {
-            builder.executedHookId(hookId);
-        }
-        return builder.build();
     }
 
     private ContractFunctionResult.Builder asUncommittedFailureResult(@NonNull final String errorMessage) {

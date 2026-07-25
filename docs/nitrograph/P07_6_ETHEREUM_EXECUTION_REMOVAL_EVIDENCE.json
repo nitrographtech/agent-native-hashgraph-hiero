@@ -1,0 +1,153 @@
+{
+  "phase": "P07-6",
+  "status": "COMPLETE",
+  "objective": "Remove live Ethereum transaction execution while retaining ordinary EVM execution and historical compatibility",
+  "base": {
+    "p07_5_tested_head": "202a91e4f3ca2c95a231187ffbf1b890f07bd99e",
+    "p07_5_ci_run": 30139539555,
+    "p07_5_merge_commit": "3535fe085e7f10691436146e233fd6bcf166adc7",
+    "merge_method": "merge commit"
+  },
+  "removed_runtime_components": [
+    "EthereumTransactionHandler",
+    "EthereumTransactionHandlerFacade",
+    "EthereumFeeCalculator",
+    "EthereumCallDataHydration",
+    "HydratedEthTxData",
+    "EthTxSigsCache",
+    "live Ethereum branches in HevmTransactionFactory",
+    "live Ethereum branches in ContextTransactionProcessor",
+    "Ethereum hollow-account signature recovery",
+    "Ethereum throttle, solvency, gas reservation, and fee-refund branches"
+  ],
+  "measured_change": {
+    "runtime_production_files_deleted": 6,
+    "runtime_production_bytes_deleted": 20455,
+    "runtime_test_files_deleted": 3,
+    "runtime_test_bytes_deleted": 36471,
+    "runtime_parser_files_moved_to_test_tooling": 2,
+    "runtime_parser_tests_moved_to_test_tooling": 3,
+    "resources_deleted": 0,
+    "overall_diff": "59 tracked files changed, 93 insertions, 4462 deletions before moved-file similarity accounting"
+  },
+  "relocated_test_tooling": {
+    "classes": ["EthTxData", "EthTxSigs"],
+    "from": "app-hapi-utils runtime API",
+    "to": "test-clients",
+    "runtime_distribution_presence": 0,
+    "reason": "Retain test corpus construction without runtime parser or signature-recovery ownership"
+  },
+  "retained": {
+    "ordinary_contract_execution": true,
+    "evm_engine": true,
+    "world_state": true,
+    "besu": true,
+    "generic_crypto": true,
+    "pbj_protobuf_ethereum_models": true,
+    "historical_ethereum_models": true,
+    "historical_record_and_block_translation": true,
+    "authenticated_fixture": "unchanged"
+  },
+  "format_changes": {
+    "consensus": 0,
+    "platform_sdk": 0,
+    "pbj_or_protobuf": 0,
+    "persisted_format": 0,
+    "codec": 0,
+    "state_id": 0,
+    "schema": 0,
+    "service_name": 0
+  },
+  "validation": {
+    "affected_main_compilation": "PASS",
+    "affected_test_compilation": "PASS",
+    "contract_implementation_tests": "PASS: 839",
+    "application_focused_tests": "PASS: 26",
+    "neutral_contract_api_tests": "PASS: 4",
+    "fixture_tooling_tests": "PASS: 1",
+    "policy": "PASS including intentional source, class, service, and JPMS failure controls",
+    "native_build": "PASS",
+    "full_build": "PASS",
+    "ordinary_contract_execution": "PASS through retained create/call implementation tests",
+    "historical_activation": "PASS",
+    "restart_replay": "PASS",
+    "legacy_rejection": "PASS: 5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+    "historical_maps": {
+      "status": "PASS",
+      "STORAGE": "cardinality 1; decoded value 424242",
+      "BYTECODE": "cardinality 2; hashes unchanged",
+      "EVM_HOOK_STATES": "cardinality 1",
+      "LAMBDA_STORAGE": "cardinality 1",
+      "combined_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+    },
+    "reconnect_and_synchronization": {
+      "status": "PASS",
+      "attempt_1": "ENVIRONMENTAL_FAILURE: recovering node could not bind port 34540",
+      "attempt_1_test_xml_sha256": "29c4247d44dc4212968fe546f0f8da386588607f5577f79edd6bb60e9134bf5b",
+      "attempt_2": "PASS after TIME_WAIT release; learner BEHIND, reconnect state load, then ACTIVE; synchronization and post-reconnect native processing passed",
+      "attempt_2_test_xml_sha256": "5610a937bca6d9b5d14a981a25a47b9c15268ce1b0b7a3cfa60f6e8b7200f151",
+      "attempt_2_learner_log_sha256": "b3967520aea81302f852a40d07b4443d3e7b5be2a4703789afffa082c0ae56e0"
+    },
+    "mirror": {
+      "status": "PASS",
+      "importer_commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+      "environment": {
+        "validation_user": "ericf (uid 1000) with effective docker group gid 989 via sg docker",
+        "docker_client": "29.6.2",
+        "docker_server": "29.6.2",
+        "testcontainers": "2.0.5",
+        "database": "official importer Testcontainers PostgreSQL",
+        "command": "sg docker -c './gradlew :importer:test --tests org.hiero.mirror.importer.parser.record.P06bFixtureRegressionTest --no-daemon --rerun-tasks'"
+      },
+      "authenticated_historical_corpus": {
+        "signed_record_files_ingested": 11,
+        "transactions": 754,
+        "contract_results": 3,
+        "contract_logs": 1,
+        "contract_actions": 3,
+        "action_sidecar_records": 3,
+        "bytecode_records": 2,
+        "attached_sidecar_records": 5,
+        "complete_blocks_ingested": 139,
+        "record_tree_sha256": "af0518aac5fe9a6850b7be96484c922f990c7e4a1350eea172aee5b5ed17ba1f",
+        "block_tree_sha256": "f2ea7faffb0c4d1972d1c099f702c84991283182b351fca768c0e237db628688",
+        "test_xml_sha256": "14d9cd80a4c93eda031cfe425b2e62448125c7c71db6542a39723ff88497b0b9"
+      },
+      "exact_head_runtime_corpus": {
+        "signed_record_files_ingested": 39,
+        "transactions": 859,
+        "contract_results": 3,
+        "contract_logs": 1,
+        "contract_actions": 0,
+        "action_sidecar_records": 0,
+        "state_change_groups": 2,
+        "storage_changes": 2,
+        "bytecode_records": 2,
+        "attached_sidecar_records": 4,
+        "complete_blocks_ingested": 229,
+        "record_tree_sha256": "988ffa09901e77a82054c97349f93722fbbe03d488c99527db0919211a76cce9",
+        "block_tree_sha256": "0d2f66c672d50224bc63218b6dcabfcfa722551aea7d608114fbc982bc2090e9",
+        "test_xml_sha256": "32a313cc3b619747bfbaa717cef3ee6e1ec13e2e8afb993fad897c5f1d3df4e3"
+      },
+      "associations_ordering_and_hashes": "PASS"
+    },
+    "authenticated_fixture": {
+      "status": "PASS",
+      "files_verified": 396,
+      "round": 4744,
+      "archive_sha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0"
+    },
+    "artifacts": {
+      "native_application_sha256": "fc01e693b0de993175fb15c8528083758b40c46d07f2412f06e1decf70be081f",
+      "full_application_sha256": "89ed9502e0a12c00170e7f4fb7f29fd5cca4028425f0aadc83b0d13a98150f28",
+      "fixture_tooling_sha256": "c27fe7adb041def863eb437de84fc21a226076a40e7df407431ed3737321b667"
+    },
+    "implementation_head": "b28a41d36229aee33740b9d340a968bbab41ce6a",
+    "implementation_head_ci": {
+      "run": 30142500872,
+      "result": "PASS"
+    },
+    "final_evidence_head_ci": "Reported by PR status because an evidence file cannot self-reference its own commit and CI run"
+  },
+  "merge_readiness": "READY after final evidence-only exact-head CI"
+}

@@ -15,12 +15,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class EthereumTransactionRollbackHandler implements HandleException.OnRollback {
+/**
+ * Replays ordinary contract gas charges after an atomic-batch rollback.
+ *
+ * <p>This is shared by ordinary HAPI contract calls and creates and is not part of the removed Ethereum transaction
+ * pipeline.
+ */
+public final class BatchTransactionRollbackHandler implements HandleException.OnRollback {
 
     private final CallOutcome outcome;
     private final List<HederaOperations.GasChargingEvent> gasChargingEvents;
 
-    public EthereumTransactionRollbackHandler(
+    public BatchTransactionRollbackHandler(
             @NonNull CallOutcome outcome, @NonNull List<HederaOperations.GasChargingEvent> gasChargingEvents) {
         this.outcome = outcome;
         this.gasChargingEvents = gasChargingEvents;
@@ -28,7 +34,6 @@ public final class EthereumTransactionRollbackHandler implements HandleException
 
     @Override
     public void replay(@NonNull FeeCharging.Context feeChargingContext, @NonNull HandleContext handleContext) {
-        // Replay fee charges
         replayGasChargingIn(feeChargingContext, handleContext);
     }
 
@@ -46,8 +51,6 @@ public final class EthereumTransactionRollbackHandler implements HandleException
                 netCharges.merge(event.accountId(), -event.amount(), Long::sum);
             }
         }
-        netCharges.forEach((payerId, amount) -> {
-            feeChargingContext.charge(payerId, new Fees(0, amount, 0), null);
-        });
+        netCharges.forEach((payerId, amount) -> feeChargingContext.charge(payerId, new Fees(0, amount, 0), null));
     }
 }

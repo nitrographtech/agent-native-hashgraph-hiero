@@ -20,7 +20,6 @@ import com.hedera.node.app.service.token.impl.handlers.TokenHandlers;
 import com.hedera.node.app.service.util.impl.UtilServiceImpl;
 import com.hedera.node.app.service.util.impl.handlers.UtilHandlers;
 import com.hedera.node.app.services.ContractRuntimeProvider;
-import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.spi.AppContext;
 import com.hedera.node.app.state.WorkingStateAccessor;
 import com.hedera.node.app.workflows.dispatcher.TransactionHandlers;
@@ -75,7 +74,7 @@ public interface HandleWorkflowModule {
 
     @Provides
     @Singleton
-    static EthereumTransactionHandlerFacade provideEthereumTransactionHandler(
+    static com.hedera.node.app.spi.workflows.TransactionHandler provideEthereumTransactionHandler(
             @NonNull final ContractRuntimeProvider contractRuntime) {
         return contractRuntime.handlers().ethereumTransactionHandler();
     }

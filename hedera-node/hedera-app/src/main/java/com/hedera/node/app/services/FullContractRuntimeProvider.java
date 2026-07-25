@@ -3,7 +3,6 @@ package com.hedera.node.app.services;
 
 import com.hedera.node.app.service.contract.ContractService;
 import com.hedera.node.app.service.contract.impl.ContractServiceImpl;
-import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
 import com.hedera.node.app.spi.AppContext;
 import com.hedera.node.app.spi.fees.QueryFeeCalculator;
 import com.hedera.node.app.spi.fees.ServiceFeeCalculator;
@@ -26,7 +25,7 @@ public final class FullContractRuntimeProvider implements ContractRuntimeProvide
                 h.contractDeleteHandler(),
                 h.contractSystemDeleteHandler(),
                 h.contractSystemUndeleteHandler(),
-                new ExecutableEthereumHandler(h.ethereumTransactionHandler()),
+                new RemovedLegacyExecutableHandler(),
                 h.hookStoreHandler(),
                 h.hookDispatchHandler(),
                 h.contractGetBySolidityIDHandler(),
@@ -80,46 +79,34 @@ public final class FullContractRuntimeProvider implements ContractRuntimeProvide
         return true;
     }
 
-    private record ExecutableEthereumHandler(EthereumTransactionHandler delegate)
-            implements EthereumTransactionHandlerFacade {
+    private static final class RemovedLegacyExecutableHandler
+            implements com.hedera.node.app.spi.workflows.TransactionHandler {
+        private static com.hedera.node.app.spi.workflows.PreCheckException rejectedPreCheck() {
+            return new com.hedera.node.app.spi.workflows.PreCheckException(
+                    com.hedera.hapi.node.base.ResponseCodeEnum.INVALID_TRANSACTION_BODY);
+        }
+
         @Override
         public void preHandle(com.hedera.node.app.spi.workflows.PreHandleContext context)
                 throws com.hedera.node.app.spi.workflows.PreCheckException {
-            delegate.preHandle(context);
+            throw rejectedPreCheck();
         }
 
         @Override
         public void pureChecks(com.hedera.node.app.spi.workflows.PureChecksContext context)
                 throws com.hedera.node.app.spi.workflows.PreCheckException {
-            delegate.pureChecks(context);
+            throw rejectedPreCheck();
         }
 
         @Override
         public void warm(com.hedera.node.app.spi.workflows.WarmupContext context) {
-            delegate.warm(context);
-        }
-
-        @Override
-        public com.hedera.node.app.spi.fees.Fees calculateFees(com.hedera.node.app.spi.fees.FeeContext context) {
-            return delegate.calculateFees(context);
+            throw new UnsupportedOperationException("Ethereum transaction execution was removed");
         }
 
         @Override
         public void handle(com.hedera.node.app.spi.workflows.HandleContext context) {
-            delegate.handle(context);
-        }
-
-        @Override
-        public com.hedera.node.app.hapi.utils.ethereum.EthTxSigs maybeEthTxSigsFor(
-                com.hedera.hapi.node.contract.EthereumTransactionBody op,
-                com.hedera.node.app.service.file.ReadableFileStore fileStore,
-                com.swirlds.config.api.Configuration configuration) {
-            return delegate.maybeEthTxSigsFor(op, fileStore, configuration);
-        }
-
-        @Override
-        public void handleThrottled(com.hedera.node.app.spi.workflows.HandleContext context) {
-            delegate.handleThrottled(context);
+            throw new com.hedera.node.app.spi.workflows.HandleException(
+                    com.hedera.hapi.node.base.ResponseCodeEnum.INVALID_TRANSACTION_BODY);
         }
     }
 }

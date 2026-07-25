@@ -4,7 +4,6 @@ module com.hedera.node.app.hapi.utils {
     exports com.hedera.node.app.hapi.utils.forensics;
     exports com.hedera.node.app.hapi.utils.blocks;
     exports com.hedera.node.app.hapi.utils.contracts;
-    exports com.hedera.node.app.hapi.utils.ethereum;
     exports com.hedera.node.app.hapi.utils.exports.recordstreaming;
     exports com.hedera.node.app.hapi.utils.keys;
     exports com.hedera.node.app.hapi.utils.sysfiles.serdes;

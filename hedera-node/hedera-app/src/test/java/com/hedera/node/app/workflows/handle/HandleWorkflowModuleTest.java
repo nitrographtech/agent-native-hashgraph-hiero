@@ -35,7 +35,6 @@ import com.hedera.node.app.service.contract.impl.handlers.ContractHandlers;
 import com.hedera.node.app.service.contract.impl.handlers.ContractSystemDeleteHandler;
 import com.hedera.node.app.service.contract.impl.handlers.ContractSystemUndeleteHandler;
 import com.hedera.node.app.service.contract.impl.handlers.ContractUpdateHandler;
-import com.hedera.node.app.service.contract.impl.handlers.EthereumTransactionHandler;
 import com.hedera.node.app.service.file.impl.handlers.FileAppendHandler;
 import com.hedera.node.app.service.file.impl.handlers.FileCreateHandler;
 import com.hedera.node.app.service.file.impl.handlers.FileDeleteHandler;
@@ -78,7 +77,7 @@ import com.hedera.node.app.service.util.impl.handlers.UtilHandlers;
 import com.hedera.node.app.service.util.impl.handlers.UtilPrngHandler;
 import com.hedera.node.app.services.ContractRuntimeHandlers;
 import com.hedera.node.app.services.ContractRuntimeProvider;
-import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
+import com.hedera.node.app.spi.workflows.TransactionHandler;
 import com.hedera.node.app.workflows.dispatcher.TransactionHandlers;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import java.util.List;
@@ -169,7 +168,7 @@ class HandleWorkflowModuleTest {
     private ContractSystemUndeleteHandler contractSystemUndeleteHandler;
 
     @Mock
-    private EthereumTransactionHandler etherumTransactionHandler;
+    private TransactionHandler etherumTransactionHandler;
 
     @Mock
     private CryptoCreateHandler cryptoCreateHandler;
@@ -360,7 +359,7 @@ class HandleWorkflowModuleTest {
         given(runtimeHandlers.contractDeleteHandler()).willReturn(contractDeleteHandler);
         given(runtimeHandlers.contractSystemDeleteHandler()).willReturn(contractSystemDeleteHandler);
         given(runtimeHandlers.contractSystemUndeleteHandler()).willReturn(contractSystemUndeleteHandler);
-        given(runtimeHandlers.ethereumTransactionHandler()).willReturn(mock(EthereumTransactionHandlerFacade.class));
+        given(runtimeHandlers.ethereumTransactionHandler()).willReturn(mock(TransactionHandler.class));
         final var handlers = HandleWorkflowModule.provideTransactionHandlers(
                 networkAdminHandlers,
                 consensusHandlers,
