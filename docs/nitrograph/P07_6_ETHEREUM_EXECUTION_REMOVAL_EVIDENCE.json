@@ -1,6 +1,6 @@
 {
   "phase": "P07-6",
-  "status": "IMPLEMENTATION_COMPLETE_MIRROR_ENVIRONMENT_BLOCKED",
+  "status": "COMPLETE",
   "objective": "Remove live Ethereum transaction execution while retaining ordinary EVM execution and historical compatibility",
   "base": {
     "p07_5_tested_head": "202a91e4f3ca2c95a231187ffbf1b890f07bd99e",
@@ -89,12 +89,47 @@
       "attempt_2_learner_log_sha256": "b3967520aea81302f852a40d07b4443d3e7b5be2a4703789afffa082c0ae56e0"
     },
     "mirror": {
-      "status": "BLOCKED_BY_HOST_DOCKER_PERMISSION",
+      "status": "PASS",
       "importer_commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
-      "authenticated_expected_semantics": "results 3; logs 1; actions 3; state-change groups 2; bytecode records 2; sidecar records 7",
-      "failure": "Docker daemon is active but the validation user cannot access /var/run/docker.sock; passwordless elevation is unavailable",
-      "test_xml_sha256": "dffa67ef9127c76a28ae39af8f592fdea84e8bce9607a96ecff0d15402adb432",
-      "claim": "Official importer database ingestion is not claimed as passed"
+      "environment": {
+        "validation_user": "ericf (uid 1000) with effective docker group gid 989 via sg docker",
+        "docker_client": "29.6.2",
+        "docker_server": "29.6.2",
+        "testcontainers": "2.0.5",
+        "database": "official importer Testcontainers PostgreSQL",
+        "command": "sg docker -c './gradlew :importer:test --tests org.hiero.mirror.importer.parser.record.P06bFixtureRegressionTest --no-daemon --rerun-tasks'"
+      },
+      "authenticated_historical_corpus": {
+        "signed_record_files_ingested": 11,
+        "transactions": 754,
+        "contract_results": 3,
+        "contract_logs": 1,
+        "contract_actions": 3,
+        "action_sidecar_records": 3,
+        "bytecode_records": 2,
+        "attached_sidecar_records": 5,
+        "complete_blocks_ingested": 139,
+        "record_tree_sha256": "af0518aac5fe9a6850b7be96484c922f990c7e4a1350eea172aee5b5ed17ba1f",
+        "block_tree_sha256": "f2ea7faffb0c4d1972d1c099f702c84991283182b351fca768c0e237db628688",
+        "test_xml_sha256": "14d9cd80a4c93eda031cfe425b2e62448125c7c71db6542a39723ff88497b0b9"
+      },
+      "exact_head_runtime_corpus": {
+        "signed_record_files_ingested": 39,
+        "transactions": 859,
+        "contract_results": 3,
+        "contract_logs": 1,
+        "contract_actions": 0,
+        "action_sidecar_records": 0,
+        "state_change_groups": 2,
+        "storage_changes": 2,
+        "bytecode_records": 2,
+        "attached_sidecar_records": 4,
+        "complete_blocks_ingested": 229,
+        "record_tree_sha256": "988ffa09901e77a82054c97349f93722fbbe03d488c99527db0919211a76cce9",
+        "block_tree_sha256": "0d2f66c672d50224bc63218b6dcabfcfa722551aea7d608114fbc982bc2090e9",
+        "test_xml_sha256": "32a313cc3b619747bfbaa717cef3ee6e1ec13e2e8afb993fad897c5f1d3df4e3"
+      },
+      "associations_ordering_and_hashes": "PASS"
     },
     "authenticated_fixture": {
       "status": "PASS",
@@ -114,5 +149,5 @@
     },
     "final_evidence_head_ci": "Reported by PR status because an evidence file cannot self-reference its own commit and CI run"
   },
-  "merge_readiness": "BLOCKED until exact-head official mirror importer database regression is run successfully"
+  "merge_readiness": "READY after final evidence-only exact-head CI"
 }
