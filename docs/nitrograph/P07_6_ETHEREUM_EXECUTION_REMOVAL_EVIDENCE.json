@@ -107,7 +107,12 @@
       "full_application_sha256": "89ed9502e0a12c00170e7f4fb7f29fd5cca4028425f0aadc83b0d13a98150f28",
       "fixture_tooling_sha256": "c27fe7adb041def863eb437de84fc21a226076a40e7df407431ed3737321b667"
     },
-    "exact_head_ci": "PENDING"
+    "implementation_head": "b28a41d36229aee33740b9d340a968bbab41ce6a",
+    "implementation_head_ci": {
+      "run": 30142500872,
+      "result": "PASS"
+    },
+    "final_evidence_head_ci": "Reported by PR status because an evidence file cannot self-reference its own commit and CI run"
   },
   "merge_readiness": "BLOCKED until exact-head official mirror importer database regression is run successfully"
 }
