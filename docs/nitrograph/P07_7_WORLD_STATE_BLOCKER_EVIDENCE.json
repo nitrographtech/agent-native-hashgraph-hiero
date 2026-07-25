@@ -1,6 +1,6 @@
 {
   "phase": "P07-7",
-  "status": "BLOCKED_BY_ORDINARY_EVM_EXECUTION_DEPENDENCY",
+  "status": "BLOCKED_AND_SUPERSEDED_BY_P07_8",
   "base": {
     "p07_6_final_evidence_head": "d626d73c8c770c977d9abf458ef97950ca8b9f12",
     "p07_6_exact_head_ci_run": 30143838354,
