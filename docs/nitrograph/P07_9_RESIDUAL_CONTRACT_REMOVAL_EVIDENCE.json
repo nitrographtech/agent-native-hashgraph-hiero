@@ -1,0 +1,267 @@
+{
+  "phase": "P07-9 residual contract implementation removal",
+  "baseline": {
+    "p07_8Merge": "6f91c0121616960dc5e60471f995a0607587966a",
+    "censusHead": "07de86941bc6e53668f90ca05205871f1cd28f0a",
+    "censusCiRun": 30171416544,
+    "censusCiResult": "PASS",
+    "ownershipEvidenceInitialSha256": "fbf4a5529eb9eb4ebc198f1084b9c993fe35c252a0d079b57232f18201079ab5"
+  },
+  "implementation": {
+    "head": "9ddbf4ca41bd57fe666cb383fcb6c6426144953f",
+    "ciRun": 30173175221,
+    "ciResult": "PASS",
+    "ciCompletedUtc": "2026-07-25T20:30:40Z",
+    "productionJavaRemoved": 2,
+    "productionJavaMoved": 3,
+    "oldModuleJavaBytes": 10221,
+    "oldModuleBuildBytes": 405,
+    "oldModuleTotalTrackedBytes": 10626,
+    "oldModuleFilesAfter": 0,
+    "oldModuleBytesAfter": 0
+  },
+  "schemaOwnershipTransfer": [
+    {
+      "oldPath": "hedera-node/hedera-smart-contract-service-impl/src/main/java/com/hedera/node/app/service/contract/impl/schemas/V0490ContractSchema.java",
+      "newPath": "hedera-node/hedera-smart-contract-service/src/main/java/com/hedera/node/app/service/contract/impl/schemas/V0490ContractSchema.java",
+      "fqn": "com.hedera.node.app.service.contract.impl.schemas.V0490ContractSchema",
+      "version": "0.49.0",
+      "states": ["STORAGE", "BYTECODE"],
+      "apiAndPersistedSemantics": "UNCHANGED"
+    },
+    {
+      "oldPath": "hedera-node/hedera-smart-contract-service-impl/src/main/java/com/hedera/node/app/service/contract/impl/schemas/V065ContractSchema.java",
+      "newPath": "hedera-node/hedera-smart-contract-service/src/main/java/com/hedera/node/app/service/contract/impl/schemas/V065ContractSchema.java",
+      "fqn": "com.hedera.node.app.service.contract.impl.schemas.V065ContractSchema",
+      "version": "0.65.0",
+      "states": ["EVM_HOOK_STATES", "LAMBDA_STORAGE"],
+      "apiAndPersistedSemantics": "UNCHANGED"
+    }
+  ],
+  "utilityOwnership": {
+    "oldClass": "com.hedera.node.app.service.contract.impl.utils.ConversionUtils",
+    "newClass": "com.hedera.services.bdd.utils.EvmConversionUtils",
+    "newOwner": "test-clients",
+    "consumersUpdated": 16,
+    "methodsDeleted": [
+      "asLongZeroAddress(long)",
+      "numberOfLongZero(org.hyperledger.besu.datatypes.Address)"
+    ],
+    "neutralApiBesuImports": 0,
+    "neutralApiTuweniImports": 0,
+    "opcodeUtils": "DELETED_AFTER_ZERO_CONSUMER_PROOF"
+  },
+  "moduleDeletion": {
+    "gradleProject": "DELETED",
+    "sourceAndResources": "DELETED",
+    "moduleInfo": "DELETED",
+    "settingsInclusion": "REMOVED",
+    "activeGradleDependencies": 0,
+    "activeJpmsDependencies": 0,
+    "serviceLoaderReferences": 0,
+    "daggerReferences": 0,
+    "distributionArtifacts": 0,
+    "packagingExclusions": 0
+  },
+  "dependencyDelta": {
+    "before": {
+      "productionBesuImporters": 12,
+      "productionTuweniImporters": 37,
+      "formerImplementationBesuImporters": 1,
+      "formerImplementationTuweniImporters": 1,
+      "testClientBesuImporters": 10,
+      "testClientTuweniImporters": 36,
+      "protectedBaseCryptoBesuImporters": 1
+    },
+    "after": {
+      "productionBesuImporters": 12,
+      "productionTuweniImporters": 37,
+      "formerImplementationBesuImporters": 0,
+      "formerImplementationTuweniImporters": 0,
+      "testClientBesuImporters": 11,
+      "testClientTuweniImporters": 37,
+      "protectedBaseCryptoBesuImporters": 1,
+      "platformTuweniImporters": 0
+    },
+    "protectedException": "platform-sdk/base-crypto/src/main/java/org/hiero/base/crypto/engine/EcdsaSecp256k1Verifier.java",
+    "platformSdkModified": false,
+    "baseCryptoModified": false
+  },
+  "buildValidation": {
+    "appServiceContract": "PASS",
+    "appServiceContractTests": "PASS: 5",
+    "testClients": "PASS",
+    "fixtureTooling": "PASS",
+    "stateValidator": "PASS",
+    "hederaApp": "PASS",
+    "nativeDistribution": "PASS",
+    "formerFullDistribution": "PASS",
+    "jpms": "PASS",
+    "dagger": "PASS",
+    "dependencyAnalysis": "PASS",
+    "nativeAndFormerFullJarSha256": "2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000",
+    "appServiceContractJarSha256": "e6df8c4d6b65a9d57f8f0f0dcf8b6cf3ab1f109549a6c918928e6e0892b1c302",
+    "removedModuleInDistributions": 0
+  },
+  "policyValidation": {
+    "residualContractRemoval": "PASS",
+    "projectRecreationInjection": "PASS",
+    "settingsInjection": "PASS",
+    "gradleDependencyInjection": "PASS",
+    "jpmsInjection": "PASS",
+    "neutralBesuInjection": "PASS",
+    "neutralTuweniInjection": "PASS",
+    "opcodeUtilsInjection": "PASS",
+    "artifactInjection": "PASS",
+    "packagingExclusionInjection": "PASS",
+    "cumulativeP07Policies": "PASS",
+    "secretAudit": "PASS",
+    "privateMaterialTracked": false
+  },
+  "fixtureValidation": {
+    "fixtureA": {
+      "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+      "archiveAndManifest": "PASS",
+      "historicalBoundary": "PASS",
+      "schemaFqns": "UNCHANGED",
+      "deterministicRejection": "PASS"
+    },
+    "fixtureB": {
+      "tag": "p07-four-node-postwrite-v065-storage424242-v1",
+      "archiveAndManifest": "PASS",
+      "fourNodesActive": "PASS",
+      "saveRestart": "PASS",
+      "restartCommonStateRoot": "4af04cecf1e203bc810386500e37e69f5fc939c03e1932d480914662482e4265a00fc031757a7f5f666adb4464afa9ce",
+      "retainedOperations": "PASS",
+      "legacyRejection": "PASS"
+    },
+    "postReconnectTestXmlSha256": "61ad2d49874f6ca60ab5cd1b642b428fb79636814f6c93e9321354793bc16ea7"
+  },
+  "protectedMaps": {
+    "result": "UNCHANGED_BEFORE_AFTER_RESTART_AND_RECONNECT",
+    "learnerValidatedRound": 7486,
+    "STORAGE": {
+      "cardinality": 1,
+      "decodedValue": 424242,
+      "sha256": "4498f1861935388100d439abcd8124cb906dc479f990c91a4b5a3d6995dd892f"
+    },
+    "BYTECODE": {
+      "cardinality": 2,
+      "sha256": "204633a18de2a97441e56adae79ce51656496582833a906a69471e24b87091ab"
+    },
+    "EVM_HOOK_STATES": {
+      "cardinality": 1,
+      "sha256": "32ffae8553e2c27c2a85e6071b9d6eddb85bc07a4a175ed9047d0c2cdb9484f1"
+    },
+    "LAMBDA_STORAGE": {
+      "cardinality": 1,
+      "sha256": "6359602eb1ab3cb0ef54e1eeddfb8bfd5bcd89a52d86afb191b1cc8cf419056b"
+    },
+    "combinedSha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+  },
+  "reconnect": {
+    "result": "PASS",
+    "learner": 2,
+    "teacher": 1,
+    "learnerOldSignedStateRound": 4975,
+    "learnerReplayConsensusRound": 5255,
+    "remoteObservedRound": 6243,
+    "behind": "2026-07-25T13:38:34.985-07:00",
+    "teacherSelected": "2026-07-25T13:38:35.020-07:00",
+    "transferredRound": 6233,
+    "transferComplete": "2026-07-25T13:38:36.085-07:00",
+    "stateValidated": "2026-07-25T13:38:36.087-07:00",
+    "stateWritten": "2026-07-25T13:38:37.088-07:00",
+    "active": "2026-07-25T13:38:39.320-07:00",
+    "transfersFromTeacher": 882,
+    "transfersFromLearner": 877,
+    "synchronizationSeconds": 0.078,
+    "stateSynchronization": "PASS",
+    "postReconnectOperations": "PASS",
+    "postReconnectMaps": "PASS",
+    "learnerLogSha256": "6eccedc47144f5ab0c390ffe1c5d30a9c5683c911575b2a629446332de42bc8c"
+  },
+  "mirror": {
+    "importerCommit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "dockerClientAndServer": "29.6.2",
+    "testcontainers": "2.0.5",
+    "database": "official Testcontainers PostgreSQL; clean integration-test database per corpus",
+    "importerProductionChanges": 0,
+    "fixtureA": {
+      "records": 11,
+      "transactions": 754,
+      "results": 3,
+      "logs": 1,
+      "actions": 3,
+      "stateChangeGroups": 2,
+      "storageChanges": 2,
+      "bytecodeRecords": 2,
+      "semanticSidecars": 7,
+      "attachedImporterSidecars": 5,
+      "completeBlocks": 139,
+      "xmlSha256": "9bc620af87ebbfb0826ac1e60d17db412c95b34312419f28306896a8d3338680",
+      "semanticSha256": "72f526bd8e8bf38bdd2e9de2bc24dd79afeaccddbba6a59351a511f3b3e99aea",
+      "recordCorpusSha256": "4ac4c1f8e01913b080483da533e323ca3f772d7de7b416c02711d27aa444d592",
+      "sidecarCorpusSha256": "1b88a770e3ff88224b5013067487cbf9644e6387d5996d77527387986df1919e",
+      "blockCorpusSha256": "25f5eafec25e43d90c7176a9024a33ccbb586b25d1ddb0479a683d7f5442a2b6"
+    },
+    "fixtureB": {
+      "records": 34,
+      "transactions": 861,
+      "results": 3,
+      "logs": 1,
+      "actions": 0,
+      "stateChangeGroups": 2,
+      "storageChanges": 2,
+      "bytecodeRecords": 2,
+      "semanticSidecars": 4,
+      "completeBlocks": 131,
+      "xmlSha256": "d70d59f30660eacb29e565fbadc2f6a4417b9776c60d0e71478e49593881aabb",
+      "semanticSha256": "4ebb69667e19190230562a81d5471d50f6104153d00764b0e6b5f3b3a0cedf51",
+      "recordCorpusSha256": "c13eedefbef3c44d43cbaac694e360b2a8e1ad6007cf28dcae46e0d21f6a3bf5",
+      "sidecarCorpusSha256": "fc98e26237ff4f1d3254dc75ebf572f513160e3aa79dd2ff5387d352f0210318",
+      "blockCorpusSha256": "ebdc152e84fac224addc062f60e2f351794b59d1f3b1daebfd1b0a2370aad0ef"
+    },
+    "exactRuntime": {
+      "records": 5,
+      "transactions": 14,
+      "results": 0,
+      "logs": 2,
+      "actions": 0,
+      "stateChangeGroups": 0,
+      "storageChanges": 0,
+      "bytecodeRecords": 0,
+      "semanticSidecars": 0,
+      "completeBlocks": 480,
+      "incompleteBlocks": 1,
+      "xmlSha256": "c1c0fcabdce495474edd8f6bcaa7ff4258e12083caa858a5ce0835e63c1a52fa",
+      "semanticSha256": "87afbd86af6cd74aa7b1a6b9ad6e516ba3497b8bfb735102d46e059426395829",
+      "recordCorpusSha256": "900cb6216a79b46d147a0ecb5d5f21ff6e0137617469da039883caf4dfb17d32",
+      "sidecarCorpusSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "blockCorpusSha256": "97ddd863ed12168e5d10b00d83c422ab026ed7561f3767d1cd602e70925f4b83"
+    },
+    "hashMethod": "SHA-256 of sorted relative-path plus per-file SHA-256 inventory; semantic SHA-256 of canonical reported-count line",
+    "recordSidecarBlockAssociations": "PASS",
+    "signaturesAndOrdering": "PASS",
+    "mirrorSchema": "UNCHANGED",
+    "status": "PASS"
+  },
+  "validationExceptions": [
+    {
+      "classification": "TEST_HARNESS_ENVIRONMENT",
+      "event": "Initial fixture launch omitted config version and network property overrides; the unchanged P07-8 control failed identically.",
+      "productionFix": false
+    },
+    {
+      "classification": "TEST_HARNESS_ENVIRONMENT",
+      "event": "One remote-test invocation lacked JAVA_HOME and was immediately rerun with the validated JDK.",
+      "productionFix": false
+    },
+    {
+      "classification": "TEST_HARNESS_ENVIRONMENT",
+      "event": "A stale state-validator installDist directory was rebuilt before map validation.",
+      "productionFix": false
+    }
+  ],
+  "status": "COMPLETE_PENDING_FINAL_EVIDENCE_HEAD_CI"
+}

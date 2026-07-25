@@ -167,7 +167,7 @@ nor use its existence to retain unrelated contract/test dependencies.
 6. Recounted repository Besu/Tuweni importers: remaining direct imports are
    test/tooling or the protected platform crypto exception.
 7. The complete protected compatibility, runtime, reconnect, and mirror
-   gates remain mandatory before merge readiness.
+   gates passed. The final evidence-only head remains subject to exact-head CI.
 
 Repository-wide Besu/Tuweni deletion is not part of this bounded set. The
 test-client residue should be handled as a separately measured follow-up, and
