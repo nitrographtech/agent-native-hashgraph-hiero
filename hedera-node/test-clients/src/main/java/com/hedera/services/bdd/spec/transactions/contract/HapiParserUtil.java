@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.services.bdd.spec.transactions.contract;
 
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asEvmAddress;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.asEvmAddress;
 
 import com.esaulpaugh.headlong.abi.Address;
 import com.esaulpaugh.headlong.abi.Function;

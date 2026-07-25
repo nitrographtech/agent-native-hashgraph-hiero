@@ -105,9 +105,9 @@ plan removes the EVM integration source first, then removes the now-unused Besu/
 | 5 | Solidity execution assets | Remove full-only Solidity execution/query handlers and compiler/source fixtures no longer needed after Wave 2 | Retain wire names such as `getBySolidityID`, address widths, PBJ fields, and historical query rejection | Medium. Do not cosmetically rename historical fields |
 | 6 | Ethereum execution | **COMPLETE (P07-6).** Live handler, hydration, signature cache, fee/gas branches, dispatch, and runtime parser ownership removed. Test-client corpus helpers remain until their mixed-suite consumers retire. | Retain Ethereum PBJ bodies/results for decoding, rejection, and mirror | Closed: historical and exact-head runtime importer regressions pass; new runtime actions are deterministically zero |
 | 7 | Separate world-state implementation removal | **BLOCKED AND SUPERSEDED.** Mutable stores, updaters, frame state, proxy accounts and commit/rollback are inseparable from ordinary executable EVM processing | Neutral historical interfaces and read-only adapters are already separate and remain protected | Replaced by P07-8: retire executable contract execution and mutable world state atomically |
-| 8 | EVM engine integration | **IMPLEMENTATION AND LOCAL VALIDATION COMPLETE.** HEVM, frame runners, processors, mutable world state, tracer seam, executable handlers, and full provider construction are absent. | Two immutable fixtures now distinguish preactivation loading from four-node post-write restart/reconnect; three separate mirror corpora pass. | Awaiting final validation-head CI and PR merge |
+| 8 | EVM engine integration | **COMPLETE AND MERGED.** HEVM, frame runners, processors, mutable world state, tracer seam, executable handlers, and full provider construction are absent. | Two immutable fixtures distinguish preactivation loading from four-node post-write restart/reconnect; three separate mirror corpora pass. | Merged as `6f91c0121616960dc5e60471f995a0607587966a` |
 | 9 | Besu/Tuweni and executable native dependencies | Remove app/test-client JPMS edges and version-catalog/dependency metadata after source scans are zero | Remove notices/SBOM components only when no retained artifact carries them | Blocked at `platform-sdk/base-crypto` without upstream neutral verifier or separate platform authorization |
-| 10 | `app-service-contract-impl` module | Delete the now-empty source/test tree, Gradle project mapping, full provider/factory, and remaining implementation tests | `RecordStreamBuilder`, six builder interfaces, historical schemas/stores remain in neutral API | High structural gate. Repository-wide implementation import and class scans must be zero |
+| 10 | `app-service-contract-impl` module | **P07-9 IMPLEMENTED.** Legacy-FQN schema forwarders moved unchanged to the neutral owner; conversion residue moved to test clients; dead opcode utility and project shell deleted. | `RecordStreamBuilder`, six builder interfaces, historical schemas/stores remain in neutral API | Exact-head fixture, reconnect, mirror, and CI gates pending |
 | 11 | Gradle cleanup | Remove full distribution task/profile, implementation dependency edges, fixture-only configurations, unused versions/plugins | Preserve native distribution and neutral API publications | Medium. Run all builds and dependency analysis |
 | 12 | JPMS/service cleanup | Remove implementation/Besu/EVM/Tuweni requires, full providers, executable `uses/provides`, reflection strings, Dagger generated roots | Preserve historical factories and retained legacy builder packages | Medium. Module graph and isolated classpath policy must pass |
 | 13 | CI cleanup | Remove smart-contract execution, standalone, full-runtime, Solidity, and performance jobs; retain P06 historical lifecycle/mirror gates | Update change detection and required-check policy explicitly | High governance risk. Never remove a required check before replacement is active |
@@ -286,15 +286,14 @@ historical compatibility only. Executable handlers, processors, mutable accounts
 world updaters, the residual live tracer seam, and full-runtime provider/store factories are
 deleted. The former full distribution is a non-executable alias of the native application.
 
-The remaining `app-service-contract-impl` module contains only historical schema forwarders and
-two test-client compatibility utilities. Its Besu/Tuweni residue, along with the separately
-protected `platform-sdk/base-crypto` secp256k1 boundary, is assigned to measured P07-9 cleanup.
+P07-8 merged after the additive four-node post-write fixture proved restart, genuine reconnect,
+state synchronization, `STORAGE=424242`, and official mirror ingestion without restoring
+production execution.
 
-P07-8 is not merge-ready. The published authenticated fixture is a one-node round-4744 state with
-empty `STORAGE`; exact-head PCES replay reaches ACTIVE but does not produce value 424242. The
-existing four-node reconnect test creates the required state through retired live contract
-execution. A new authenticated multi-node, post-write fixture would be required, but fixture
-regeneration or replacement is outside the approved P07-8 boundary.
+P07-9 physically removes `app-service-contract-impl`. The two deprecated schema forwarders retain
+their exact FQNs inside `app-service-contract`; the reduced EVM conversion helper is test-client
+owned; the unused opcode helper and build/JPMS shell are deleted. Remaining Besu/Tuweni ownership
+is test/tooling or the separately protected `platform-sdk/base-crypto` secp256k1 boundary.
 
 ## Stop gates
 

@@ -6,6 +6,11 @@ module com.hedera.node.app.service.contract {
     exports com.hedera.node.app.service.contract;
     exports com.hedera.node.app.service.contract.history;
     exports com.hedera.node.app.service.contract.impl.records;
+    exports com.hedera.node.app.service.contract.impl.schemas to
+            com.hedera.node.app,
+            com.hedera.node.services.cli,
+            com.hedera.node.test.clients,
+            com.hedera.state.validator;
 
     uses com.hedera.node.app.service.contract.ContractService;
 

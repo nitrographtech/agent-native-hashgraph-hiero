@@ -34,7 +34,6 @@ javaModules {
         module("hedera-schedule-service") { artifact = "app-service-schedule" }
         module("hedera-schedule-service-impl") { artifact = "app-service-schedule-impl" }
         module("hedera-smart-contract-service") { artifact = "app-service-contract" }
-        module("hedera-smart-contract-service-impl") { artifact = "app-service-contract-impl" }
         module("hedera-token-service") { artifact = "app-service-token" }
         module("hedera-token-service-impl") { artifact = "app-service-token-impl" }
         module("hedera-util-service") { artifact = "app-service-util" }

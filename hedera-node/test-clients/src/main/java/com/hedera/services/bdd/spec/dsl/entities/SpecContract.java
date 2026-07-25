@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.services.bdd.spec.dsl.entities;
 
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.headlongAddressOf;
 import static com.hedera.services.bdd.spec.dsl.utils.DslUtils.PBJ_IMMUTABILITY_SENTINEL_KEY;
 import static com.hedera.services.bdd.spec.dsl.utils.DslUtils.PROTO_IMMUTABILITY_SENTINEL_KEY;
 import static com.hedera.services.bdd.spec.dsl.utils.DslUtils.atMostOnce;
@@ -11,6 +10,7 @@ import static com.hedera.services.bdd.spec.utilops.UtilVerbs.blockingOrder;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.createLargeFile;
 import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.contract.Utils.getInitcodeOf;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.headlongAddressOf;
 import static java.util.Objects.requireNonNull;
 
 import com.esaulpaugh.headlong.abi.Address;

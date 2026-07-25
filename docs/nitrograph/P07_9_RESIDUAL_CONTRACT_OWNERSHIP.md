@@ -2,8 +2,9 @@
 
 ## Scope and baseline
 
-This is a census-only checkpoint. It records the residue after P07-8 and does
-not authorize or perform source deletion.
+This document began as the census-only checkpoint and now records the implemented
+ownership transfer. P07-9 removes the residual module without expanding into
+test-client or protected platform cryptography cleanup.
 
 - Baseline branch: `agent-native`
 - P07-8 merge commit: `6f91c0121616960dc5e60471f995a0607587966a`
@@ -153,20 +154,20 @@ nor use its existence to retain unrelated contract/test dependencies.
 5. **Are any remaining dependencies protected exclusively by platform crypto?** Yes: Besu native secp256k1 in `platform-sdk/base-crypto`. No Tuweni dependency is protected by that boundary.
 6. **Is there a safe bounded P07-9 deletion set?** Yes.
 
-## Recommended bounded implementation wave
+## Implemented bounded wave
 
-1. Move the two schema forwarders unchanged into `app-service-contract` and
+1. Moved the two schema forwarders unchanged into `app-service-contract` and
    verify old-FQN linkage plus schema/state inventory.
-2. Move or split `ConversionUtils` into test-client ownership, keeping
+2. Moved `ConversionUtils` to test-client ownership as `EvmConversionUtils`, keeping
    Besu/Tuweni-specific conversion out of neutral and runtime modules.
-3. Delete unreferenced `OpcodeUtils`.
-4. Delete the residual implementation module descriptor and Gradle project.
-5. Remove the settings mapping, test-client JPMS/project dependency, and
+3. Deleted unreferenced `OpcodeUtils`.
+4. Deleted the residual implementation module descriptor and Gradle project.
+5. Removed the settings mapping, test-client/state-validator JPMS dependencies, and
    obsolete application packaging exclusions.
-6. Recount repository Besu/Tuweni importers and validate that remaining
-   ownership is test/tooling or the protected platform crypto exception.
-7. Run the complete protected compatibility, runtime, reconnect, and mirror
-   gates before claiming module collapse complete.
+6. Recounted repository Besu/Tuweni importers: remaining direct imports are
+   test/tooling or the protected platform crypto exception.
+7. The complete protected compatibility, runtime, reconnect, and mirror
+   gates remain mandatory before merge readiness.
 
 Repository-wide Besu/Tuweni deletion is not part of this bounded set. The
 test-client residue should be handled as a separately measured follow-up, and

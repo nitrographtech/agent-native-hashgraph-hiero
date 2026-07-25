@@ -16,6 +16,10 @@ The following remain permanent:
 - deterministic rejection of legacy executable bodies.
 
 Historical adapters remain read-only. No executable behavior may move into them.
+
+P07-9 changes only source-module ownership of the deprecated V0.49 and V0.65 forwarders. Their
+FQNs, parent schemas, versions, state registrations, IDs, keys, and codecs remain protected and
+unchanged inside `app-service-contract`.
 ## Fixture boundary
 
 The authenticated round-4744 state, its one-node roster, manifest, PCES, hashes, and publication

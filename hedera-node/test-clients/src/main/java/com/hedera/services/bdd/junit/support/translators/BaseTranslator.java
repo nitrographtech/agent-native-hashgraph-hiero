@@ -22,13 +22,13 @@ import static com.hedera.node.app.hapi.utils.EntityType.SCHEDULE;
 import static com.hedera.node.app.hapi.utils.EntityType.TOKEN;
 import static com.hedera.node.app.hapi.utils.EntityType.TOPIC;
 import static com.hedera.node.app.service.contract.history.HistoricalContractKeyUtils.minimalKey;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.asBesuLog;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.bloomFor;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.bloomForAll;
-import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.explicitAddressOf;
 import static com.hedera.node.app.service.schedule.impl.handlers.HandlerUtility.scheduledTxnIdFrom;
 import static com.hedera.node.app.service.token.HookDispatchUtils.HTS_HOOKS_CONTRACT_NUM;
 import static com.hedera.services.bdd.junit.support.translators.impl.FileUpdateTranslator.EXCHANGE_RATES_FILE_NUM;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.asBesuLog;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.bloomFor;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.bloomForAll;
+import static com.hedera.services.bdd.utils.EvmConversionUtils.explicitAddressOf;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
@@ -72,12 +72,12 @@ import com.hedera.hapi.streams.StorageChange;
 import com.hedera.hapi.streams.TransactionSidecarRecord;
 import com.hedera.node.app.hapi.utils.EntityType;
 import com.hedera.node.app.hapi.utils.contracts.HookUtils;
-import com.hedera.node.app.service.contract.impl.utils.ConversionUtils;
 import com.hedera.node.app.state.SingleTransactionRecord;
 import com.hedera.pbj.runtime.ParseException;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import com.hedera.services.bdd.junit.support.translators.inputs.BlockTransactionParts;
 import com.hedera.services.bdd.junit.support.translators.inputs.BlockTransactionalUnit;
+import com.hedera.services.bdd.utils.EvmConversionUtils;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.time.Instant;
@@ -1023,7 +1023,7 @@ public class BaseTranslator {
                                 .computeIfAbsent(ACCOUNT, ignore -> new LinkedList<>())
                                 .add(num);
                         final var account = mapUpdate.valueOrThrow().accountValueOrThrow();
-                        evmAddresses.put(key.accountIdKey(), ConversionUtils.priorityAddressOf(account));
+                        evmAddresses.put(key.accountIdKey(), EvmConversionUtils.priorityAddressOf(account));
                     }
                 } else if (key.hasEntityNumberKey()) {
                     final var value = mapUpdate.valueOrThrow();

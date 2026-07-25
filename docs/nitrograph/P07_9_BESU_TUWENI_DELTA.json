@@ -1,0 +1,52 @@
+{
+  "baseline": {
+    "commit": "6f91c0121616960dc5e60471f995a0607587966a",
+    "productionBesuImporters": 12,
+    "productionTuweniImporters": 37,
+    "formerContractImplementationBesuImporters": 1,
+    "formerContractImplementationTuweniImporters": 1,
+    "testClientBesuImporters": 10,
+    "testClientTuweniImporters": 36,
+    "protectedBaseCryptoBesuImporters": 1
+  },
+  "afterModuleCollapse": {
+    "productionBesuImporters": 12,
+    "productionTuweniImporters": 37,
+    "formerContractImplementationBesuImporters": 0,
+    "formerContractImplementationTuweniImporters": 0,
+    "testClientBesuImporters": 11,
+    "testClientTuweniImporters": 37,
+    "protectedBaseCryptoBesuImporters": 1,
+    "platformTuweniImporters": 0
+  },
+  "movedImporter": {
+    "oldPath": "hedera-node/hedera-smart-contract-service-impl/src/main/java/com/hedera/node/app/service/contract/impl/utils/ConversionUtils.java",
+    "newPath": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/utils/EvmConversionUtils.java",
+    "owner": "test-clients"
+  },
+  "neutralContractApi": {
+    "besuImports": 0,
+    "tuweniImports": 0
+  },
+  "remainingDependencyOwners": {
+    "testClients": [
+      "org.hyperledger.besu.datatypes",
+      "org.hyperledger.besu.evm",
+      "org.hyperledger.besu.internal.crypto",
+      "org.hyperledger.besu.nativelib.secp256k1",
+      "tuweni.bytes",
+      "tuweni.units"
+    ],
+    "hederaAppModuleEdges": [],
+    "protectedPlatformCrypto": [
+      "org.hyperledger.besu.nativelib.secp256k1"
+    ]
+  },
+  "protectedExceptions": [
+    "platform-sdk/base-crypto/src/main/java/org/hiero/base/crypto/engine/EcdsaSecp256k1Verifier.java"
+  ],
+  "nextWaveCandidates": [
+    "test-client Besu/Tuweni conversion and legacy execution vectors",
+    "remaining test-client Besu/Tuweni JPMS and source ownership"
+  ]
+}

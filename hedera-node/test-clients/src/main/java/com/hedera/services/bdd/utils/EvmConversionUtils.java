@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-package com.hedera.node.app.service.contract.impl.utils;
+package com.hedera.services.bdd.utils;
 
 import static com.esaulpaugh.headlong.abi.Address.toChecksumAddress;
 import static java.util.Objects.requireNonNull;
@@ -24,10 +24,10 @@ import org.hyperledger.besu.evm.log.LogsBloomFilter;
  * retirement. This residue is not used by either production application profile and is scheduled
  * for neutralization in P07-9.
  */
-public final class ConversionUtils {
+public final class EvmConversionUtils {
     public static final int NUM_LONG_ZEROS = 12;
 
-    private ConversionUtils() {
+    private EvmConversionUtils() {
         throw new UnsupportedOperationException("Utility class");
     }
 
@@ -73,10 +73,6 @@ public final class ConversionUtils {
         return copyToLeftPaddedByteArray(num, new byte[20]);
     }
 
-    public static Address asLongZeroAddress(final long num) {
-        return Address.wrap(Bytes.wrap(asEvmAddress(num)));
-    }
-
     public static Address priorityAddressOf(@NonNull final Account account) {
         return Address.wrap(Bytes.wrap(explicitAddressOf(requireNonNull(account))));
     }
@@ -104,10 +100,6 @@ public final class ConversionUtils {
             value = (value << 8) | (explicit[i] & 0xffL);
         }
         return value;
-    }
-
-    public static long numberOfLongZero(@NonNull final Address address) {
-        return numberOfLongZero(requireNonNull(address).toArrayUnsafe());
     }
 
     public static byte[] explicitAddressOf(@NonNull final Account account) {

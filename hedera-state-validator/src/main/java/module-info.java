@@ -7,7 +7,6 @@ module com.hedera.state.validator {
     requires com.hedera.node.app.service.addressbook.impl;
     requires com.hedera.node.app.service.consensus.impl;
     requires com.hedera.node.app.service.consensus;
-    requires com.hedera.node.app.service.contract.impl;
     requires com.hedera.node.app.service.contract;
     requires com.hedera.node.app.service.entityid.impl;
     requires com.hedera.node.app.service.entityid;

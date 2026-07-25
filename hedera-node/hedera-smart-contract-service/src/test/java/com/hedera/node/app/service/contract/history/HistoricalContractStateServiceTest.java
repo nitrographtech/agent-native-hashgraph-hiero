@@ -37,6 +37,17 @@ class HistoricalContractStateServiceTest {
         assertThat(V065ContractSchema.EVM_HOOK_STORAGE_KEY).isEqualTo("LAMBDA_STORAGE");
     }
 
+    @Test
+    void preservesLegacySchemaClassNamesInNeutralArtifact() throws ReflectiveOperationException {
+        final var v049 = Class.forName("com.hedera.node.app.service.contract.impl.schemas.V0490ContractSchema");
+        final var v065 = Class.forName("com.hedera.node.app.service.contract.impl.schemas.V065ContractSchema");
+
+        assertThat(v049.getSuperclass()).isEqualTo(V0490ContractSchema.class);
+        assertThat(v065.getSuperclass()).isEqualTo(V065ContractSchema.class);
+        assertThat(v049.getConstructor().newInstance()).isInstanceOf(V0490ContractSchema.class);
+        assertThat(v065.getConstructor().newInstance()).isInstanceOf(V065ContractSchema.class);
+    }
+
     private static SemanticVersion version(final int major, final int minor, final int patch) {
         return SemanticVersion.newBuilder()
                 .major(major)
