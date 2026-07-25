@@ -1,6 +1,6 @@
 {
   "phase": "P07-8",
-  "status": "IMPLEMENTED_VALIDATION_IN_PROGRESS",
+  "status": "IMPLEMENTED_AWAITING_EXACT_LIFECYCLE_RECONNECT_AND_MIRROR",
   "baseMerge": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
   "fixtureCompatibilityRelease": {
     "tag": "p07-executable-fixture-compat-v1",
@@ -35,11 +35,22 @@
     "nativeDistribution": "PASS",
     "formerFullProfileRetirementBuild": "PASS",
     "fixtureToolingBuild": "PASS",
+    "freshFixtureReleaseVerification": {
+      "status": "PASS",
+      "filesVerified": 396,
+      "archiveSha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+      "savedStateRound": 4744,
+      "savedStateRoot": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485",
+      "note": "The immutable pre-activation snapshot has STORAGE cardinality zero before its bundled pre-consensus events are replayed; the frozen cardinality-one/value-424242 gate applies after authenticated activation and replay."
+    },
+    "freshGenesisStartup": "PASS: REPLAYING_EVENTS -> OBSERVING -> CHECKING -> ACTIVE; gRPC listening",
+    "artifactAbsence": "PASS: ContractServiceImpl, FullContractRuntimeProvider, RootProxyWorldUpdater, HederaEVM, FrameRunner, and ActionSidecarContentTracer absent from both distributions",
+    "distributionProfileEquivalence": "PASS: native and retired-full HederaNode.jar SHA-256 7c493cf5bb4018586c50f270d02e7031d41d669ef6c30b265890bb8b7c42d530",
     "engineRemovalPolicy": "PASS",
     "intentionalFailureControls": "PASS",
-    "lifecycle": "PENDING",
-    "reconnect": "PENDING",
-    "mirror": "PENDING",
+    "lifecycle": "PENDING authenticated activation/restart/replay on exact implementation head",
+    "reconnect": "PENDING exact-head four-node reconnect and synchronization",
+    "mirror": "PENDING exact-head official importer regression; prior P07-6 XML is not represented as exact-head validation",
     "ci": "PENDING"
   }
 }
