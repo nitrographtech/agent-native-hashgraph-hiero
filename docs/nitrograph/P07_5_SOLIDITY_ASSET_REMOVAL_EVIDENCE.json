@@ -1,0 +1,102 @@
+{
+  "phase": "P07-5",
+  "status": "COMPLETE",
+  "base_merge": "2555870871184049ad3801666b75dacb50577990",
+  "scope": {
+    "directories_removed": 44,
+    "files_removed": 130,
+    "bytes_removed": 716068,
+    "solidity_inputs_removed": 44,
+    "abi_json_files_removed": 43,
+    "compiled_bytecode_files_removed": 43,
+    "production_java_changed": 0,
+    "tests_changed": 0
+  },
+  "ownership": {
+    "deletion_class": "SYSTEM_CONTRACT_ONLY",
+    "java_runtime_consumers": 0,
+    "fixture_consumers": 0,
+    "historical_consumers": 0,
+    "retained_solidity_importers": 0,
+    "ethereum_consumers": 0,
+    "ordinary_evm_consumers": 0
+  },
+  "compiler_cleanup": {
+    "compiler_plugins_removed": 0,
+    "gradle_tasks_removed": 0,
+    "ci_generation_jobs_removed": 0,
+    "reason": "The shared compile.sh and OpcodesContract recompile path still serve retained general-contract and EVM vectors; no dead asset had dedicated Gradle or CI generation wiring."
+  },
+  "protected_assets": {
+    "authenticated_fixture_inputs_changed": false,
+    "ordinary_contract_assets_changed": false,
+    "ethereum_vectors_changed": false,
+    "historical_corpora_changed": false,
+    "pbj_or_protobuf_changed": false,
+    "persisted_or_schema_changed": false
+  },
+  "validation": {
+    "builds": {
+      "test_clients_resources_and_compile": "PASS",
+      "contract_implementation_tests": "PASS (886)",
+      "focused_application_tests": "PASS (26)",
+      "fixture_tooling_tests": "PASS",
+      "native_distribution": "PASS",
+      "full_distribution": "PASS"
+    },
+    "policies": {
+      "dead_solidity_asset_policy": "PASS",
+      "dead_solidity_intentional_source_and_distribution_injections": "PASS",
+      "system_contract_policy_and_injections": "PASS",
+      "fixture_action_tracer_policy_and_injections": "PASS",
+      "fixture_tooling_policy_and_injections": "PASS",
+      "standalone_policy_and_injections": "PASS",
+      "native_dependency_policy": "PASS"
+    },
+    "lifecycle_reconnect": {
+      "result": "PASS",
+      "attempts": 1,
+      "duration": "4m47s",
+      "learner_active": true,
+      "state_synchronization": "PASS",
+      "post_reconnect_processing": "PASS",
+      "legacy_rejection": "5/5 INVALID_TRANSACTION_BODY before and after reconnect",
+      "test_xml_sha256": "2597c2917679147055f9cc7c5aafd8005c662e7692d2a9a2179e259231755818"
+    },
+    "historical_maps": {
+      "comparison": "UNCHANGED",
+      "STORAGE": "cardinality 1; decoded value 424242",
+      "BYTECODE": "cardinality 2",
+      "EVM_HOOK_STATES": "cardinality 1",
+      "LAMBDA_STORAGE": "cardinality 1",
+      "pre_and_post_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+    },
+    "mirror": {
+      "revision": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+      "official_importer_code_changes": 0,
+      "authenticated_historical_release": {
+        "result": "PASS",
+        "records": 15,
+        "transactions": 763,
+        "contract_results": 3,
+        "contract_logs": 2,
+        "contract_actions": 3,
+        "attached_complete_signed_sidecars": 5,
+        "complete_blocks": 328,
+        "test_xml_sha256": "8d0e914de9c3757d78d03bbc064b7b5c73acac5e0436b27a50e96af20dba6a17"
+      },
+      "exact_head_new_output": {
+        "parser_and_database_ingestion": "PASS through the obsolete action-count assertion",
+        "records": 34,
+        "transactions": 859,
+        "contract_results": 3,
+        "contract_logs": 1,
+        "contract_actions": 0,
+        "non_action_sidecars": 4,
+        "complete_blocks": 128,
+        "expected_output_delta": "Normal runtime uses NoTracer. The temporary harness failed only its historical hard-coded actions == 3 assertion after all preceding persistence checks; its independent block test passed.",
+        "test_xml_sha256": "d60faeb4d74ee325a062c1808f0fa2e37ba8ca7280c7e17b08802a2ba01192a5"
+      }
+    }
+  }
+}

@@ -209,6 +209,12 @@ Ethereum execution vectors for their later owning wave. The Wave 5 census must i
 version/settings, metadata stripping, generated-bytecode hashes, and every test-client resource
 consumer before deleting a resource.
 
+Wave 5 is implemented on `p07/remove-dead-solidity-assets`. Its closed deletion set removes 44
+system-contract-only Solidity inputs, 43 paired ABI files, and 43 paired bytecode files (130 files,
+716,068 bytes). No shared compiler task is removed: retained general-contract, fixture, Ethereum,
+and EVM vectors still use the common compiler paths. Wave 6 should census and then remove
+Ethereum-transaction execution while retaining generic EVM execution until its later wave.
+
 ## Risk assessment
 
 | Risk | Severity | Evidence | Control |
