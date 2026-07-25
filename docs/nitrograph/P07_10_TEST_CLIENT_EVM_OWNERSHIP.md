@@ -213,3 +213,26 @@ mixed allowance/batch/integration suites. Moving either closure into a native
 helper would preserve retired EVM execution under a misleading owner. P07-10A
 therefore stops at the explicit “native tests fundamentally require live EVM
 execution” gate pending authorization to remove those individual test methods.
+
+## P07-10B checkpoint
+
+P07-10B removed the embedded CREATE2, contract, and HTS-precompile scenarios
+from the five mixed suites without changing their retained native tests. It
+also deleted the two execution-only atomic-batch classes,
+`Create2OperationSuite`, `HTSPrecompileResult`, and 18 unreferenced CREATE2
+resource files. The affected main and test source sets compile, and both the
+P07-10A and P07-10B policy suites pass.
+
+Direct test-client imports are now Besu 7 and Tuweni 13. The unchanged Besu
+count is deliberate: `Signing` remains a reverse dependency of the general
+`HapiEthereumCall` and `HapiEthereumContractCreate` operation infrastructure.
+A full `test-clients:test` probe exposed additional pre-P07-10 executable suite
+expectation drift (`CongestionPricingTest` expects a successful
+`ContractCreate`, but the retired runtime correctly returns
+`INVALID_TRANSACTION_BODY`). This is not a regression from P07-10B and no
+production change is warranted.
+
+P07-10B is complete as a bounded ownership removal. P07-10 overall remains
+blocked pending a repository-wide retirement of the general executable HAPI
+operation/suite closure; lifecycle, reconnect, and mirror claims are not made
+for this uncommitted checkpoint.

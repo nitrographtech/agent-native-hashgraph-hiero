@@ -40,9 +40,37 @@
     "platformSdkChanges": 0,
     "baseCryptoChanges": 0
   },
+  "p07_10b": {
+    "status": "COMPLETE_LOCAL_CHECKPOINT",
+    "deletedClasses": [
+      "Create2OperationSuite",
+      "HTSPrecompileResult",
+      "AtomicBatchContractKeysHtsTest",
+      "AtomicBatchAddress167Test"
+    ],
+    "mixedSuitesUpdated": 5,
+    "resourceFilesRemoved": 18,
+    "testClientCompileJava": "PASS",
+    "testClientCompileTestJava": "PASS",
+    "sharedHelperPolicy": "PASS",
+    "mixedSuitePolicy": "PASS",
+    "intentionalFailureControls": "PASS",
+    "besuImportersAfter": 7,
+    "tuweniImportersAfter": 13,
+    "productionRuntimeChanges": 0,
+    "platformSdkChanges": 0,
+    "baseCryptoChanges": 0,
+    "fullTestProbe": {
+      "result": "EXPECTATION_DRIFT",
+      "suite": "CongestionPricingTest",
+      "expected": "ContractCreate precheck OK",
+      "actual": "INVALID_TRANSACTION_BODY",
+      "classification": "remaining retired executable suite outside the mixed-suite closure"
+    }
+  },
   "stopCondition": {
-    "status": "BLOCKED",
-    "trigger": "A supposedly dead suite still owns helpers consumed by required historical or retained native behavior.",
+    "status": "BLOCKED_AFTER_P07_10B",
+    "trigger": "General HAPI Ethereum operation infrastructure and additional executable suites remain outside the now-clean mixed-suite boundary.",
     "proof": [
       "RecordsSuite is a reverse dependency of ContractCallTranslator.",
       "EncodingUtils is consumed by SidecarVerbs and Hip1195StorageTest historical state/storage coverage.",
