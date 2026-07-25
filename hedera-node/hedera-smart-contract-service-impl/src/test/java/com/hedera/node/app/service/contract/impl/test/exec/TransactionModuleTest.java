@@ -1,29 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.service.contract.impl.test.exec;
 
-import static com.hedera.hapi.node.base.ResponseCodeEnum.ACCOUNT_DELETED;
 import static com.hedera.node.app.service.contract.impl.exec.TransactionModule.provideActionSidecarContentTracer;
 import static com.hedera.node.app.service.contract.impl.exec.TransactionModule.provideHederaEvmContext;
-import static com.hedera.node.app.service.contract.impl.exec.TransactionModule.provideSenderEcdsaKey;
-import static com.hedera.node.app.service.contract.impl.test.TestHelpers.A_SECP256K1_KEY;
 import static com.hedera.node.app.service.contract.impl.test.TestHelpers.DEFAULT_CONTRACTS_CONFIG;
-import static com.hedera.node.app.service.contract.impl.test.TestHelpers.DEFAULT_HEDERA_CONFIG;
-import static com.hedera.node.app.service.contract.impl.test.TestHelpers.ETH_DATA_WITH_CALL_DATA;
 import static com.hedera.node.app.service.contract.impl.utils.ConversionUtils.FEE_SCHEDULE_UNITS_PER_TINYCENT;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 import com.hedera.hapi.node.base.AccountID;
-import com.hedera.hapi.node.contract.ContractCallTransactionBody;
-import com.hedera.hapi.node.contract.EthereumTransactionBody;
 import com.hedera.hapi.node.transaction.TransactionBody;
-import com.hedera.node.app.hapi.utils.ethereum.EthTxSigs;
 import com.hedera.node.app.service.contract.impl.exec.FeatureFlags;
 import com.hedera.node.app.service.contract.impl.exec.TransactionModule;
 import com.hedera.node.app.service.contract.impl.exec.TransactionProcessor;
@@ -38,12 +28,7 @@ import com.hedera.node.app.service.contract.impl.exec.tracers.NoTracer;
 import com.hedera.node.app.service.contract.impl.exec.utils.PendingCreationMetadataRef;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmBlocks;
 import com.hedera.node.app.service.contract.impl.hevm.HederaEvmVersion;
-import com.hedera.node.app.service.contract.impl.hevm.HydratedEthTxData;
-import com.hedera.node.app.service.contract.impl.infra.EthTxSigsCache;
-import com.hedera.node.app.service.contract.impl.infra.EthereumCallDataHydration;
 import com.hedera.node.app.service.contract.impl.records.ContractOperationStreamBuilder;
-import com.hedera.node.app.service.contract.impl.test.TestHelpers;
-import com.hedera.node.app.service.file.ReadableFileStore;
 import com.hedera.node.app.spi.fees.Fees;
 import com.hedera.node.app.spi.info.NetworkInfo;
 import com.hedera.node.app.spi.validation.AttributeValidator;
@@ -84,15 +69,6 @@ class TransactionModuleTest {
     private SystemContractOperations systemContractOperations;
 
     @Mock
-    private EthereumCallDataHydration hydration;
-
-    @Mock
-    private EthTxSigsCache ethTxSigsCache;
-
-    @Mock
-    private ReadableFileStore fileStore;
-
-    @Mock
     private HandleContext context;
 
     @Mock
@@ -120,26 +96,6 @@ class TransactionModuleTest {
     }
 
     @Test
-    void providesNullSenderEcdsaKeyWithoutHydratedEthTxData() {
-        assertNull(provideSenderEcdsaKey(ethTxSigsCache, null));
-    }
-
-    @Test
-    void providesNullSenderEcdsaKeyWithUnavailableEthTxData() {
-        final var failedHydration = HydratedEthTxData.failureFrom(ACCOUNT_DELETED);
-        assertNull(provideSenderEcdsaKey(ethTxSigsCache, failedHydration));
-    }
-
-    @Test
-    void providesCorrespondingKeyForAvailableEthTxData() {
-        final var hydration = HydratedEthTxData.successFrom(ETH_DATA_WITH_CALL_DATA, false);
-        given(ethTxSigsCache.computeIfAbsent(ETH_DATA_WITH_CALL_DATA))
-                .willReturn(
-                        new EthTxSigs(A_SECP256K1_KEY.ecdsaSecp256k1OrThrow().toByteArray(), new byte[0]));
-        assertThat(provideSenderEcdsaKey(ethTxSigsCache, hydration)).isEqualTo(A_SECP256K1_KEY);
-    }
-
-    @Test
     void providesExpectedEvmContextWithExplicitTracingOff() {
         final var recordBuilder = mock(ContractOperationStreamBuilder.class);
         final var gasCalculator = mock(SystemContractGasCalculator.class);
@@ -159,37 +115,10 @@ class TransactionModuleTest {
     }
 
     @Test
-    void providesEthTxDataWhenApplicable() {
-        final var ethTxn = EthereumTransactionBody.newBuilder()
-                .ethereumData(TestHelpers.ETH_WITH_TO_ADDRESS)
-                .build();
-        final var body =
-                TransactionBody.newBuilder().ethereumTransaction(ethTxn).build();
-        given(context.body()).willReturn(body);
-        final var expectedHydration = HydratedEthTxData.successFrom(ETH_DATA_WITH_CALL_DATA, false);
-        given(hydration.tryToHydrate(ethTxn, fileStore, DEFAULT_HEDERA_CONFIG.firstUserEntity()))
-                .willReturn(expectedHydration);
-        assertSame(
-                expectedHydration,
-                TransactionModule.maybeProvideHydratedEthTxData(context, hydration, DEFAULT_HEDERA_CONFIG, fileStore));
-    }
-
-    @Test
     void providesEnhancement() {
         given(hederaOperations.begin()).willReturn(hederaOperations);
         assertNotNull(
                 TransactionModule.provideEnhancement(hederaOperations, nativeOperations, systemContractOperations));
-    }
-
-    @Test
-    void providesNullEthTxDataIfNotEthereumTransaction() {
-        final var callTxn = ContractCallTransactionBody.newBuilder()
-                .contractID(TestHelpers.CALLED_CONTRACT_ID)
-                .build();
-        final var body = TransactionBody.newBuilder().contractCall(callTxn).build();
-        given(context.body()).willReturn(body);
-        assertNull(
-                TransactionModule.maybeProvideHydratedEthTxData(context, hydration, DEFAULT_HEDERA_CONFIG, fileStore));
     }
 
     @Test

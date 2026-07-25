@@ -3,7 +3,7 @@ package com.hedera.node.app.spi.fixtures;
 
 import static java.util.Objects.requireNonNull;
 
-import com.hedera.node.app.hapi.utils.ethereum.EthTxData;
+import com.hedera.node.app.hapi.utils.keys.KeyComparator;
 import com.swirlds.state.lifecycle.Schema;
 import com.swirlds.state.lifecycle.SchemaRegistry;
 import com.swirlds.state.lifecycle.Service;
@@ -25,7 +25,7 @@ public class TestService implements Service {
         this.schemas = requireNonNull(schemas);
         // Just something to keep checkModuleInfo from claiming we don't
         // require com.hedera.node.hapi.utils
-        requireNonNull(EthTxData.class);
+        requireNonNull(KeyComparator.class);
     }
 
     @NonNull

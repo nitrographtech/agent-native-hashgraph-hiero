@@ -140,6 +140,7 @@ open module com.hedera.node.test.clients {
     requires java.desktop;
     requires java.net.http;
     requires net.i2p.crypto.eddsa;
+    requires org.apache.commons.codec;
     requires org.apache.commons.io;
     requires org.apache.commons.lang3;
     requires org.apache.logging.log4j.core;

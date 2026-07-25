@@ -699,7 +699,7 @@ public class ConversionUtils {
      */
     public static void throwIfUnsuccessfulCall(
             @NonNull final CallOutcome outcome,
-            @NonNull final EthereumTransactionRollbackHandler rollbackHandler,
+            @NonNull final BatchTransactionRollbackHandler rollbackHandler,
             @NonNull final ContractOperationStreamBuilder streamBuilder,
             @NonNull final HandleContext context) {
         requireNonNull(outcome);

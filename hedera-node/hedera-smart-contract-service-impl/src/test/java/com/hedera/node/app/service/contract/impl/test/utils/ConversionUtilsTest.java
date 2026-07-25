@@ -67,8 +67,8 @@ import com.hedera.node.app.service.contract.impl.exec.scope.HederaNativeOperatio
 import com.hedera.node.app.service.contract.impl.exec.scope.HederaOperations;
 import com.hedera.node.app.service.contract.impl.records.ContractCallStreamBuilder;
 import com.hedera.node.app.service.contract.impl.records.ContractCreateStreamBuilder;
+import com.hedera.node.app.service.contract.impl.utils.BatchTransactionRollbackHandler;
 import com.hedera.node.app.service.contract.impl.utils.ConversionUtils;
-import com.hedera.node.app.service.contract.impl.utils.EthereumTransactionRollbackHandler;
 import com.hedera.node.app.spi.workflows.HandleContext;
 import com.hedera.node.app.spi.workflows.HandleException;
 import com.hedera.node.config.testfixtures.HederaTestConfigBuilder;
@@ -123,7 +123,7 @@ class ConversionUtilsTest {
                 HandleException.class,
                 () -> throwIfUnsuccessfulCall(
                         outcome,
-                        new EthereumTransactionRollbackHandler(outcome, hederaOperations.gasChargingEvents()),
+                        new BatchTransactionRollbackHandler(outcome, hederaOperations.gasChargingEvents()),
                         contractCallStreamBuilder,
                         handleContext));
 
@@ -139,7 +139,7 @@ class ConversionUtilsTest {
                 HandleException.class,
                 () -> throwIfUnsuccessfulCall(
                         outcome,
-                        new EthereumTransactionRollbackHandler(outcome, hederaOperations.gasChargingEvents()),
+                        new BatchTransactionRollbackHandler(outcome, hederaOperations.gasChargingEvents()),
                         contractCreateStreamBuilder,
                         handleContext));
 
@@ -158,7 +158,7 @@ class ConversionUtilsTest {
                 HandleException.class,
                 () -> throwIfUnsuccessfulCall(
                         outcome,
-                        new EthereumTransactionRollbackHandler(outcome, hederaOperations.gasChargingEvents()),
+                        new BatchTransactionRollbackHandler(outcome, hederaOperations.gasChargingEvents()),
                         contractCreateStreamBuilder,
                         handleContext));
 

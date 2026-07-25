@@ -17,8 +17,8 @@ import com.hedera.node.app.hapi.utils.fee.SmartContractFeeBuilder;
 import com.hedera.node.app.service.contract.impl.ContractServiceComponent;
 import com.hedera.node.app.service.contract.impl.exec.TransactionComponent;
 import com.hedera.node.app.service.contract.impl.records.ContractCallStreamBuilder;
+import com.hedera.node.app.service.contract.impl.utils.BatchTransactionRollbackHandler;
 import com.hedera.node.app.service.contract.impl.utils.ConstantUtils;
-import com.hedera.node.app.service.contract.impl.utils.EthereumTransactionRollbackHandler;
 import com.hedera.node.app.service.entityid.EntityIdFactory;
 import com.hedera.node.app.spi.workflows.HandleContext;
 import com.hedera.node.app.spi.workflows.HandleException;
@@ -68,7 +68,7 @@ public class ContractCallHandler extends AbstractContractTransactionHandler {
 
         throwIfUnsuccessfulCall(
                 outcome,
-                new EthereumTransactionRollbackHandler(
+                new BatchTransactionRollbackHandler(
                         outcome, component.hederaOperations().gasChargingEvents()),
                 streamBuilder,
                 context);

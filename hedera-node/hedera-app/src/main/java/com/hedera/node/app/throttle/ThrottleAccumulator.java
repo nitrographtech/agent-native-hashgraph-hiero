@@ -12,7 +12,6 @@ import static com.hedera.hapi.node.base.HederaFunctionality.HOOK_DISPATCH;
 import static com.hedera.hapi.node.base.HederaFunctionality.TOKEN_ASSOCIATE_TO_ACCOUNT;
 import static com.hedera.hapi.util.HapiUtils.functionOf;
 import static com.hedera.node.app.hapi.utils.CommonPbjConverters.fromPbj;
-import static com.hedera.node.app.hapi.utils.ethereum.EthTxData.populateEthTxData;
 import static com.hedera.node.app.hapi.utils.sysfiles.domain.throttling.ScaleFactor.ONE_TO_ONE;
 import static com.hedera.node.app.hapi.utils.throttles.LeakyBucketThrottle.DEFAULT_BURST_SECONDS;
 import static com.hedera.node.app.service.schedule.impl.handlers.HandlerUtility.childAsOrdinary;
@@ -46,7 +45,6 @@ import com.hedera.hapi.node.transaction.Query;
 import com.hedera.hapi.node.transaction.ThrottleDefinitions;
 import com.hedera.hapi.node.transaction.TransactionBody;
 import com.hedera.hapi.util.UnknownHederaFunctionality;
-import com.hedera.node.app.hapi.utils.ethereum.EthTxData;
 import com.hedera.node.app.hapi.utils.sysfiles.domain.throttling.ThrottleBucket;
 import com.hedera.node.app.hapi.utils.sysfiles.domain.throttling.ThrottleGroup;
 import com.hedera.node.app.hapi.utils.throttles.DeterministicThrottle;
@@ -76,7 +74,6 @@ import com.swirlds.config.api.Configuration;
 import com.swirlds.state.State;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -560,15 +557,6 @@ public class ThrottleAccumulator {
                         throttleUsages,
                         useHighVolumeBucket);
             }
-            case ETHEREUM_TRANSACTION -> {
-                final var accountStore = new ReadableStoreFactoryImpl(state).readableStore(ReadableAccountStore.class);
-                yield shouldThrottleEthTxn(
-                        effectiveManager,
-                        now,
-                        getImplicitCreationsCount(txBody, accountStore),
-                        throttleUsages,
-                        useHighVolumeBucket);
-            }
             default -> !effectiveManager.allReqsMetAt(now, throttleUsages);
         };
     }
@@ -715,13 +703,6 @@ public class ThrottleAccumulator {
                     case CONTRACT_CREATE ->
                         txnBody.contractCreateInstanceOrThrow().gas();
                     case CONTRACT_CALL -> txnBody.contractCallOrThrow().gas();
-                    case ETHEREUM_TRANSACTION ->
-                        Optional.of(txnBody.ethereumTransactionOrThrow()
-                                        .ethereumData()
-                                        .toByteArray())
-                                .map(EthTxData::populateEthTxData)
-                                .map(EthTxData::gasLimit)
-                                .orElse(0L);
                     case HOOK_DISPATCH ->
                         txnBody.hookDispatchOrThrow()
                                 .executionOrElse(HookExecution.DEFAULT)
@@ -788,32 +769,10 @@ public class ThrottleAccumulator {
         }
     }
 
-    private boolean shouldThrottleEthTxn(
-            @NonNull final ThrottleReqsManager manager,
-            @NonNull final Instant now,
-            final int implicitCreationsCount,
-            @Nullable final List<ThrottleUsage> throttleUsages,
-            final boolean useHighVolumeBucket) {
-        return shouldThrottleBasedOnImplicitCreations(
-                manager, implicitCreationsCount, now, throttleUsages, useHighVolumeBucket);
-    }
-
     public int getImplicitCreationsCount(
             @NonNull final TransactionBody txnBody, @NonNull final ReadableAccountStore accountStore) {
         int implicitCreationsCount = 0;
-        if (txnBody.hasEthereumTransaction()) {
-            final var ethTxData = populateEthTxData(
-                    txnBody.ethereumTransaction().ethereumData().toByteArray());
-            if (ethTxData == null) {
-                return UNKNOWN_NUM_IMPLICIT_CREATIONS;
-            }
-            final var config = configSupplier.get().getConfigData(HederaConfig.class);
-            final boolean doesNotExist =
-                    !accountStore.containsAlias(config.shard(), config.realm(), Bytes.wrap(ethTxData.to()));
-            if (doesNotExist && ethTxData.value().compareTo(BigInteger.ZERO) > 0) {
-                implicitCreationsCount++;
-            }
-        } else {
+        if (!txnBody.hasEthereumTransaction()) {
             final var cryptoTransferBody = txnBody.cryptoTransfer();
             if (cryptoTransferBody == null) {
                 return 0;

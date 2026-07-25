@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.workflows.handle.steps;
 
-import static com.hedera.hapi.node.base.HederaFunctionality.ETHEREUM_TRANSACTION;
 import static com.hedera.hapi.node.base.ResponseCodeEnum.INVALID_ACCOUNT_AMOUNTS;
 import static com.hedera.hapi.node.base.ResponseCodeEnum.SUCCESS;
-import static com.hedera.node.app.fixtures.AppTestBase.DEFAULT_CONFIG;
 import static com.hedera.node.app.hapi.utils.keys.KeyUtils.IMMUTABILITY_SENTINEL_KEY;
 import static com.hedera.node.app.spi.fees.NoopFeeCharging.UNIVERSAL_NOOP_FEE_CHARGING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,32 +20,25 @@ import static org.mockito.Mockito.when;
 import com.hedera.hapi.node.base.AccountID;
 import com.hedera.hapi.node.base.Key;
 import com.hedera.hapi.node.base.NftTransfer;
-import com.hedera.hapi.node.base.SignatureMap;
 import com.hedera.hapi.node.base.Timestamp;
 import com.hedera.hapi.node.base.TokenID;
 import com.hedera.hapi.node.base.TokenTransferList;
 import com.hedera.hapi.node.base.TransactionID;
-import com.hedera.hapi.node.contract.EthereumTransactionBody;
 import com.hedera.hapi.node.state.token.Account;
 import com.hedera.hapi.node.token.CryptoTransferTransactionBody;
 import com.hedera.hapi.node.transaction.SignedTransaction;
 import com.hedera.hapi.node.transaction.TransactionBody;
-import com.hedera.node.app.hapi.utils.ethereum.EthTxSigs;
 import com.hedera.node.app.service.token.ReadableAccountStore;
-import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.signature.AppKeyVerifier;
 import com.hedera.node.app.signature.impl.SignatureVerificationImpl;
-import com.hedera.node.app.spi.fixtures.ids.FakeEntityIdFactoryImpl;
 import com.hedera.node.app.spi.signatures.SignatureVerification;
 import com.hedera.node.app.spi.store.ReadableStoreFactory;
 import com.hedera.node.app.spi.workflows.DispatchOptions;
 import com.hedera.node.app.spi.workflows.HandleContext;
-import com.hedera.node.app.workflows.TransactionInfo;
 import com.hedera.node.app.workflows.handle.Dispatch;
 import com.hedera.node.app.workflows.handle.record.RecordStreamBuilder;
 import com.hedera.node.app.workflows.handle.stack.SavepointStackImpl;
 import com.hedera.node.app.workflows.prehandle.PreHandleResult;
-import com.hedera.node.config.data.HederaConfig;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
 import java.time.Instant;
 import java.util.Collections;
@@ -82,9 +73,6 @@ public class HollowAccountCompletionsTest {
 
     @Mock(strictness = LENIENT)
     private RecordStreamBuilder recordBuilder;
-
-    @Mock
-    private EthereumTransactionHandlerFacade ethereumTransactionHandler;
 
     @Mock
     private ParentTxn parentTxn;
@@ -260,79 +248,6 @@ public class HollowAccountCompletionsTest {
         when(parentTxn.preHandleResult().getHollowAccounts()).thenReturn(Set.of(hollowAccount));
         when(parentTxn.stack()).thenReturn(stack);
         when(stack.rootHasPrecedingCapacity()).thenReturn(true);
-
-        hollowAccountCompletions.completeHollowAccounts(parentTxn, dispatch);
-
-        verify(handleContext, never()).dispatch(any());
-    }
-
-    @Test
-    void completeHollowAccountsWithEthereumTransaction() {
-        when(parentTxn.functionality()).thenReturn(ETHEREUM_TRANSACTION);
-        final var alias = Bytes.fromHex("89abcdef89abcdef89abcdef89abcdef89abcdef");
-        final var hederaConfig = DEFAULT_CONFIG.getConfigData(HederaConfig.class);
-        final var idFactory = new FakeEntityIdFactoryImpl(hederaConfig.shard(), hederaConfig.realm());
-        final var hollowId = idFactory.newAccountId(1234);
-        final var hollowAccount = Account.newBuilder()
-                .alias(alias)
-                .key(IMMUTABILITY_SENTINEL_KEY)
-                .accountId(hollowId)
-                .build();
-        final var ethTxSigs = new EthTxSigs(Bytes.EMPTY.toByteArray(), alias.toByteArray());
-        when(ethereumTransactionHandler.maybeEthTxSigsFor(any(), any(), any())).thenReturn(ethTxSigs);
-        when(accountStore.getAccountIDByAlias(hederaConfig.shard(), hederaConfig.realm(), alias))
-                .thenReturn(hollowId);
-        when(accountStore.getAccountById(hollowId)).thenReturn(hollowAccount);
-        final var txnBody = TransactionBody.newBuilder()
-                .transactionID(TransactionID.newBuilder()
-                        .accountID(AccountID.newBuilder().accountNum(1).build())
-                        .build())
-                .ethereumTransaction(EthereumTransactionBody.DEFAULT)
-                .build();
-        final TransactionInfo txnInfo = new TransactionInfo(
-                SignedTransaction.newBuilder()
-                        .bodyBytes(TransactionBody.PROTOBUF.toBytes(txnBody))
-                        .build(),
-                txnBody,
-                SignatureMap.DEFAULT,
-                transactionBytes,
-                ETHEREUM_TRANSACTION,
-                null);
-
-        when(parentTxn.readableStoreFactory().readableStore(ReadableAccountStore.class))
-                .thenReturn(accountStore);
-        when(parentTxn.config()).thenReturn(DEFAULT_CONFIG);
-        when(parentTxn.txnInfo()).thenReturn(txnInfo);
-        when(parentTxn.stack()).thenReturn(stack);
-        when(stack.rootHasPrecedingCapacity()).thenReturn(true);
-
-        hollowAccountCompletions.completeHollowAccounts(parentTxn, dispatch);
-
-        verify(handleContext).dispatch(any());
-        verify(recordBuilder).accountID(hollowId);
-    }
-
-    @Test
-    void ignoreEthereumTransactionIfNoCorrespondingSigs() {
-        when(parentTxn.config()).thenReturn(DEFAULT_CONFIG);
-        when(parentTxn.functionality()).thenReturn(ETHEREUM_TRANSACTION);
-        when(ethereumTransactionHandler.maybeEthTxSigsFor(any(), any(), any())).thenReturn(null);
-        final var txnBody = TransactionBody.newBuilder()
-                .transactionID(TransactionID.newBuilder()
-                        .accountID(AccountID.newBuilder().accountNum(1).build())
-                        .build())
-                .ethereumTransaction(EthereumTransactionBody.DEFAULT)
-                .build();
-        final TransactionInfo txnInfo = new TransactionInfo(
-                SignedTransaction.newBuilder()
-                        .bodyBytes(TransactionBody.PROTOBUF.toBytes(txnBody))
-                        .build(),
-                txnBody,
-                SignatureMap.DEFAULT,
-                transactionBytes,
-                ETHEREUM_TRANSACTION,
-                null);
-        when(parentTxn.txnInfo()).thenReturn(txnInfo);
 
         hollowAccountCompletions.completeHollowAccounts(parentTxn, dispatch);
 

@@ -13,7 +13,6 @@ import com.hedera.node.app.service.contract.impl.calculator.ContractCallFeeCalcu
 import com.hedera.node.app.service.contract.impl.calculator.ContractCreateFeeCalculator;
 import com.hedera.node.app.service.contract.impl.calculator.ContractDeleteFeeCalculator;
 import com.hedera.node.app.service.contract.impl.calculator.ContractUpdateFeeCalculator;
-import com.hedera.node.app.service.contract.impl.calculator.EthereumFeeCalculator;
 import com.hedera.node.app.service.contract.impl.handlers.HookDispatchHandler;
 import com.hedera.node.app.service.contract.impl.handlers.HookStoreHandler;
 import com.hedera.node.app.service.contract.impl.schemas.V0490ContractSchema;
@@ -76,15 +75,14 @@ class ContractServiceImplTest {
     @Test
     void serviceFeeCalculatorsAreAvailable() {
         final var calculators = subject.serviceFeeCalculators();
-        assertEquals(7, calculators.size());
+        assertEquals(6, calculators.size());
         final Set<Class<? extends ServiceFeeCalculator>> expectedClasses = Set.of(
                 HookStoreHandler.FeeCalculator.class,
                 HookDispatchHandler.FeeCalculator.class,
                 ContractCreateFeeCalculator.class,
                 ContractCallFeeCalculator.class,
                 ContractDeleteFeeCalculator.class,
-                ContractUpdateFeeCalculator.class,
-                EthereumFeeCalculator.class);
+                ContractUpdateFeeCalculator.class);
 
         final var actualClasses =
                 calculators.stream().map(ServiceFeeCalculator::getClass).collect(Collectors.toUnmodifiableSet());

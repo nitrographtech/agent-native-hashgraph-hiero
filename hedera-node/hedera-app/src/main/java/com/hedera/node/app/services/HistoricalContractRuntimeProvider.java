@@ -63,7 +63,8 @@ public final class HistoricalContractRuntimeProvider implements ContractRuntimeP
     }
 
     private static final class UnsupportedLegacyHandler
-            implements EthereumTransactionHandlerFacade, com.hedera.node.app.spi.workflows.QueryHandler {
+            implements com.hedera.node.app.spi.workflows.TransactionHandler,
+                    com.hedera.node.app.spi.workflows.QueryHandler {
         private static UnsupportedOperationException rejected() {
             return new UnsupportedOperationException("Legacy contract execution is disabled");
         }
@@ -85,19 +86,6 @@ public final class HistoricalContractRuntimeProvider implements ContractRuntimeP
 
         @Override
         public void handle(HandleContext context) {
-            throw rejected();
-        }
-
-        @Override
-        public com.hedera.node.app.hapi.utils.ethereum.EthTxSigs maybeEthTxSigsFor(
-                com.hedera.hapi.node.contract.EthereumTransactionBody op,
-                com.hedera.node.app.service.file.ReadableFileStore fileStore,
-                com.swirlds.config.api.Configuration configuration) {
-            throw rejected();
-        }
-
-        @Override
-        public void handleThrottled(HandleContext context) {
             throw rejected();
         }
 

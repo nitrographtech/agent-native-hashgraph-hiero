@@ -219,10 +219,6 @@ public class SolvencyPreCheck {
                 yield contractCall.amount()
                         + contractCall.gas() * estimatedGasPriceInTinybars(CONTRACT_CALL, consensusTime);
             }
-            case ETHEREUM_TRANSACTION -> {
-                final var ethTxn = txBody.ethereumTransactionOrThrow();
-                yield ethTxn.maxGasAllowance();
-            }
             default -> 0L;
         };
     }

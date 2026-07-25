@@ -60,7 +60,6 @@ import com.hedera.node.app.service.token.impl.handlers.TokenUpdateHandler;
 import com.hedera.node.app.service.token.impl.handlers.TokenUpdateNftsHandler;
 import com.hedera.node.app.service.util.impl.handlers.AtomicBatchHandler;
 import com.hedera.node.app.service.util.impl.handlers.UtilPrngHandler;
-import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.spi.workflows.TransactionHandler;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -79,7 +78,7 @@ public record TransactionHandlers(
         @NonNull TransactionHandler contractDeleteHandler,
         @NonNull TransactionHandler contractSystemDeleteHandler,
         @NonNull TransactionHandler contractSystemUndeleteHandler,
-        @NonNull EthereumTransactionHandlerFacade ethereumTransactionHandler,
+        @NonNull TransactionHandler ethereumTransactionHandler,
         @NonNull TransactionHandler hookStoreHandler,
         @NonNull TransactionHandler hookDispatchHandler,
         @NonNull CryptoCreateHandler cryptoCreateHandler,

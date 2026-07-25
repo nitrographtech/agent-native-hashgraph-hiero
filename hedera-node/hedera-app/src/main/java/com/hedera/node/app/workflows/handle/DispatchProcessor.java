@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.node.app.workflows.handle;
 
-import static com.hedera.hapi.node.base.HederaFunctionality.ETHEREUM_TRANSACTION;
 import static com.hedera.hapi.node.base.HederaFunctionality.HOOK_DISPATCH;
 import static com.hedera.hapi.node.base.HederaFunctionality.NODE_UPDATE;
 import static com.hedera.hapi.node.base.HederaFunctionality.SYSTEM_DELETE;
@@ -23,7 +22,6 @@ import com.hedera.hapi.node.base.ResponseCodeEnum;
 import com.hedera.node.app.fees.AppFeeCharging;
 import com.hedera.node.app.fees.ExchangeRateManager;
 import com.hedera.node.app.fees.FeeAccumulator;
-import com.hedera.node.app.services.EthereumTransactionHandlerFacade;
 import com.hedera.node.app.spi.authorization.Authorizer;
 import com.hedera.node.app.spi.fees.FeeCharging;
 import com.hedera.node.app.spi.fees.Fees;
@@ -41,7 +39,6 @@ import com.hedera.node.app.workflows.handle.steps.PlatformStateUpdates;
 import com.hedera.node.app.workflows.handle.steps.SystemFileUpdates;
 import com.hedera.node.app.workflows.handle.throttle.DispatchUsageManager;
 import com.hedera.node.app.workflows.handle.throttle.ThrottleException;
-import com.hedera.node.config.data.ContractsConfig;
 import com.hedera.node.config.data.NetworkAdminConfig;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -73,7 +70,6 @@ public class DispatchProcessor {
     private final DispatchUsageManager dispatchUsageManager;
     private final ExchangeRateManager exchangeRateManager;
     private final TransactionDispatcher dispatcher;
-    private final EthereumTransactionHandlerFacade ethereumTransactionHandler;
     private final NetworkInfo networkInfo;
     private final OpWorkflowMetrics workflowMetrics;
     private final AppFeeCharging appFeeCharging;
@@ -88,7 +84,6 @@ public class DispatchProcessor {
             @NonNull final DispatchUsageManager dispatchUsageManager,
             @NonNull final ExchangeRateManager exchangeRateManager,
             @NonNull final TransactionDispatcher dispatcher,
-            @NonNull final EthereumTransactionHandlerFacade ethereumTransactionHandler,
             @NonNull final NetworkInfo networkInfo,
             @NonNull final OpWorkflowMetrics workflowMetrics,
             @NonNull final AppFeeCharging appFeeCharging) {
@@ -100,7 +95,6 @@ public class DispatchProcessor {
         this.dispatchUsageManager = requireNonNull(dispatchUsageManager);
         this.exchangeRateManager = requireNonNull(exchangeRateManager);
         this.dispatcher = requireNonNull(dispatcher);
-        this.ethereumTransactionHandler = requireNonNull(ethereumTransactionHandler);
         this.networkInfo = requireNonNull(networkInfo);
         this.workflowMetrics = requireNonNull(workflowMetrics);
         this.appFeeCharging = requireNonNull(appFeeCharging);
@@ -166,13 +160,6 @@ public class DispatchProcessor {
             dispatchUsageManager.screenForCapacity(dispatch);
             dispatcher.dispatchHandle(dispatch.handleContext());
             dispatch.streamBuilder().status(SUCCESS);
-            if (functionality == ETHEREUM_TRANSACTION) {
-                final boolean refundsEnabled =
-                        dispatch.config().getConfigData(ContractsConfig.class).evmEthTransactionZeroHapiFeesEnabled();
-                if (refundsEnabled) {
-                    dispatch.feeChargingOrElse(appFeeCharging).refund(dispatch, fees);
-                }
-            }
             handleSystemUpdates(dispatch);
             success = true;
         } catch (HandleException e) {
@@ -184,9 +171,6 @@ public class DispatchProcessor {
         } catch (ThrottleException e) {
             workflowMetrics.incrementThrottled(functionality);
             rollbackAndRechargeFee(dispatch, validation, e.getStatus());
-            if (functionality == ETHEREUM_TRANSACTION) {
-                ethereumTransactionHandler.handleThrottled(dispatch.handleContext());
-            }
         } catch (Exception e) {
             logger.error("{} - exception thrown while handling dispatch", ALERT_MESSAGE, e);
             rollbackAndRechargeFee(dispatch, validation, FAIL_INVALID);
