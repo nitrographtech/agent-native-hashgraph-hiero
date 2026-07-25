@@ -1,0 +1,54 @@
+{
+  "phase": "P07-10 test-client EVM residue removal",
+  "baseline": "395a34e02753ba7a231aa432bdd1da4a80397c5d",
+  "census": {
+    "head": "bfaaddee793e493560b4c3a54a971fbe4ef43fdd",
+    "ciRun": 30176529064,
+    "ciResult": "PASS",
+    "besuImporters": 11,
+    "tuweniImporters": 37,
+    "uniqueDirectImporterFiles": 40
+  },
+  "boundedRemoval": {
+    "commits": [
+      "c945da0be05c7ce9fe930506c51f56b328bc1bd9",
+      "501a39d1aa57a5a65efdcb7dd352e1dfa6f8dc77"
+    ],
+    "filesRemoved": 17,
+    "bytesRemoved": 495871,
+    "testClientCompile": "PASS",
+    "besuImportersAfter": 6,
+    "tuweniImportersAfter": 20,
+    "productionRuntimeChanges": 0,
+    "platformSdkChanges": 0,
+    "baseCryptoChanges": 0
+  },
+  "stopCondition": {
+    "status": "BLOCKED",
+    "trigger": "A supposedly dead suite still owns helpers consumed by required historical or retained native behavior.",
+    "proof": [
+      "RecordsSuite is a reverse dependency of ContractCallTranslator.",
+      "EncodingUtils is consumed by SidecarVerbs and Hip1195StorageTest historical state/storage coverage.",
+      "TraceabilitySuite constants are consumed by ContractCreateTranslator and GasMatcher.",
+      "Evm46ValidationSuite system-account helpers are consumed by retained CryptoTransferSuite.",
+      "Create2OperationSuite helpers are consumed by retained token-airdrop suites.",
+      "ContractCreateSuite constants are consumed by retained LeakyCryptoTestsSuite.",
+      "HTSPrecompileResult remains consumed by native allowance, integration, and batch suites.",
+      "Signing remains required by native ECDSA authorization, account, topic-fee, airdrop, and integration tests."
+    ],
+    "rejectedApproach": "Delete the shared owners and either lose historical/native coverage or duplicate helpers ad hoc.",
+    "requiredPrerequisite": "A separately bounded helper-ownership separation that moves historical translation, sidecar encoding, system-account vectors, and native ECDSA helpers to coherent retained owners before deleting their former suites."
+  },
+  "validationNotRunBecauseBlocked": [
+    "Fixture A lifecycle",
+    "Fixture B lifecycle",
+    "save and restart",
+    "four-node reconnect",
+    "official mirror regression"
+  ],
+  "protectedBoundary": {
+    "importer": "platform-sdk/base-crypto/src/main/java/org/hiero/base/crypto/engine/EcdsaSecp256k1Verifier.java",
+    "status": "UNCHANGED"
+  },
+  "recommendedNextCheckpoint": "P07-10A separate shared historical/native helpers from retired suite ownership; then resume P07-10 importer and dependency removal."
+}

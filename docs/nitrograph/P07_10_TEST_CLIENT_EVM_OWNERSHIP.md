@@ -181,3 +181,20 @@ Stop if the suite closure still owns authenticated fixture consumption,
 historical sidecar interpretation, deterministic rejection, or required native
 ECDSA coverage. Importer-count reduction is an outcome, not the deletion rule.
 
+## Implementation checkpoint
+
+The census CI passed at exact head
+`bfaaddee793e493560b4c3a54a971fbe4ef43fdd` in run `30176529064`.
+
+A first bounded deletion removed 17 zero-reverse-consumer live-execution suites
+and ABI helpers (495,871 bytes). `test-clients:compileJava` passes, and direct
+test-client counts fell from 11 to 6 Besu importers and from 37 to 20 Tuweni
+importers.
+
+The next deletion probe was rolled back without commit because it triggered the
+documented stop condition. The remaining nominal suite owners are reverse
+dependencies of historical translators, sidecar/state-storage validation, or
+retained native crypto, transfer, allowance, airdrop, and ECDSA coverage.
+P07-10 is therefore **BLOCKED after a safe partial removal** pending a bounded
+helper-ownership separation. No lifecycle or mirror claim is made for this
+partial checkpoint.
