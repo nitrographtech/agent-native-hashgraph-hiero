@@ -1,5 +1,13 @@
 # P07 Executable Fixture Compatibility Ownership
 
+## Additive post-write authority
+
+The frozen compatibility release is now the recorded generator for
+`p07-four-node-postwrite-v065-storage424242-v1`. Two clean guarded generations proved the same
+protected map fingerprint and four-member roster semantics. The published data release—not the
+generator—is consumed by P07-8 runtime validation. Production Gradle, JPMS, Dagger, ServiceLoader,
+and application classpaths retain no dependency on the generator release.
+
 ## Decision
 
 Authenticated P06A fixture generation is no longer owned by production source. The complete

@@ -1,6 +1,6 @@
 {
   "phase": "P07-8",
-  "status": "BLOCKED_BY_AUTHENTICATED_FIXTURE_TOPOLOGY_AND_POST_REPLAY_STATE",
+  "status": "VALIDATION_COMPLETE_PENDING_EXACT_HEAD_CI",
   "baseMerge": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
   "fixtureCompatibilityRelease": {
     "tag": "p07-executable-fixture-compat-v1",
@@ -48,9 +48,11 @@
     "distributionProfileEquivalence": "PASS: native and retired-full HederaNode.jar SHA-256 7c493cf5bb4018586c50f270d02e7031d41d669ef6c30b265890bb8b7c42d530",
     "engineRemovalPolicy": "PASS",
     "intentionalFailureControls": "PASS",
-    "lifecycle": "PARTIAL PASS: exact-head state load, PCES replay, ACTIVE, and new signed-state production passed; STORAGE remained cardinality zero",
-    "reconnect": "BLOCKED: authenticated fixture has a one-node signed roster; creating a four-node state is fixture generation",
-    "mirror": "NOT RUN because the mandatory post-replay STORAGE gate failed; prior P07-6 XML is not represented as exact-head validation",
-    "ci": "PASS: run 30163481681"
+    "fixtureBoundary": "PASS: Fixture A activates at authenticated preactivation empty-STORAGE boundary; additive Fixture B is the post-write/reconnect authority",
+    "fixtureBRelease": "PASS: p07-four-node-postwrite-v065-storage424242-v1, archive SHA-256 0fd75fd4da408787ddef6b5a73300ce8018e330eb2f3a8e98d11ef9fbceceaa3",
+    "lifecycle": "PASS: four exact-head nodes ACTIVE, protected maps verified, exact-head save and restart passed, retained operations passed",
+    "reconnect": "PASS: learner 2 received round 4733 from teacher 1, validated, loaded, synchronized, and reached ACTIVE",
+    "mirror": "PASS: pinned importer 834a7a1; separate preactivation, post-write fixture, and exact-head runtime corpora passed official Testcontainers PostgreSQL",
+    "ci": "STARTING HEAD PASS: run 30164181825; final validation-head CI pending"
   }
 }

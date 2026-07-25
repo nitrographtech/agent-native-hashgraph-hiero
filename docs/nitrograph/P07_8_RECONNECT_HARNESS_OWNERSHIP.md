@@ -1,5 +1,18 @@
 # P07-8 Reconnect Harness Ownership
 
+## Two-fixture consumer separation
+
+`AuthenticatedHistoricalFixtureConsumerTest` is the repository-owned retained-operation and
+fail-closed-body suite. The surrounding fixture installer verifies and copies an immutable signed
+state and PCES set; the suite never invokes `DiverseStateCreation`,
+`HistoricalContractStateFixtureCreation`, fixture tooling, Solidity compilation, live contract
+deployment, or mutable world-state construction.
+
+Fixture A remains a one-node activation consumer path. Fixture B installs the same authenticated
+round-2143 four-member state for nodes 0–3 plus each node's canonical PCES, launches the exact
+non-executable `HederaNode.jar`, and orchestrates stop/advance/restart reconnect. Runtime classpaths
+contain neither the frozen generator release nor executable compatibility classes.
+
 ## Existing flow
 
 The existing `P06aHistoricalStateReconnectTest` is a combined generator and consumer. Its

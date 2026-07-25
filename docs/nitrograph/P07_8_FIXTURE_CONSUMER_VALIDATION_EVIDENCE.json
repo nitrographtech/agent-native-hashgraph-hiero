@@ -1,12 +1,12 @@
 {
   "phase": "P07-8 fixture-consumer validation",
-  "status": "BLOCKED_AT_AUTHENTICATED_FIXTURE_CONTRACT",
+  "status": "EXPECTED_PREACTIVATION_FIXTURE_BOUNDARY",
   "implementationHead": "46ecfbb61e3618bccaeb17e54f6f4eebd373fb5d",
   "exactHeadCi": {
     "run": 30163481681,
     "result": "PASS"
   },
-  "fixture": {
+  "fixtureA": {
     "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
     "archiveSha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
     "manifestSha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2",
@@ -37,25 +37,27 @@
   "historicalState": {
     "preActivationStorageCardinality": 0,
     "postReplayStorageCardinality": 0,
-    "requiredStorageCardinality": 1,
-    "requiredStorageValue": 424242,
+    "expectedStorageCardinality": 0,
     "bytecodeCardinality": 2,
     "evmHookStatesCardinality": 1,
     "lambdaStorageCardinality": 1,
     "postReplayFingerprintFileSha256": "604e023255f5966630da6241cc5d45ae32cc1b98c110dcc298bf86b3804d9999"
   },
   "reconnect": {
-    "status": "NOT_RUN",
-    "reason": "The authenticated saved state has a one-node signed roster. A four-node reconnect requires generating or replacing the authenticated fixture."
+    "status": "NOT_APPLICABLE_TO_FIXTURE_A",
+    "reason": "The authenticated preactivation fixture has a one-member roster. Reconnect is validated independently with the additive post-write four-node fixture."
   },
   "mirror": {
-    "status": "NOT_RUN",
-    "reason": "The mandatory post-replay state gate failed before output promotion to the official importer."
+    "status": "HISTORICAL_CORPUS_RETAINED",
+    "reason": "Fixture A remains the authenticated historical activation corpus; post-write and exact-head output are validated as separate corpora."
   },
-  "stopConditionsTriggered": [
-    "STORAGE does not reach value 424242",
-    "reconnect requires fixture generation"
-  ],
+  "boundaryDecision": {
+    "classification": "EXPECTED_PREACTIVATION_FIXTURE_BOUNDARY",
+    "frozenBaselineAlsoHasEmptyStorage": true,
+    "productionRuntimeFailure": false,
+    "requiresProductionChange": false,
+    "postWriteReconnectAuthority": "p07-four-node-postwrite-v065-storage424242-v1"
+  },
   "productionChanges": 0,
   "fixtureChanges": 0,
   "privateMaterialTracked": false

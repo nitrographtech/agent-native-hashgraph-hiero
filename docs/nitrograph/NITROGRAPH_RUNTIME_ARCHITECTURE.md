@@ -1,5 +1,14 @@
 # Nitrograph Runtime Architecture
 
+## P07-8 compatibility witnesses
+
+Runtime validation uses two immutable fixtures with different authenticated boundaries. The
+original one-node preactivation fixture proves historical schema loading and activation with empty
+`STORAGE`. The additive four-node post-write fixture proves persisted `STORAGE=424242`, exact-head
+save/restart, real reconnect, synchronization, and mirror ingestion. Fixture generation remains in
+the frozen non-production compatibility release; neither generator nor executable engine is
+available to a production application.
+
 Status: P06B-7A engineering control artifact
 
 ```mermaid

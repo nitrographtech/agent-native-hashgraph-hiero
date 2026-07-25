@@ -1,0 +1,167 @@
+{
+  "phase": "P07-8 two-fixture validation",
+  "implementationHead": "46ecfbb61e3618bccaeb17e54f6f4eebd373fb5d",
+  "startingEvidenceHead": "03d84ddcfd2d7ed9b293945206fc21524a2ec980",
+  "startingCi": {
+    "run": 30164181825,
+    "result": "PASS"
+  },
+  "fixtureA": {
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "class": "PREACTIVATION_SINGLE_NODE",
+    "archiveSha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "manifestSha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2",
+    "stateRoot": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485",
+    "rosterMembers": 1,
+    "activation": "PASS",
+    "pcesEventsReplayed": 29,
+    "transactionsObserved": 2,
+    "storageCardinality": 0,
+    "postReplayFingerprintSha256": "604e023255f5966630da6241cc5d45ae32cc1b98c110dcc298bf86b3804d9999",
+    "classification": "EXPECTED_PREACTIVATION_FIXTURE_BOUNDARY"
+  },
+  "fixtureB": {
+    "tag": "p07-four-node-postwrite-v065-storage424242-v1",
+    "class": "POST_WRITE_MULTI_NODE",
+    "release": "https://github.com/nitrographtech/agent-native-hashgraph-hiero/releases/tag/p07-four-node-postwrite-v065-storage424242-v1",
+    "generatorTag": "p07-executable-fixture-compat-v1",
+    "generatorSource": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
+    "generatorArchiveSha256": "6af7596d365e62561df913032daaaf4437c3eafeb75e567e33057e8eab5b7a7a",
+    "generationRuns": 2,
+    "semanticEquivalence": "PASS",
+    "byteDeterministic": false,
+    "archiveSize": 26911183,
+    "archiveSha256": "0fd75fd4da408787ddef6b5a73300ce8018e330eb2f3a8e98d11ef9fbceceaa3",
+    "manifestSha256": "967798ff82aad71ac7b9f6b4464279479f4e2a201098a02995cfd6cd70e30439",
+    "fileCount": 394,
+    "round": 2143,
+    "stateRoot": "0c3b973439f127093ad1d64bd9777d9a365a6d18522e6e46c6bd0fa41fa9f4e8eba8b4eac33b0cda2bfa82cf175a0894",
+    "roster": {
+      "nodeIds": [0, 1, 2, 3],
+      "weights": [1, 1, 1, 1]
+    },
+    "maps": {
+      "STORAGE": {
+        "cardinality": 1,
+        "decodedValue": 424242,
+        "sha256": "4498f1861935388100d439abcd8124cb906dc479f990c91a4b5a3d6995dd892f"
+      },
+      "BYTECODE": {
+        "cardinality": 2,
+        "sha256": "204633a18de2a97441e56adae79ce51656496582833a906a69471e24b87091ab"
+      },
+      "EVM_HOOK_STATES": {
+        "cardinality": 1,
+        "sha256": "32ffae8553e2c27c2a85e6071b9d6eddb85bc07a4a175ed9047d0c2cdb9484f1"
+      },
+      "LAMBDA_STORAGE": {
+        "cardinality": 1,
+        "sha256": "6359602eb1ab3cb0ef54e1eeddfb8bfd5bcd89a52d86afb191b1cc8cf419056b"
+      },
+      "combinedSha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+    },
+    "secretAudit": {
+      "result": "PASS",
+      "privateMaterialPublished": 0,
+      "developerPathRemediation": "settingsUsed.txt excluded"
+    },
+    "cleanArchiveVerification": "PASS"
+  },
+  "exactHeadConsumer": {
+    "artifactSha256": "7c493cf5bb4018586c50f270d02e7031d41d669ef6c30b265890bb8b7c42d530",
+    "allNodesActive": "2026-07-25T11:10:42-07:00",
+    "saveRestart": "PASS",
+    "restartSignedStateRounds": [2269, 2558, 2810],
+    "retainedOperationTest": "PASS",
+    "retainedOperationXmlSha256": "20de5114ba400044dc19183b0746abbc1b29cf3639a85f74b355ad84f5156231",
+    "executableClasspath": "ABSENT",
+    "compatibilityGeneratorOnClasspath": false
+  },
+  "reconnect": {
+    "result": "PASS",
+    "learner": 2,
+    "teacher": 1,
+    "learnerOldRound": 3757,
+    "transferredRound": 4733,
+    "replayingEvents": "2026-07-25T11:15:22.948-07:00",
+    "behind": "2026-07-25T11:15:23.021-07:00",
+    "teacherSelected": "2026-07-25T11:15:23.057-07:00",
+    "transferComplete": "2026-07-25T11:15:24.458-07:00",
+    "stateValidated": "2026-07-25T11:15:24.479-07:00",
+    "stateWritten": "2026-07-25T11:15:25.758-07:00",
+    "active": "2026-07-25T11:15:27.680-07:00",
+    "synchronization": "PASS",
+    "postReconnectMaps": "PASS",
+    "postReconnectCombinedInventorySha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "learnerLogSha256": "98a3b7e85918f0519298a51a79fdd910e0b3f2468008952fcd3e455681d789fd"
+  },
+  "mirror": {
+    "importerCommit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "docker": "29.6.2",
+    "testcontainers": "2.0.5",
+    "fixtureBRecordTreeSha256": "dc0fdadf450ca9b08367d1c417e18a5956648f5366f7051fa6c9d3217d681e28",
+    "fixtureBSidecarTreeSha256": "0a0591a4b48c15b61d30ef44419abf1efd959a17bad706d94d164aa8079603e0",
+    "fixtureBBlockTreeSha256": "e7142790eb310ca05b1d02b788b052a251b5c0047553dc7bf62bbf2e9c256e85",
+    "runtimeRecordTreeSha256": "26510456f527ea770c29e32b096c45987eee0f79347696ea46ef4a183adecfd9",
+    "runtimeBlockTreeSha256": "f0b4d2b7663fdd96a95416eb004eea7f2c183e568512f19fd28e9527de4b4bbe",
+    "environment": {
+      "user": "ericf with effective docker group via sg docker",
+      "dockerClient": "29.6.2",
+      "dockerServer": "29.6.2",
+      "testcontainers": "2.0.5",
+      "database": "official Testcontainers PostgreSQL",
+      "importerSourceChanges": "test harness only; production and schema unchanged"
+    },
+    "corpusA": {
+      "records": 11,
+      "transactions": 754,
+      "results": 3,
+      "logs": 1,
+      "actions": 3,
+      "stateChangeGroups": 2,
+      "storageChanges": 2,
+      "bytecodeRecords": 2,
+      "semanticSidecarRecords": 7,
+      "attachedImporterSidecarRecords": 5,
+      "completeBlocks": 139,
+      "recordTreeSha256": "af0518aac5fe9a6850b7be96484c922f990c7e4a1350eea172aee5b5ed17ba1f",
+      "sidecarTreeSha256": "b0e0559a8d14faa035bb190bf6e40cc718e663cf15e0a2cf7b11ee52bed63a94",
+      "blockTreeSha256": "f2ea7faffb0c4d1972d1c099f702c84991283182b351fca768c0e237db628688",
+      "xmlSha256": "11ff7b478364ec71d174585fe2aad39c7e9555366fb3e84225a17c72b6573feb",
+      "semanticFingerprint": "80a82ff875564ab9a4611a4921e3ac96ae6065752a5ecb98bd17fbeab3ecd594"
+    },
+    "corpusB": {
+      "records": 34,
+      "transactions": 861,
+      "results": 3,
+      "logs": 1,
+      "actions": 0,
+      "stateChangeGroups": 2,
+      "storageChanges": 2,
+      "bytecodeRecords": 2,
+      "semanticSidecarRecords": 4,
+      "completeBlocks": 131,
+      "xmlSha256": "bb55ba8c141e67b3740b6aa233728cfe1cea3c7714e257cb1cbe3e8bdfabdecc",
+      "semanticFingerprint": "f15db91673237c656bc3f27ac26da9499f62dc0d76f258b4be15b812534e1a32",
+      "actionBoundary": "NoTracer generator composition; Corpus A remains authority for three historical actions"
+    },
+    "corpusC": {
+      "records": 8,
+      "transactions": 24,
+      "results": 0,
+      "logs": 4,
+      "actions": 0,
+      "stateChangeGroups": 0,
+      "storageChanges": 0,
+      "bytecodeRecords": 0,
+      "semanticSidecarRecords": 0,
+      "completeBlocks": 508,
+      "xmlSha256": "c7c846db6ed211685638c7d3a4416d215745b4069f754c7d8fc9f63d52b4ae50",
+      "semanticFingerprint": "f68c1cf93c96eeaf5ffa19ac3acb3f1b24e59c4c2e0583715f55c3ef02083f05"
+    },
+    "associationsOrderingSignaturesAndSchema": "PASS",
+    "status": "PASS"
+  },
+  "privateMaterialTracked": false,
+  "productionExecutableSourceRestored": false
+}
