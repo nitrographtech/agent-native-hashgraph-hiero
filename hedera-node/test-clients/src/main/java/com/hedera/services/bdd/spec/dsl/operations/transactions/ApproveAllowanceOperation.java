@@ -96,18 +96,15 @@ public class ApproveAllowanceOperation
     @Override
     protected SpecOperation computeDelegate(@NonNull final HapiSpec spec) {
         return switch (allowanceType) {
-            case HBAR ->
-                cryptoApproveAllowance()
-                        .signedByPayerAnd(ownerName)
-                        .addCryptoAllowance(ownerName, spenderName, allowance);
-            case NFT ->
-                cryptoApproveAllowance()
-                        .signedByPayerAnd(ownerName)
-                        .addNftAllowance(ownerName, tokenName, spenderName, isApproveForAll, serialNumbers);
-            case FUNGIBLE_TOKEN ->
-                cryptoApproveAllowance()
-                        .signedByPayerAnd(ownerName)
-                        .addTokenAllowance(ownerName, tokenName, spenderName, allowance);
+            case HBAR -> cryptoApproveAllowance()
+                    .signedByPayerAnd(ownerName)
+                    .addCryptoAllowance(ownerName, spenderName, allowance);
+            case NFT -> cryptoApproveAllowance()
+                    .signedByPayerAnd(ownerName)
+                    .addNftAllowance(ownerName, tokenName, spenderName, isApproveForAll, serialNumbers);
+            case FUNGIBLE_TOKEN -> cryptoApproveAllowance()
+                    .signedByPayerAnd(ownerName)
+                    .addTokenAllowance(ownerName, tokenName, spenderName, allowance);
         };
     }
 

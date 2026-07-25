@@ -39,7 +39,8 @@ public abstract class TestBase {
         HapiSuite.runConcurrentSpecs(specs);
         final var failures = specs.stream().filter(HapiSpec::notOk).toList();
         if (!failures.isEmpty()) {
-            final var failureReport = """
+            final var failureReport =
+                    """
                             %d specs FAILED. By suite,
                             %s
                             """;
