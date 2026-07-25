@@ -62,6 +62,8 @@ jobs:
           tools/p07/test-ethereum-execution-removal-policy.sh
           tools/p07/verify-executable-contract-engine-removed.sh
           tools/p07/test-executable-engine-removal-policy.sh
+          tools/p07/verify-authenticated-fixture-governance.sh
+          tools/p07/test-authenticated-fixture-governance-policy.sh
 
       - name: Enforce protected-layer boundary
         run: |
