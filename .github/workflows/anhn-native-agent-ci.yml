@@ -56,6 +56,8 @@ jobs:
           tools/p07/test-fixture-tooling-policy.sh
           tools/p07/verify-system-contracts-removed.sh
           tools/p07/test-system-contract-removal-policy.sh
+          tools/p07/verify-dead-solidity-assets-removed.sh
+          tools/p07/test-dead-solidity-asset-policy.sh
 
       - name: Enforce protected-layer boundary
         run: |
