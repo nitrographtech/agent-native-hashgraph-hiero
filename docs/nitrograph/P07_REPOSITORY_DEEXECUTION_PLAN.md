@@ -104,7 +104,7 @@ plan removes the EVM integration source first, then removes the now-unused Besu/
 | 4 | System contracts | Remove `exec/systemcontracts/**`, its Dagger bindings, executable precompile tests, and full-only service hooks | Retain token/account/schedule native APIs; remove smart-contract precompile CI partitions | Very high. Native token/account suites and protected historical streams must pass |
 | 5 | Solidity execution assets | Remove full-only Solidity execution/query handlers and compiler/source fixtures no longer needed after Wave 2 | Retain wire names such as `getBySolidityID`, address widths, PBJ fields, and historical query rejection | Medium. Do not cosmetically rename historical fields |
 | 6 | Ethereum execution | **COMPLETE (P07-6).** Live handler, hydration, signature cache, fee/gas branches, dispatch, and runtime parser ownership removed. Test-client corpus helpers remain until their mixed-suite consumers retire. | Retain Ethereum PBJ bodies/results for decoding, rejection, and mirror | Closed: historical and exact-head runtime importer regressions pass; new runtime actions are deterministically zero |
-| 7 | World-state implementation | Remove mutable stores, `WorldUpdater`, frame state, proxy accounts, writable EVM hook stores, and `FullContractStoreFactory` | First move any remaining validator schema references to neutral history API; retain historical read-only adapters | Very high. All four retained map inventories must be unchanged |
+| 7 | World-state implementation | **BLOCKED (P07-7 census).** Mutable stores, updaters, frame state, proxy accounts and commit/rollback are the mandatory state backend for every retained ordinary EVM create/call | Neutral historical interfaces and read-only adapters are already separate and remain protected | Stop gate reached: deletion requires retiring ordinary EVM execution and must be combined with engine removal |
 | 8 | EVM engine integration | Remove HEVM, frame runners, processors, custom operations, versioned EVM modules, gas/executable metrics, Bonneville, and native-lib verifier | Remove associated implementation tests and full provider construction | Very high. This retires the full executable application profile |
 | 9 | Besu/Tuweni and executable native dependencies | Remove app/test-client JPMS edges and version-catalog/dependency metadata after source scans are zero | Remove notices/SBOM components only when no retained artifact carries them | Blocked at `platform-sdk/base-crypto` without upstream neutral verifier or separate platform authorization |
 | 10 | `app-service-contract-impl` module | Delete the now-empty source/test tree, Gradle project mapping, full provider/factory, and remaining implementation tests | `RecordStreamBuilder`, six builder interfaces, historical schemas/stores remain in neutral API | High structural gate. Repository-wide implementation import and class scans must be zero |
@@ -232,6 +232,14 @@ permanent neutral retained-map interfaces and read-only historical adapters. The
 implementation should remove only world-state implementations with no ordinary EVM execution
 consumer; if ordinary create/call still requires the entire world-state closure, record an
 architecture blocker rather than broadening into EVM-engine removal.
+
+The P07-7 census reached that stop condition. `ContextTransactionProcessor`, Besu frame
+construction, ordinary create/call commit, storage validation/rent, created-contract/nonce
+externalization, and authenticated full-node fixture generation all require the same mutable
+updater closure. There is no independently deletable production subset. No world-state source was
+deleted. The closure is deferred until ordinary EVM execution is explicitly retired; neutral
+historical interfaces, read-only adapters, schemas, and retained maps remain independent and
+protected.
 
 ## Risk assessment
 
