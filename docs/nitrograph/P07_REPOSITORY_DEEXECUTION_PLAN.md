@@ -273,6 +273,18 @@ generated dependency metadata, or documentation. The larger benefit is dependenc
 surface reduction: the 14 executable artifacts already removed from native packaging become
 removable from full/repository build graphs after Wave 10.
 
+## P07-10A shared-helper separation checkpoint
+
+P07-10A separated historical result/sidecar/storage helpers, system-account
+vectors, legacy resource identities, and native ECDSA signing from retired suite
+owners. Eight newly unreachable suite/utility shells were then deleted.
+
+P07-10A is partially complete and blocked at a mixed-suite boundary:
+retained token/airdrop suites still contain live CREATE2 contract scenarios, and
+allowance/batch/integration suites still contain HTS-precompile result scenarios.
+Deleting these scenarios requires explicit test-method scope; moving their helpers
+would incorrectly preserve retired execution as “native” support.
+
 No Git pack-size, clone-time, or build-time reduction is claimed until a deletion branch measures it
 against this base.
 

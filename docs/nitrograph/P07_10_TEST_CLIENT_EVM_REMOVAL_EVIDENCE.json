@@ -23,6 +23,23 @@
     "platformSdkChanges": 0,
     "baseCryptoChanges": 0
   },
+  "p07_10a": {
+    "status": "PARTIALLY_COMPLETE_BLOCKED",
+    "censusCommit": "f0b1543e28",
+    "helperSeparationCommit": "ec058940b1",
+    "formatterCorrectionCommit": "b10b38dfee",
+    "suiteDeletionCommit": "d93cc4d164",
+    "additionalFilesRemoved": 8,
+    "additionalBytesRemoved": 542099,
+    "additionalLinesRemoved": 8520,
+    "testClientCompileJava": "PASS",
+    "testClientCompileTestJava": "PASS",
+    "besuImportersAfter": 7,
+    "tuweniImportersAfter": 15,
+    "productionRuntimeChanges": 0,
+    "platformSdkChanges": 0,
+    "baseCryptoChanges": 0
+  },
   "stopCondition": {
     "status": "BLOCKED",
     "trigger": "A supposedly dead suite still owns helpers consumed by required historical or retained native behavior.",
@@ -37,7 +54,7 @@
       "Signing remains required by native ECDSA authorization, account, topic-fee, airdrop, and integration tests."
     ],
     "rejectedApproach": "Delete the shared owners and either lose historical/native coverage or duplicate helpers ad hoc.",
-    "requiredPrerequisite": "A separately bounded helper-ownership separation that moves historical translation, sidecar encoding, system-account vectors, and native ECDSA helpers to coherent retained owners before deleting their former suites."
+    "requiredPrerequisite": "Authorize deletion of live CREATE2 contract-recipient and HTS-precompile methods embedded in otherwise retained native/token suites; moving those implementations would preserve retired execution under a false native owner."
   },
   "validationNotRunBecauseBlocked": [
     "Fixture A lifecycle",
@@ -50,5 +67,5 @@
     "importer": "platform-sdk/base-crypto/src/main/java/org/hiero/base/crypto/engine/EcdsaSecp256k1Verifier.java",
     "status": "UNCHANGED"
   },
-  "recommendedNextCheckpoint": "P07-10A separate shared historical/native helpers from retired suite ownership; then resume P07-10 importer and dependency removal."
+  "recommendedNextCheckpoint": "P07-10A mixed-suite method removal for CREATE2 contract-recipient and HTS-precompile coverage, followed by resumed P07-10 importer and dependency removal."
 }

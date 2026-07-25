@@ -1,0 +1,47 @@
+{
+  "schema": "nitrograph.p07-10a.dependency-delta.v1",
+  "baseline_head": "0dfd53d6797050008e9033f738ce0a91e051fe0d",
+  "baseline_test_client_importers": {
+    "besu": 6,
+    "tuweni": 20
+  },
+  "current_test_client_importers": {
+    "besu": 7,
+    "tuweni": 15
+  },
+  "notes": [
+    "The Besu count temporarily increases by one because native ECDSA signing now has an explicit narrow owner while the old executable Ethereum signing owner still remains.",
+    "The resumed deletion removed five Tuweni-importing suite/utility owners.",
+    "Importer counts are an ownership measurement, not the completion criterion."
+  ],
+  "moved_symbols": [
+    "RecordsSuite.OVERSIZED_CONTRACT_ACTIONS_MEMO -> HistoricalContractResultFixtures",
+    "TraceabilitySuite propagated-revert test identity -> HistoricalContractResultFixtures",
+    "EncodingUtils.getInitcode -> HistoricalSidecarFixtures",
+    "EncodingUtils.formattedAssertionValue -> HistoricalStorageEncoding",
+    "Evm46ValidationSuite system-account vectors -> NativeAccountTestVectors",
+    "ContractCreateSuite.EMPTY_CONSTRUCTOR_CONTRACT -> LegacyTransactionVectors",
+    "Signing.signMessage(byte[],byte[]) -> NativeEcdsaSigning"
+  ],
+  "deleted_suite_shells": [
+    "RecordsSuite",
+    "TraceabilitySuite",
+    "EncodingUtils",
+    "Evm46ValidationSuite",
+    "ContractCreateSuite",
+    "ExtCodeCopyOperationSuite",
+    "ExtCodeSizeOperationSuite",
+    "SelfDestructSuite"
+  ],
+  "deleted_source": {
+    "files": 8,
+    "bytes": 542099,
+    "lines": 8520
+  },
+  "remaining_ownership_gates": [
+    "CREATE2 execution helpers are consumed by mixed token-airdrop suites",
+    "HTSPrecompileResult is consumed by mixed allowance, batch, and integration suites",
+    "Executable Ethereum builders still own the old Signing utility",
+    "Shared EvmConversionUtils and contract Utils still serve historical translators and legacy suites"
+  ]
+}

@@ -198,3 +198,18 @@ retained native crypto, transfer, allowance, airdrop, and ECDSA coverage.
 P07-10 is therefore **BLOCKED after a safe partial removal** pending a bounded
 helper-ownership separation. No lifecycle or mirror claim is made for this
 partial checkpoint.
+
+## P07-10A checkpoint
+
+P07-10A moved historical result, sidecar, storage, system-account, legacy-resource,
+and native-signing symbols into narrow owners. This exposed and removed eight
+additional zero-consumer suite/utility shells (542,099 bytes). Test-client imports
+are now Besu 7 and Tuweni 15.
+
+The remaining CREATE2 edge is not a shared deterministic-address helper:
+`AirdropsDisabledTest` and `TokenAirdropTest` use it to deploy and call contracts.
+Likewise, `HTSPrecompileResult` still encodes removed HTS precompile execution for
+mixed allowance/batch/integration suites. Moving either closure into a native
+helper would preserve retired EVM execution under a misleading owner. P07-10A
+therefore stops at the explicit “native tests fundamentally require live EVM
+execution” gate pending authorization to remove those individual test methods.
