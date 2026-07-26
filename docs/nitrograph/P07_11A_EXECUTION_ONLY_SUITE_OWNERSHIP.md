@@ -144,3 +144,19 @@ P07-11B. `AtomicContractUpdateSuite` has no such dependency and remains in P07-1
 
 P07-11A does not broaden into mixed native-suite edits, core HAPI operation deletion, resource
 cleanup, signing cleanup, or protected cryptography.
+
+## Implemented boundary
+
+The exact 91-file closure above was deleted without adjustment. Post-deletion compilation proves
+that no source consumer or suite-discovery edge remains. The two shared-owner deferrals remain
+present, and no production, mixed native, historical, rejection, fixture, resource, Gradle, JPMS,
+platform-sdk, or base-crypto source was changed.
+
+The post-deletion literal operation inventory in test-client main source is:
+
+- `contractCreate`: 274;
+- `contractCall`: 172;
+- `ethereumCall`: 9.
+
+These remaining operations belong to P07-11B/C. P07-11A does not reinterpret them as part of its
+bounded deletion.

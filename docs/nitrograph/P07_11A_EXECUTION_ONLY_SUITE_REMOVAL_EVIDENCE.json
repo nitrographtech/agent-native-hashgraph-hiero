@@ -1,0 +1,106 @@
+{
+  "schema": "nitrograph.p07-11a.execution-only-suite-removal-evidence.v1",
+  "status": "IMPLEMENTED_PENDING_EXACT_HEAD_CI",
+  "baseline": {
+    "mergedP07_10": "3002aa45c7d3d6622746fa6ac809b9f1a26d9593",
+    "ownershipGateHead": "772880d459",
+    "branch": "p07/remove-execution-only-hapi-suites"
+  },
+  "architectureGate": {
+    "result": "BOUNDED_DELETION_POSSIBLE",
+    "directCensusSuitesDeleted": 30,
+    "annotationDrivenSuitesDeleted": 4,
+    "suiteLocalHelpersDeleted": 57,
+    "mixedSuitesChanged": 0,
+    "coreHapiOperationsChanged": 0,
+    "productionFilesChanged": 0,
+    "platformSdkFilesChanged": 0,
+    "baseCryptoFilesChanged": 0
+  },
+  "deletion": {
+    "javaFiles": 91,
+    "sourceBytes": 684002,
+    "sourceLines": 12590,
+    "hapiTestRegistrations": 274,
+    "resources": 0,
+    "providersOrExplicitRegistrations": 0,
+    "releasedLiteralOperations": {
+      "contractCreate": 143,
+      "contractCall": 145,
+      "ethereumCall": 66,
+      "ethereumContractCreate": 24,
+      "localCall": 11
+    }
+  },
+  "protectedDeferrals": {
+    "mixedNativeP07_11B": 61,
+    "rejectionOrHistoricalP07_11C": 2,
+    "sharedOwnerSuites": [
+      "ContractUpdateSuite",
+      "ContractRecordsSanityCheckSuite"
+    ],
+    "resourceAndDependencyCleanup": "P07-11D",
+    "coreOperations": [
+      "HapiContractCreate",
+      "HapiContractCall",
+      "HapiEthereumCall",
+      "HapiEthereumContractCreate",
+      "Signing"
+    ]
+  },
+  "postDeletionCensus": {
+    "testClientBesuImporters": 7,
+    "testClientTuweniImporters": 13,
+    "testClientHeadlongImporters": 46,
+    "fixtureToolingBesuImporters": 0,
+    "fixtureToolingTuweniImporters": 0,
+    "protectedBaseCryptoBesuImporters": 1,
+    "literalContractCreate": 274,
+    "literalContractCall": 172,
+    "literalEthereumCall": 9
+  },
+  "validation": {
+    "testClientsCompileJava": "PASS",
+    "testClientsCompileTestJava": "PASS",
+    "appTestsObservedPassingBeforeWorkerFailure": 580,
+    "appBuildProbe": {
+      "result": "NON_SEMANTIC_BASELINE_AND_ENVIRONMENT_FAILURES",
+      "spotless": "Pre-existing formatting drift in untouched app files",
+      "testWorker": "Java heap space after 580 passing tests",
+      "productionFixAuthorized": false
+    },
+    "suiteRemovalPolicy": "PASS",
+    "intentionalFailureControls": "PASS",
+    "priorP07PolicyMatrix": "PASS_AT_MERGED_P07_10_BASELINE",
+    "changedClosurePolicy": "PASS",
+    "aggregateLocalPolicyProbe": "Applicable verifiers progressed without failure; stopped during the unchanged, repository-wide system-contract scan after ten minutes. Exact-head CI remains authoritative."
+  },
+  "lifecycleCertification": {
+    "exactNativeDistributionJarSha256": "2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000",
+    "exactFormerFullDistributionJarSha256": "2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000",
+    "certifiedP07_10JarSha256": "2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000",
+    "certificationRule": "The exact production artifact, immutable fixtures, fixture/reconnect harnesses, and pinned importer are unchanged. P07-11A deletes test-client suites only.",
+    "fixtureA": "PASS_BY_EXACT_ARTIFACT_AND_INPUT_EQUIVALENCE",
+    "fixtureB": "PASS_BY_EXACT_ARTIFACT_AND_INPUT_EQUIVALENCE",
+    "restart": "PASS_BY_EXACT_ARTIFACT_AND_INPUT_EQUIVALENCE",
+    "reconnect": {
+      "result": "PASS_BY_EXACT_ARTIFACT_AND_INPUT_EQUIVALENCE",
+      "learner": 2,
+      "teacher": 1,
+      "oldLearnerRound": 4975,
+      "transferredRound": 6233,
+      "learnerLogSha256": "6eccedc47144f5ab0c390ffe1c5d30a9c5683c911575b2a629446332de42bc8c"
+    },
+    "protectedInventorySha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "mirror": {
+      "result": "PASS_BY_EXACT_ARTIFACT_AND_INPUT_EQUIVALENCE",
+      "importerCommit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+      "fixtureAXmlSha256": "9bc620af87ebbfb0826ac1e60d17db412c95b34312419f28306896a8d3338680",
+      "fixtureASemanticSha256": "72f526bd8e8bf38bdd2e9de2bc24dd79afeaccddbba6a59351a511f3b3e99aea",
+      "fixtureBXmlSha256": "d70d59f30660eacb29e565fbadc2f6a4417b9776c60d0e71478e49593881aabb",
+      "fixtureBSemanticSha256": "4ebb69667e19190230562a81d5471d50f6104153d00764b0e6b5f3b3a0cedf51",
+      "runtimeXmlSha256": "c1c0fcabdce495474edd8f6bcaa7ff4258e12083caa858a5ce0835e63c1a52fa",
+      "runtimeSemanticSha256": "87afbd86af6cd74aa7b1a6b9ad6e516ba3497b8bfb735102d46e059426395829"
+    }
+  }
+}
