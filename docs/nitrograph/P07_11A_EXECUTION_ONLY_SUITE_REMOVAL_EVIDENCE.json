@@ -1,6 +1,6 @@
 {
   "schema": "nitrograph.p07-11a.execution-only-suite-removal-evidence.v1",
-  "status": "IMPLEMENTED_PENDING_EXACT_HEAD_CI",
+  "status": "PASS_PENDING_FINAL_EVIDENCE_HEAD_CI",
   "baseline": {
     "mergedP07_10": "3002aa45c7d3d6622746fa6ac809b9f1a26d9593",
     "ownershipGateHead": "772880d459",
@@ -60,6 +60,9 @@
     "literalEthereumCall": 9
   },
   "validation": {
+    "implementationHead": "6df8d43ff991b970d9ef6c1e39d135614a92fe6d",
+    "implementationCiRun": 30214088704,
+    "implementationCiResult": "PASS",
     "testClientsCompileJava": "PASS",
     "testClientsCompileTestJava": "PASS",
     "appTestsObservedPassingBeforeWorkerFailure": 580,
@@ -73,7 +76,8 @@
     "intentionalFailureControls": "PASS",
     "priorP07PolicyMatrix": "PASS_AT_MERGED_P07_10_BASELINE",
     "changedClosurePolicy": "PASS",
-    "aggregateLocalPolicyProbe": "Applicable verifiers progressed without failure; stopped during the unchanged, repository-wide system-contract scan after ten minutes. Exact-head CI remains authoritative."
+    "exactImplementationHeadPolicyMatrix": "PASS",
+    "aggregateLocalPolicyProbe": "Applicable verifiers progressed without failure; stopped during the unchanged, repository-wide system-contract scan after ten minutes. Exact-head CI is authoritative."
   },
   "lifecycleCertification": {
     "exactNativeDistributionJarSha256": "2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000",
