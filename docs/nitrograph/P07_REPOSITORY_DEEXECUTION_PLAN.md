@@ -299,6 +299,11 @@ linearly after that merge:
   deletion;
 - **P07-11D** — dead resources, signing, Gradle/JPMS dependency cleanup, and final certification.
 
+P07-11A is implemented on its dedicated linear branch with an exact bounded deletion of 34
+execution-only suites and 57 suite-local helpers (91 files / 684,002 bytes). Mixed native suites,
+the historical/rejection boundary, core HAPI operations, and resource/dependency cleanup remain
+assigned to P07-11B, P07-11C, and P07-11D respectively.
+
 Known successful-execution expectations assigned to those waves are not globally suppressed and
 are not regressions in the focused P07-10 closure. P07 remains incomplete until all four waves and
 final certification pass.
