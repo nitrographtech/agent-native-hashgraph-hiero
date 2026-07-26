@@ -133,7 +133,6 @@ import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.trigge
 import static com.hedera.services.bdd.suites.integration.RepeatableScheduleLongTermExecutionTest.BASIC_XFER;
 import static com.hedera.services.bdd.suites.integration.RepeatableScheduleLongTermExecutionTest.CREATE_TX;
 import static com.hedera.services.bdd.suites.integration.RepeatableScheduleLongTermExecutionTest.SIGN_TX;
-import static com.hedera.services.bdd.suites.utils.contracts.precompile.HTSPrecompileResult.htsPrecompileResult;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.ConsensusCreateTopic;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BUSY;
@@ -1191,49 +1190,6 @@ public class RepeatableHip423Tests {
     }
 
     @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
-    final Stream<DynamicTest> scheduleV2SecurityAssociateSingleTokenWithDelegateContractKey() {
-        return hapiTest(
-                // upload fees for SCHEDULE_CREATE_CONTRACT_CALL
-                uploadScheduledContractPrices(GENESIS),
-                cryptoCreate(TOKEN_TREASURY).balance(ONE_HUNDRED_HBARS),
-                cryptoCreate(SIGNER).balance(ONE_MILLION_HBARS),
-                cryptoCreate(ACCOUNT).balance(10 * ONE_HUNDRED_HBARS),
-                tokenCreate(FUNGIBLE_TOKEN)
-                        .tokenType(TokenType.FUNGIBLE_COMMON)
-                        .treasury(TOKEN_TREASURY)
-                        .supplyKey(TOKEN_TREASURY)
-                        .adminKey(TOKEN_TREASURY),
-                uploadInitCode(ASSOCIATE_CONTRACT),
-                contractCreate(ASSOCIATE_CONTRACT),
-                withOpContext((spec, opLog) -> allRunFor(
-                        spec,
-                        newKeyNamed(CONTRACT_KEY).shape(THRESHOLD_KEY_SHAPE.signedWith(sigs(ON, ASSOCIATE_CONTRACT))),
-                        cryptoUpdate(SIGNER).key(CONTRACT_KEY),
-                        tokenUpdate(FUNGIBLE_TOKEN).supplyKey(CONTRACT_KEY).signedByPayerAnd(TOKEN_TREASURY),
-                        scheduleCreate(
-                                        "schedule",
-                                        contractCall(
-                                                        ASSOCIATE_CONTRACT,
-                                                        "tokenAssociate",
-                                                        HapiParserUtil.asHeadlongAddress(asAddress(
-                                                                spec.registry().getAccountID(ACCOUNT))),
-                                                        HapiParserUtil.asHeadlongAddress(asAddress(
-                                                                spec.registry().getTokenID(FUNGIBLE_TOKEN))))
-                                                .signedBy(SIGNER)
-                                                .payingWith(SIGNER)
-                                                .hasRetryPrecheckFrom(BUSY)
-                                                .via("fungibleTokenAssociate")
-                                                .gas(4_000_000L)
-                                                .hasKnownStatus(ResponseCodeEnum.SUCCESS))
-                                .waitForExpiry(true)
-                                .expiringIn(THIRTY_MINUTES))),
-                sleepForSeconds(THIRTY_MINUTES * 2),
-                cryptoCreate("trigger"),
-                sleepForSeconds(1),
-                tokenAssociate(ACCOUNT, FUNGIBLE_TOKEN).hasKnownStatus(TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT));
-    }
-
-    @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
     final Stream<DynamicTest> scheduleBurnSignAndChangeTheSupplyKey() {
         final var schedule = "s";
         return hapiTest(
@@ -1255,81 +1211,6 @@ public class RepeatableHip423Tests {
                 cryptoCreate("trigger"),
                 sleepForSeconds(1),
                 getAccountBalance("treasury").hasTokenBalance("token", 100));
-    }
-
-    @LeakyRepeatableHapiTest(
-            value = NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION,
-            overrides = {"scheduling.whitelist"})
-    @DisplayName("Schedule contract call")
-    final Stream<DynamicTest> scheduleCreateContractCalls() {
-        final var contract = "TestContract";
-        final var zeroAddress =
-                idAsHeadlongAddress(AccountID.newBuilder().setAccountNum(0L).build());
-        return hapiTest(flattened(
-                uploadTestContracts(contract),
-                contractCreate(
-                                contract,
-                                idAsHeadlongAddress(
-                                        AccountID.newBuilder().setAccountNum(2).build()),
-                                BigInteger.ONE)
-                        .balance(ONE_HBAR),
-                // contract call
-                scheduleCreate("contractCall", contractCall(contract, "callSpecific", zeroAddress))
-                        .expiringIn(ONE_MINUTE)
-                        .via("contractCall"),
-                // contract call with amount
-                scheduleCreate("callWithAmount", contractCall(contract, "callSpecificWithValue", zeroAddress))
-                        .expiringIn(ONE_MINUTE)
-                        .via("callWithAmount"),
-                triggerAndValidateSuccessfulExecution(ONE_MINUTE, "contractCall", "callWithAmount")));
-    }
-
-    @LeakyRepeatableHapiTest(
-            value = NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION,
-            overrides = {"scheduling.whitelist"})
-    @DisplayName("Schedule contract create")
-    final Stream<DynamicTest> scheduleCreateContractCreate() {
-        final var contract = "TestContract";
-        final var addressTwo =
-                idAsHeadlongAddress(AccountID.newBuilder().setAccountNum(2).build());
-        return hapiTest(flattened(
-                cryptoCreate("payer").balance(ONE_HUNDRED_HBARS),
-                uploadTestContracts(contract),
-                // contract create
-                scheduleCreate(
-                                "contractCreate",
-                                contractCreate(contract, addressTwo, BigInteger.ONE)
-                                        .omitAdminKey())
-                        .expiringIn(ONE_MINUTE)
-                        .via("contractCreate"),
-                triggerAndValidateSuccessfulExecution(ONE_MINUTE, "contractCreate")));
-    }
-
-    @LeakyRepeatableHapiTest(
-            value = NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION,
-            overrides = {"scheduling.whitelist"})
-    @DisplayName("Schedule contract update and delete")
-    final Stream<DynamicTest> scheduleCreateContractUpdate() {
-        final var contract = "TestContract";
-        final var addressTwo =
-                idAsHeadlongAddress(AccountID.newBuilder().setAccountNum(2).build());
-        return hapiTest(flattened(
-                uploadTestContracts(contract),
-                newKeyNamed("admin"),
-                contractCreate(contract, addressTwo, BigInteger.ONE)
-                        .adminKey("admin")
-                        .balance(ONE_HBAR),
-                // contract update
-                scheduleCreate("update", contractUpdate(contract).newMemo("tess update"))
-                        .alsoSigningWith("admin")
-                        .expiringIn(ONE_MINUTE)
-                        .via("update"),
-                // contract delete
-                scheduleCreate("delete", contractDelete(contract))
-                        .alsoSigningWith("admin")
-                        .expiringIn(ONE_MINUTE)
-                        .via("delete"),
-                triggerAndValidateSuccessfulExecution(ONE_MINUTE, "update", "delete")));
     }
 
     @LeakyRepeatableHapiTest(
@@ -1372,42 +1253,6 @@ public class RepeatableHip423Tests {
     @LeakyRepeatableHapiTest(
             value = NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION,
             overrides = {"scheduling.whitelist"})
-    @DisplayName("Schedule precompile call without ContractID key will fail")
-    final Stream<DynamicTest> noContractIdKeyWillFail() {
-        return hapiTest(
-                cryptoCreate("account"),
-                tokenCreate("FungibleToken").tokenType(TokenType.FUNGIBLE_COMMON),
-                uploadScheduledContractPrices(GENESIS),
-                overriding("scheduling.whitelist", "ContractCall"),
-                uploadInitCode("AssociateDissociate"),
-                contractCreate("AssociateDissociate"),
-                withOpContext((spec, opLog) -> allRunFor(
-                        spec,
-                        scheduleCreate(
-                                        "fungibleTokenAssociate",
-                                        contractCall(
-                                                        "AssociateDissociate",
-                                                        "tokenAssociate",
-                                                        asHeadlongAddress(asAddress(
-                                                                spec.registry().getAccountID("account"))),
-                                                        asHeadlongAddress(asAddress(
-                                                                spec.registry().getTokenID("FungibleToken"))))
-                                                .gas(4_000_000L))
-                                .waitForExpiry(true)
-                                .expiringIn(ONE_MINUTE)
-                                .via("fungibleTokenAssociate"),
-                        sleepForSeconds(ONE_MINUTE),
-                        cryptoCreate("foo"),
-                        getTxnRecord("fungibleTokenAssociate")
-                                .scheduled()
-                                .andAllChildRecords()
-                                .hasPriority(recordWith().status(CONTRACT_REVERT_EXECUTED))
-                                .hasChildRecords(recordWith().status(INVALID_FULL_PREFIX_SIGNATURE_FOR_PRECOMPILE)))));
-    }
-
-    @LeakyRepeatableHapiTest(
-            value = NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION,
-            overrides = {"scheduling.whitelist"})
     @DisplayName("Schedule transaction, than delete the payer")
     final Stream<DynamicTest> deletedPayer() {
         return hapiTest(
@@ -1421,58 +1266,6 @@ public class RepeatableHip423Tests {
                 cryptoDelete("payer"),
                 scheduleSign("transfer").alsoSigningWith("account"),
                 getTxnRecord("transfer").scheduled().hasPriority(recordWith().status(ACCOUNT_DELETED)));
-    }
-
-    @LeakyRepeatableHapiTest(
-            value = NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION,
-            overrides = {"scheduling.whitelist", "contracts.maxGasPerSec", "contracts.maxGasPerSecBackend"})
-    @DisplayName("Gas throttle works as expected")
-    final Stream<DynamicTest> gasThrottleWorksAsExpected() {
-        final var contract = "TestContract";
-        final var addressTwo =
-                idAsHeadlongAddress(AccountID.newBuilder().setAccountNum(2).build());
-        final var zeroAddress =
-                idAsHeadlongAddress(AccountID.newBuilder().setAccountNum(0L).build());
-        final var gasToOffer = 2_000_000L;
-        return hapiTest(flattened(
-                overriding("contracts.maxGasPerSec", "4000000"),
-                overriding("contracts.maxGasPerSecBackend", "4000000"),
-                cryptoCreate("PAYING_ACCOUNT"),
-                uploadTestContracts(contract),
-                contractCreate(contract, addressTwo, BigInteger.ONE)
-                        .balance(ONE_HBAR)
-                        .via("contractCreate"),
-                // schedule at another second, should not affect the throttle
-                scheduleCreate(
-                                "1",
-                                contractCall(contract, "callSpecificWithValue", zeroAddress)
-                                        .sending(1L)
-                                        .gas(gasToOffer))
-                        .withRelativeExpiry("contractCreate", 20)
-                        .payingWith("PAYING_ACCOUNT"),
-                scheduleCreate(
-                                "2",
-                                contractCall(contract, "callSpecificWithValue", zeroAddress)
-                                        .sending(2L)
-                                        .gas(gasToOffer))
-                        .withRelativeExpiry("contractCreate", 10)
-                        .payingWith("PAYING_ACCOUNT"),
-                scheduleCreate(
-                                "3",
-                                contractCall(contract, "callSpecificWithValue", zeroAddress)
-                                        .sending(3L)
-                                        .gas(gasToOffer))
-                        .withRelativeExpiry("contractCreate", 10)
-                        .payingWith("PAYING_ACCOUNT"),
-                scheduleCreate(
-                                "4",
-                                contractCall(contract, "callSpecificWithValue", zeroAddress)
-                                        .sending(4L)
-                                        .gas(gasToOffer))
-                        .withRelativeExpiry("contractCreate", 10)
-                        .payingWith("PAYING_ACCOUNT")
-                        .hasKnownStatus(SCHEDULE_EXPIRY_IS_BUSY),
-                purgeExpiringWithin(20)));
     }
 
     @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
@@ -1525,41 +1318,6 @@ public class RepeatableHip423Tests {
                         "transfer")));
     }
 
-    @LeakyRepeatableHapiTest(
-            value = NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION,
-            overrides = {"scheduling.whitelist"})
-    @DisplayName("Schedule contract call then delete the contract")
-    final Stream<DynamicTest> scheduleCreateContractCallsThenChangeKeysOrDeleteContract() {
-        final var contract = "TestContract";
-        final var zeroAddress =
-                idAsHeadlongAddress(AccountID.newBuilder().setAccountNum(0L).build());
-        return hapiTest(flattened(
-                uploadTestContracts(contract),
-                cryptoCreate("contractAdmin").balance(ONE_HUNDRED_HBARS),
-                contractCreate(
-                                contract,
-                                idAsHeadlongAddress(
-                                        AccountID.newBuilder().setAccountNum(2).build()),
-                                BigInteger.ONE)
-                        .balance(ONE_HBAR)
-                        .adminKey("contractAdmin"),
-                // contract call
-                scheduleCreate("contractCall", contractCall(contract, "callSpecific", zeroAddress))
-                        .waitForExpiry(true)
-                        .expiringIn(ONE_MINUTE)
-                        .via("contractCall"),
-                contractDelete(contract).payingWith("contractAdmin"),
-                getContractInfo(contract).has(contractWith().isDeleted()),
-                // Trigger the executions
-                sleepForSeconds(ONE_MINUTE),
-                cryptoCreate("foo"),
-                getTxnRecord("contractCall")
-                        .scheduled()
-                        .hasPriority(recordWith()
-                                .contractCallResult(
-                                        resultWith().contractCallResult(() -> org.apache.tuweni.bytes.Bytes.EMPTY)))));
-    }
-
     @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
     @DisplayName("Schedule sign then delete the signer")
     final Stream<DynamicTest> deleteAccountAfterSign() {
@@ -1582,58 +1340,6 @@ public class RepeatableHip423Tests {
                 triggerAndValidateSuccessfulExecution(ONE_MINUTE, "transfer")));
     }
 
-    @LeakyRepeatableHapiTest(
-            value = NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION,
-            overrides = {"scheduling.whitelist"})
-    @DisplayName("Schedule contract call with delegate call to system contract")
-    final Stream<DynamicTest> scheduleCreateContractCallsWithDelegateCall() {
-        final var account = "account";
-        final var treasury = "treasury";
-        final var token = "token";
-        final var associateContract = "AssociateDissociate";
-        final var nestedAssociatedContract = "NestedAssociateDissociate";
-        final var accountAddress = new AtomicReference<>();
-        final var tokenAddress = new AtomicReference<>();
-        final var associateContractAddress = new AtomicReference<>();
-        final var keyShape = KeyShape.threshOf(1, ED25519, DELEGATE_CONTRACT);
-        return hapiTest(flattened(
-                cryptoCreate(account).balance(ONE_HUNDRED_HBARS),
-                cryptoCreate(treasury),
-                tokenCreate(token).tokenType(FUNGIBLE_COMMON).treasury(treasury),
-                uploadTestContracts(associateContract, nestedAssociatedContract),
-                contractCreate(associateContract),
-                // set addresses
-                withOpContext((spec, opLog) -> {
-                    associateContractAddress.set(asHeadlongAddress(getNestedContractAddress(associateContract, spec)));
-                    accountAddress.set(
-                            asHeadlongAddress(asAddress(spec.registry().getAccountID(account))));
-                    tokenAddress.set(asHeadlongAddress(asAddress(spec.registry().getTokenID(token))));
-                }),
-                sourcing(() -> contractCreate(nestedAssociatedContract, associateContractAddress.get())),
-                // update account key to contain delegate contract id
-                newKeyNamed("contractKey").shape(keyShape.signedWith(sigs(ON, nestedAssociatedContract))),
-                cryptoUpdate(account).key("contractKey"),
-                // schedule contract call
-                sourcing(() -> scheduleCreate(
-                                "scheduleDelegateCall",
-                                // SIGNER → call → CONTRACT A → delegatecall → CONTRACT B → call → PRECOMPILE(HTS)
-                                contractCall(
-                                                nestedAssociatedContract,
-                                                "associateDelegateCall",
-                                                accountAddress.get(),
-                                                tokenAddress.get())
-                                        .payingWith(account)
-                                        .gas(4_000_000L))
-                        .waitForExpiry(true)
-                        .expiringIn(ONE_MINUTE)
-                        .via("scheduleDelegateCall")),
-                // wait and execute
-                sleepForSeconds(ONE_MINUTE),
-                cryptoCreate("foo"),
-                // asserts
-                assertScheduleDelegateCallRecords("scheduleDelegateCall"),
-                getAccountInfo(account).hasToken(relationshipWith(token))));
-    }
 
     @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
     public Stream<DynamicTest> executionWithDefaultPayerWorks() {
@@ -1857,26 +1563,6 @@ public class RepeatableHip423Tests {
                 getAliasedAccountInfo("alias").has(accountWith().balance(10L)),
                 sleepForSeconds(2),
                 cryptoTransfer(tinyBarsFromTo(DEFAULT_PAYER, FUNDING, 1L)));
-    }
-
-    private SpecOperation[] uploadTestContracts(String... contracts) {
-        final var ops = new ArrayList<>(List.of(
-                uploadScheduledContractPrices(GENESIS),
-                overriding("scheduling.whitelist", "ContractCall,ContractCreate,ContractUpdate,ContractDelete")));
-        for (final var contract : contracts) {
-            ops.add(uploadInitCode(contract));
-        }
-        return ops.toArray(new SpecOperation[0]);
-    }
-
-    private SpecOperation assertScheduleDelegateCallRecords(@NonNull final String scheduleTxn) {
-        return getTxnRecord(scheduleTxn)
-                .scheduled()
-                .andAllChildRecords()
-                .hasChildRecords(recordWith()
-                        .status(ResponseCodeEnum.SUCCESS)
-                        .contractCallResult(resultWith()
-                                .contractCallResult(htsPrecompileResult().withStatus(ResponseCodeEnum.SUCCESS))));
     }
 
     private SpecOperation[] triggerAndValidateSuccessfulExecution(

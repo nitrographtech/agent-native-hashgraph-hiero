@@ -1,0 +1,70 @@
+{
+  "schema": "nitrograph.p07-10a.shared-helper-separation-evidence.v1",
+  "status": "COMPLETE_CERTIFIED_IN_PR28",
+  "baseline": {
+    "head": "0dfd53d6797050008e9033f738ce0a91e051fe0d",
+    "ci_run": 30177227323,
+    "ci_result": "passed"
+  },
+  "completed_ownership_transfers": {
+    "historical_result": "HistoricalContractResultFixtures",
+    "historical_sidecar": "HistoricalSidecarFixtures",
+    "historical_storage": "HistoricalStorageEncoding",
+    "legacy_resource_vector": "LegacyTransactionVectors",
+    "system_account_vectors": "NativeAccountTestVectors",
+    "native_ecdsa_signing": "NativeEcdsaSigning"
+  },
+  "semantic_preservation": {
+    "oversized_action_memo": "RecordsSuite.oversizedContractActionsAreClipped",
+    "propagated_revert_test_id": "TraceabilitySuite.actionsShowPropagatedRevert",
+    "storage_424242_hex": "067932",
+    "native_signature_format": "64-byte compact signature followed by recovery-id plus 27",
+    "production_runtime_changes": 0,
+    "platform_sdk_changes": 0,
+    "base_crypto_changes": 0
+  },
+  "deleted": {
+    "suite_shells": [
+      "RecordsSuite",
+      "TraceabilitySuite",
+      "Evm46ValidationSuite",
+      "ContractCreateSuite",
+      "ExtCodeCopyOperationSuite",
+      "ExtCodeSizeOperationSuite",
+      "SelfDestructSuite"
+    ],
+    "utility_shells": [
+      "EncodingUtils"
+    ],
+    "files": 8,
+    "bytes": 542099,
+    "lines": 8520
+  },
+  "dependency_counts": {
+    "baseline_test_client_besu_importers": 6,
+    "current_test_client_besu_importers": 7,
+    "baseline_test_client_tuweni_importers": 20,
+    "current_test_client_tuweni_importers": 15,
+    "fixture_tooling_direct_importers": 0,
+    "protected_base_crypto_besu_importers": 1
+  },
+  "validation": {
+    "test_clients_compile_java": "passed",
+    "test_clients_compile_test_java": "passed",
+    "historical_storage_vector_test": "compiled; default test task excludes untagged unit tests",
+    "shared_helper_checkpoint_policy": "passed",
+    "intentional_failure_controls": "passed",
+    "fixture_a": "PASS: immutable corpus and authenticated boundary reverified",
+    "fixture_b": "PASS: archive, manifest, topology, maps, and exact runtime artifact equivalence reverified",
+    "reconnect": "PASS: P07-9 certified runtime artifact and unchanged reconnect harness retained; learner log SHA-256 6eccedc47144f5ab0c390ffe1c5d30a9c5683c911575b2a629446332de42bc8c",
+    "mirror": "PASS: immutable corpora and byte-identical 2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000 runtime artifact preserve pinned-importer certification"
+  },
+  "blocker": {
+    "status": "RESOLVED_BY_P07_10B",
+    "stop_condition": "native tests contained mixed live EVM execution methods",
+    "finding": "AirdropsDisabledTest and TokenAirdropTest consume Create2OperationSuite to deploy and call CREATE2 contracts; this is executable contract behavior, not deterministic native address-vector support.",
+    "second_mixed_owner": "HTSPrecompileResult remains coupled to allowance, atomic-batch, and integration suites that encode removed HTS precompile results.",
+    "prohibited_resolution": "Moving these live execution helpers into NativeTokenTestVectors would misclassify and preserve retired EVM execution.",
+    "resolution": "P07-10B removed the embedded CREATE2 and HTS-precompile methods, deleted their zero-consumer owners, and retained direct native coverage."
+  }
+}

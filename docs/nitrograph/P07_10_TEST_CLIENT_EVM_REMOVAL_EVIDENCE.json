@@ -1,0 +1,107 @@
+{
+  "phase": "P07-10 test-client EVM residue removal",
+  "baseline": "395a34e02753ba7a231aa432bdd1da4a80397c5d",
+  "census": {
+    "head": "bfaaddee793e493560b4c3a54a971fbe4ef43fdd",
+    "ciRun": 30176529064,
+    "ciResult": "PASS",
+    "besuImporters": 11,
+    "tuweniImporters": 37,
+    "uniqueDirectImporterFiles": 40
+  },
+  "boundedRemoval": {
+    "commits": [
+      "c945da0be05c7ce9fe930506c51f56b328bc1bd9",
+      "501a39d1aa57a5a65efdcb7dd352e1dfa6f8dc77"
+    ],
+    "filesRemoved": 17,
+    "bytesRemoved": 495871,
+    "testClientCompile": "PASS",
+    "besuImportersAfter": 6,
+    "tuweniImportersAfter": 20,
+    "productionRuntimeChanges": 0,
+    "platformSdkChanges": 0,
+    "baseCryptoChanges": 0
+  },
+  "p07_10a": {
+    "status": "COMPLETE_CERTIFIED_IN_PR28",
+    "censusCommit": "f0b1543e28",
+    "helperSeparationCommit": "ec058940b1",
+    "formatterCorrectionCommit": "b10b38dfee",
+    "suiteDeletionCommit": "d93cc4d164",
+    "additionalFilesRemoved": 8,
+    "additionalBytesRemoved": 542099,
+    "additionalLinesRemoved": 8520,
+    "testClientCompileJava": "PASS",
+    "testClientCompileTestJava": "PASS",
+    "besuImportersAfter": 7,
+    "tuweniImportersAfter": 15,
+    "productionRuntimeChanges": 0,
+    "platformSdkChanges": 0,
+    "baseCryptoChanges": 0
+  },
+  "p07_10b": {
+    "status": "COMPLETE_CERTIFIED_IN_PR28",
+    "deletedClasses": [
+      "Create2OperationSuite",
+      "HTSPrecompileResult",
+      "AtomicBatchContractKeysHtsTest",
+      "AtomicBatchAddress167Test"
+    ],
+    "mixedSuitesUpdated": 5,
+    "resourceFilesRemoved": 18,
+    "testClientCompileJava": "PASS",
+    "testClientCompileTestJava": "PASS",
+    "sharedHelperPolicy": "PASS",
+    "mixedSuitePolicy": "PASS",
+    "intentionalFailureControls": "PASS",
+    "besuImportersAfter": 7,
+    "tuweniImportersAfter": 13,
+    "productionRuntimeChanges": 0,
+    "platformSdkChanges": 0,
+    "baseCryptoChanges": 0,
+    "fullTestProbe": {
+      "result": "EXPECTATION_DRIFT",
+      "suite": "CongestionPricingTest",
+      "expected": "ContractCreate precheck OK",
+      "actual": "INVALID_TRANSACTION_BODY",
+      "classification": "remaining retired executable suite outside the mixed-suite closure"
+    }
+  },
+  "stopCondition": {
+    "status": "RESOLVED_AS_LINEAR_SCOPE_BOUNDARY",
+    "trigger": "General HAPI Ethereum operation infrastructure and additional executable suites remain outside the now-clean mixed-suite boundary.",
+    "proof": [
+      "RecordsSuite is a reverse dependency of ContractCallTranslator.",
+      "EncodingUtils is consumed by SidecarVerbs and Hip1195StorageTest historical state/storage coverage.",
+      "TraceabilitySuite constants are consumed by ContractCreateTranslator and GasMatcher.",
+      "Evm46ValidationSuite system-account helpers are consumed by retained CryptoTransferSuite.",
+      "Create2OperationSuite helpers are consumed by retained token-airdrop suites.",
+      "ContractCreateSuite constants are consumed by retained LeakyCryptoTestsSuite.",
+      "HTSPrecompileResult remains consumed by native allowance, integration, and batch suites.",
+      "Signing remains required by native ECDSA authorization, account, topic-fee, airdrop, and integration tests."
+    ],
+    "rejectedApproach": "Delete the shared owners and either lose historical/native coverage or duplicate helpers ad hoc.",
+    "requiredPrerequisite": "SATISFIED: P07-10B deleted live CREATE2 contract-recipient and HTS-precompile methods embedded in otherwise retained native/token suites.",
+    "remainingClosure": "P07-11 census proves 93 affected executable HAPI suites require separate linear waves and are not a PR #28 regression."
+  },
+  "finalCertification": {
+    "scopeBoundary": "P07_10_PR28_SCOPE_BOUNDARY.md",
+    "validationMatrix": "P07_10_PR28_VALIDATION_MATRIX.md",
+    "finalEvidence": "P07_10_PR28_FINAL_VALIDATION_EVIDENCE.json",
+    "compileJava": "PASS",
+    "compileTestJava": "PASS",
+    "cumulativePolicies": "PASS",
+    "fixtureA": "PASS",
+    "fixtureB": "PASS",
+    "saveRestart": "PASS",
+    "reconnect": "PASS",
+    "mirror": "PASS",
+    "certificationBasis": "Current native and former-full distribution jars are byte-identical to the P07-9 lifecycle-certified artifact; fixture and reconnect harness sources and immutable corpora are unchanged."
+  },
+  "protectedBoundary": {
+    "importer": "platform-sdk/base-crypto/src/main/java/org/hiero/base/crypto/engine/EcdsaSecp256k1Verifier.java",
+    "status": "UNCHANGED"
+  },
+  "recommendedNextCheckpoint": "Merge bounded PR #28, then begin P07-11A execution-only suite/provider deletion from the linear merged baseline."
+}

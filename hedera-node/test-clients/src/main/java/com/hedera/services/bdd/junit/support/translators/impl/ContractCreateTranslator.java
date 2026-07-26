@@ -22,6 +22,7 @@ import com.hedera.hapi.node.base.HookId;
 import com.hedera.hapi.node.base.ResponseCodeEnum;
 import com.hedera.node.app.state.SingleTransactionRecord;
 import com.hedera.pbj.runtime.io.buffer.Bytes;
+import com.hedera.services.bdd.junit.support.fixtures.HistoricalContractResultFixtures;
 import com.hedera.services.bdd.junit.support.translators.BaseTranslator;
 import com.hedera.services.bdd.junit.support.translators.BlockTransactionPartsTranslator;
 import com.hedera.services.bdd.junit.support.translators.ScopedTraceData;
@@ -41,7 +42,7 @@ public class ContractCreateTranslator implements BlockTransactionPartsTranslator
     private static final Logger log = LogManager.getLogger(ContractCreateTranslator.class);
 
     private static final Set<String> TESTS_WITH_DISABLED_BYTECODE_SIDECARS =
-            Set.of("TraceabilitySuite.actionsShowPropagatedRevert");
+            Set.of(HistoricalContractResultFixtures.PROPAGATED_REVERT_TEST_ID);
     private static final Set<ResponseCodeEnum> SKIPPED_INITCODE_STATUSES =
             Set.of(ERROR_DECODING_BYTESTRING, CONTRACT_BYTECODE_EMPTY, FILE_DELETED);
 

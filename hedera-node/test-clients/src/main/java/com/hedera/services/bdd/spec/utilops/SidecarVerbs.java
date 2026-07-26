@@ -4,9 +4,9 @@ package com.hedera.services.bdd.spec.utilops;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractBytecode;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
+import static com.hedera.services.bdd.spec.utilops.HistoricalSidecarFixtures.getInitcode;
 import static com.hedera.services.bdd.spec.utilops.UtilStateChange.stateChangesToGrpc;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
-import static com.hedera.services.bdd.suites.contract.traceability.EncodingUtils.getInitcode;
 import static java.util.Objects.requireNonNull;
 
 import com.google.protobuf.ByteString;

@@ -273,6 +273,36 @@ generated dependency metadata, or documentation. The larger benefit is dependenc
 surface reduction: the 14 executable artifacts already removed from native packaging become
 removable from full/repository build graphs after Wave 10.
 
+## P07-10A shared-helper separation checkpoint
+
+P07-10A separated historical result/sidecar/storage helpers, system-account
+vectors, legacy resource identities, and native ECDSA signing from retired suite
+owners. Eight newly unreachable suite/utility shells were then deleted.
+
+P07-10A is partially complete and blocked at a mixed-suite boundary:
+retained token/airdrop suites still contain live CREATE2 contract scenarios, and
+allowance/batch/integration suites still contain HTS-precompile result scenarios.
+Deleting these scenarios requires explicit test-method scope; moving their helpers
+would incorrectly preserve retired execution as “native” support.
+
+P07-10A and P07-10B are now **COMPLETE pending PR #28 merge**. P07-10B removed the mixed CREATE2
+and HTS-precompile methods, their zero-consumer helper owners, and 18 CREATE2 resources while
+retaining direct native coverage. PR #28 is frozen as the bounded test-client execution-residue
+cleanup and ownership-separation package.
+
+The remaining executable HAPI closure is measured but not implemented in PR #28. P07-11 proceeds
+linearly after that merge:
+
+- **P07-11A** — execution-only suites and providers;
+- **P07-11B** — contract-based setup inside retained native suites;
+- **P07-11C** — minimal rejection and historical-query boundary, then executable HAPI operation
+  deletion;
+- **P07-11D** — dead resources, signing, Gradle/JPMS dependency cleanup, and final certification.
+
+Known successful-execution expectations assigned to those waves are not globally suppressed and
+are not regressions in the focused P07-10 closure. P07 remains incomplete until all four waves and
+final certification pass.
+
 No Git pack-size, clone-time, or build-time reduction is claimed until a deletion branch measures it
 against this base.
 

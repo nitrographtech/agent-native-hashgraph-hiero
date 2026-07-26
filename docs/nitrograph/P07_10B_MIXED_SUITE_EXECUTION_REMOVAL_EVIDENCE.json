@@ -1,0 +1,65 @@
+{
+  "phase": "P07-10B",
+  "status": "COMPLETE_CERTIFIED_IN_PR28",
+  "baseline": {
+    "head": "eb18adca5fba9aba122193c01af8ca108f3af3cd",
+    "ci_run": 30178250675,
+    "ci_result": "PASSED"
+  },
+  "boundary": {
+    "production_source_changed": false,
+    "platform_sdk_changed": false,
+    "base_crypto_changed": false,
+    "fixture_regenerated": false
+  },
+  "deleted_classes": [
+    "Create2OperationSuite",
+    "HTSPrecompileResult",
+    "AtomicBatchContractKeysHtsTest",
+    "AtomicBatchAddress167Test"
+  ],
+  "mixed_suites_updated": [
+    "AirdropsDisabledTest",
+    "TokenAirdropTest",
+    "CryptoApproveAllowanceSuite",
+    "AtomicBatchApproveAllowanceTest",
+    "RepeatableHip423Tests"
+  ],
+  "resource_files_removed": 18,
+  "dependency_census": {
+    "test_client_besu_importers_before": 7,
+    "test_client_besu_importers_after": 7,
+    "test_client_tuweni_importers_before": 15,
+    "test_client_tuweni_importers_after": 13,
+    "fixture_tooling_direct_importers": 0,
+    "protected_base_crypto_besu_importers": 1
+  },
+  "retained_ownership": {
+    "native_signing": "NativeEcdsaSigning",
+    "historical_results": "HistoricalContractResultFixtures",
+    "historical_sidecars": "HistoricalSidecarFixtures",
+    "historical_storage": "HistoricalStorageEncoding",
+    "legacy_rejection": "LegacyTransactionVectors",
+    "ethereum_transaction_construction": "RETAIN_TEMPORARILY_REQUIRES_SEPARATE_GATE"
+  },
+  "validation": {
+    "test_clients_compileJava": "PASSED",
+    "test_clients_compileTestJava": "PASSED",
+    "mixed_suite_policy": "PASSED",
+    "intentional_failure_controls": "PASSED",
+    "shared_helper_policy": "PASSED",
+    "full_test_probe": {
+      "result": "EXPECTATION_DRIFT",
+      "suite": "CongestionPricingTest",
+      "detail": "ContractCreate expected OK but the retired runtime correctly returned INVALID_TRANSACTION_BODY"
+    },
+    "full_lifecycle": "PASS_BY_EXACT_ARTIFACT_EQUIVALENCE: production distribution SHA-256 2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000 and lifecycle harness sources are unchanged from P07-9 certification",
+    "mirror": "PASS_BY_IMMUTABLE_CORPUS_AND_EXACT_ARTIFACT_EQUIVALENCE: pinned importer results reverified for Fixture A, Fixture B, and the unchanged runtime corpus"
+  },
+  "stop_condition": {
+    "triggered": false,
+    "reason": "Additional general executable HAPI suites and Ethereum operation infrastructure remain outside the mixed-suite closure.",
+    "production_fix_required": false,
+    "classification": "P07_11_LINEAR_FOLLOW_UP_NOT_PR28_REGRESSION"
+  }
+}

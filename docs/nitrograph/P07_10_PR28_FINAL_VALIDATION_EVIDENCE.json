@@ -1,0 +1,172 @@
+{
+  "schema": "nitrograph.p07-10.pr28-final-validation-evidence.v1",
+  "status": "PASS_PENDING_FINAL_EVIDENCE_CI",
+  "scope": {
+    "baseline": "395a34e02753ba7a231aa432bdd1da4a80397c5d",
+    "implementationHead": "c24bb9e0172ca2920c6b06e6932e2dce84ae2135",
+    "p07_11CensusHead": "60387ac69a221bf5e2226fc0559c445a113ae6e3",
+    "filesChangedThroughCensus": 85,
+    "insertionsThroughCensus": 1354,
+    "deletionsThroughCensus": 23861,
+    "deletedFiles": 47,
+    "deletedBytes": 1358553,
+    "productionRuntimeFilesChanged": 0,
+    "platformSdkFilesChanged": 0,
+    "baseCryptoFilesChanged": 0,
+    "scopeBoundary": "P07_10_PR28_SCOPE_BOUNDARY.md",
+    "validationMatrix": "P07_10_PR28_VALIDATION_MATRIX.md"
+  },
+  "implementation": {
+    "initialDeadSuitesRemoved": 15,
+    "unusedAbiHelpersRemoved": 2,
+    "ownershipTransfers": [
+      "HistoricalContractResultFixtures",
+      "HistoricalSidecarFixtures",
+      "HistoricalStorageEncoding",
+      "NativeAccountTestVectors",
+      "LegacyTransactionVectors",
+      "NativeEcdsaSigning"
+    ],
+    "additionalZeroConsumerFilesRemoved": 8,
+    "mixedSuitesUpdated": 5,
+    "deletedMixedExecutionOwners": [
+      "Create2OperationSuite",
+      "HTSPrecompileResult",
+      "AtomicBatchContractKeysHtsTest",
+      "AtomicBatchAddress167Test"
+    ],
+    "create2ResourcesRemoved": 18
+  },
+  "dependencyCensus": {
+    "testClientBesuImporters": 7,
+    "testClientBesuImporterBytes": 112834,
+    "testClientTuweniImporters": 13,
+    "testClientTuweniImporterBytes": 204930,
+    "testClientHeadlongImporters": 100,
+    "testClientHeadlongImporterBytes": 1604235,
+    "uniqueTestClientImporterFiles": 109,
+    "fixtureToolingBesuImporters": 0,
+    "fixtureToolingTuweniImporters": 0,
+    "fixtureToolingHeadlongImporters": 0,
+    "protectedBaseCryptoBesuImporters": 1
+  },
+  "focusedValidation": {
+    "compileJava": "PASS",
+    "compileTestJava": "PASS",
+    "historicalStorageUnitVectors": "COMPILED; test-clients default test task intentionally selects tagged main-source HAPI tests rather than untagged src/test units",
+    "sharedHelperOwnership": "PASS",
+    "sharedHelperIntentionalFailures": "PASS",
+    "mixedSuiteOwnership": "PASS",
+    "mixedSuiteIntentionalFailures": "PASS",
+    "cumulativeExistingP07Policies": "PASS",
+    "censusCiRun": 30211281779,
+    "censusCiResult": "PASS",
+    "knownP07_11ExpectationDrift": "INVENTORIED_NOT_SUPPRESSED"
+  },
+  "runtimeArtifactEquivalence": {
+    "currentNativeDistributionJarSha256": "2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000",
+    "currentFormerFullDistributionJarSha256": "2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000",
+    "p07_9CertifiedRuntimeJarSha256": "2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000",
+    "fixtureConsumerHarnessChangedSinceP07_9": false,
+    "reconnectHarnessChangedSinceP07_9": false,
+    "certificationRule": "Fixture, reconnect, and mirror outputs are re-certified because the exact production artifact, immutable fixture inputs, harness sources, and pinned importer are unchanged; PR #28 changes only test-client ownership and dead test coverage."
+  },
+  "fixtureA": {
+    "tag": "p06a-fixture-preactivation-v065-ff6490d-round4744",
+    "archiveSha256": "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0",
+    "manifestSha256": "e82234205950328f4f6940c588f692d873bd2acff5a642d3167a88eba3f5dcc2",
+    "stateRoot": "9a6ffdddf7dda57154bd84730df9507da8411deafdb61e7c075a886235dbf1b2aff08ded3ffddcfecf5f9b57dd858485",
+    "rosterMembers": 1,
+    "storageCardinality": 0,
+    "historicalResults": 3,
+    "historicalLogs": 1,
+    "historicalActions": 3,
+    "status": "PASS"
+  },
+  "fixtureB": {
+    "tag": "p07-four-node-postwrite-v065-storage424242-v1",
+    "archiveSha256": "0fd75fd4da408787ddef6b5a73300ce8018e330eb2f3a8e98d11ef9fbceceaa3",
+    "manifestSha256": "967798ff82aad71ac7b9f6b4464279479f4e2a201098a02995cfd6cd70e30439",
+    "fileCount": 394,
+    "round": 2143,
+    "nodeIds": [0, 1, 2, 3],
+    "weights": [1, 1, 1, 1],
+    "privateMaterial": 0,
+    "storageCardinality": 1,
+    "storageDecodedValue": 424242,
+    "bytecodeCardinality": 2,
+    "evmHookStatesCardinality": 1,
+    "lambdaStorageCardinality": 1,
+    "combinedInventorySha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48",
+    "saveRestart": "PASS",
+    "retainedOperations": "PASS",
+    "deterministicRejection": "PASS",
+    "status": "PASS"
+  },
+  "reconnect": {
+    "result": "PASS",
+    "learner": 2,
+    "teacher": 1,
+    "learnerOldSignedStateRound": 4975,
+    "learnerReplayConsensusRound": 5255,
+    "remoteObservedRound": 6243,
+    "transferredRound": 6233,
+    "behind": "2026-07-25T13:38:34.985-07:00",
+    "teacherSelected": "2026-07-25T13:38:35.020-07:00",
+    "transferComplete": "2026-07-25T13:38:36.085-07:00",
+    "stateValidated": "2026-07-25T13:38:36.087-07:00",
+    "active": "2026-07-25T13:38:39.320-07:00",
+    "stateSynchronization": "PASS",
+    "postReconnectOperations": "PASS",
+    "protectedMaps": "PASS",
+    "learnerLogSha256": "6eccedc47144f5ab0c390ffe1c5d30a9c5683c911575b2a629446332de42bc8c"
+  },
+  "mirror": {
+    "importerCommit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "fixtureA": {
+      "records": 11,
+      "transactions": 754,
+      "results": 3,
+      "logs": 1,
+      "actions": 3,
+      "semanticSidecars": 7,
+      "completeBlocks": 139,
+      "xmlSha256": "9bc620af87ebbfb0826ac1e60d17db412c95b34312419f28306896a8d3338680",
+      "semanticSha256": "72f526bd8e8bf38bdd2e9de2bc24dd79afeaccddbba6a59351a511f3b3e99aea"
+    },
+    "fixtureB": {
+      "records": 34,
+      "transactions": 861,
+      "results": 3,
+      "logs": 1,
+      "actions": 0,
+      "semanticSidecars": 4,
+      "completeBlocks": 131,
+      "xmlSha256": "d70d59f30660eacb29e565fbadc2f6a4417b9776c60d0e71478e49593881aabb",
+      "semanticSha256": "4ebb69667e19190230562a81d5471d50f6104153d00764b0e6b5f3b3a0cedf51"
+    },
+    "runtime": {
+      "records": 5,
+      "transactions": 14,
+      "results": 0,
+      "logs": 2,
+      "actions": 0,
+      "semanticSidecars": 0,
+      "completeBlocks": 480,
+      "incompleteBlocks": 1,
+      "xmlSha256": "c1c0fcabdce495474edd8f6bcaa7ff4258e12083caa858a5ce0835e63c1a52fa",
+      "semanticSha256": "87afbd86af6cd74aa7b1a6b9ad6e516ba3497b8bfb735102d46e059426395829"
+    },
+    "schemaAndAssociations": "PASS"
+  },
+  "p07_11": {
+    "implementedInPr28": false,
+    "affectedSuites": 93,
+    "waves": [
+      "P07-11A execution-only suites and providers",
+      "P07-11B contract-based setup in retained native suites",
+      "P07-11C rejection/historical-query boundary and HAPI operation deletion",
+      "P07-11D resources, signing, Gradle/JPMS dependencies, and final certification"
+    ]
+  }
+}
