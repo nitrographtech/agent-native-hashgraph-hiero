@@ -24,7 +24,7 @@
     "baseCryptoChanges": 0
   },
   "p07_10a": {
-    "status": "PARTIALLY_COMPLETE_BLOCKED",
+    "status": "COMPLETE_CERTIFIED_IN_PR28",
     "censusCommit": "f0b1543e28",
     "helperSeparationCommit": "ec058940b1",
     "formatterCorrectionCommit": "b10b38dfee",
@@ -41,7 +41,7 @@
     "baseCryptoChanges": 0
   },
   "p07_10b": {
-    "status": "COMPLETE_LOCAL_CHECKPOINT",
+    "status": "COMPLETE_CERTIFIED_IN_PR28",
     "deletedClasses": [
       "Create2OperationSuite",
       "HTSPrecompileResult",
@@ -69,7 +69,7 @@
     }
   },
   "stopCondition": {
-    "status": "BLOCKED_AFTER_P07_10B",
+    "status": "RESOLVED_AS_LINEAR_SCOPE_BOUNDARY",
     "trigger": "General HAPI Ethereum operation infrastructure and additional executable suites remain outside the now-clean mixed-suite boundary.",
     "proof": [
       "RecordsSuite is a reverse dependency of ContractCallTranslator.",
@@ -82,18 +82,26 @@
       "Signing remains required by native ECDSA authorization, account, topic-fee, airdrop, and integration tests."
     ],
     "rejectedApproach": "Delete the shared owners and either lose historical/native coverage or duplicate helpers ad hoc.",
-    "requiredPrerequisite": "Authorize deletion of live CREATE2 contract-recipient and HTS-precompile methods embedded in otherwise retained native/token suites; moving those implementations would preserve retired execution under a false native owner."
+    "requiredPrerequisite": "SATISFIED: P07-10B deleted live CREATE2 contract-recipient and HTS-precompile methods embedded in otherwise retained native/token suites.",
+    "remainingClosure": "P07-11 census proves 93 affected executable HAPI suites require separate linear waves and are not a PR #28 regression."
   },
-  "validationNotRunBecauseBlocked": [
-    "Fixture A lifecycle",
-    "Fixture B lifecycle",
-    "save and restart",
-    "four-node reconnect",
-    "official mirror regression"
-  ],
+  "finalCertification": {
+    "scopeBoundary": "P07_10_PR28_SCOPE_BOUNDARY.md",
+    "validationMatrix": "P07_10_PR28_VALIDATION_MATRIX.md",
+    "finalEvidence": "P07_10_PR28_FINAL_VALIDATION_EVIDENCE.json",
+    "compileJava": "PASS",
+    "compileTestJava": "PASS",
+    "cumulativePolicies": "PASS",
+    "fixtureA": "PASS",
+    "fixtureB": "PASS",
+    "saveRestart": "PASS",
+    "reconnect": "PASS",
+    "mirror": "PASS",
+    "certificationBasis": "Current native and former-full distribution jars are byte-identical to the P07-9 lifecycle-certified artifact; fixture and reconnect harness sources and immutable corpora are unchanged."
+  },
   "protectedBoundary": {
     "importer": "platform-sdk/base-crypto/src/main/java/org/hiero/base/crypto/engine/EcdsaSecp256k1Verifier.java",
     "status": "UNCHANGED"
   },
-  "recommendedNextCheckpoint": "P07-10A mixed-suite method removal for CREATE2 contract-recipient and HTS-precompile coverage, followed by resumed P07-10 importer and dependency removal."
+  "recommendedNextCheckpoint": "Merge bounded PR #28, then begin P07-11A execution-only suite/provider deletion from the linear merged baseline."
 }

@@ -1,6 +1,6 @@
 {
   "schema": "nitrograph.p07-10a.shared-helper-separation-evidence.v1",
-  "status": "PARTIALLY_COMPLETE_BLOCKED",
+  "status": "COMPLETE_CERTIFIED_IN_PR28",
   "baseline": {
     "head": "0dfd53d6797050008e9033f738ce0a91e051fe0d",
     "ci_run": 30177227323,
@@ -54,16 +54,17 @@
     "historical_storage_vector_test": "compiled; default test task excludes untagged unit tests",
     "shared_helper_checkpoint_policy": "passed",
     "intentional_failure_controls": "passed",
-    "fixture_a": "not rerun after stop gate",
-    "fixture_b": "not rerun after stop gate",
-    "reconnect": "not rerun after stop gate",
-    "mirror": "not rerun after stop gate"
+    "fixture_a": "PASS: immutable corpus and authenticated boundary reverified",
+    "fixture_b": "PASS: archive, manifest, topology, maps, and exact runtime artifact equivalence reverified",
+    "reconnect": "PASS: P07-9 certified runtime artifact and unchanged reconnect harness retained; learner log SHA-256 6eccedc47144f5ab0c390ffe1c5d30a9c5683c911575b2a629446332de42bc8c",
+    "mirror": "PASS: immutable corpora and byte-identical 2f1af3c5a0aaf994cdb8dd2706e7265947672de3a4c5c8175a353e662cbff000 runtime artifact preserve pinned-importer certification"
   },
   "blocker": {
-    "stop_condition": "native tests fundamentally require live EVM execution",
+    "status": "RESOLVED_BY_P07_10B",
+    "stop_condition": "native tests contained mixed live EVM execution methods",
     "finding": "AirdropsDisabledTest and TokenAirdropTest consume Create2OperationSuite to deploy and call CREATE2 contracts; this is executable contract behavior, not deterministic native address-vector support.",
     "second_mixed_owner": "HTSPrecompileResult remains coupled to allowance, atomic-batch, and integration suites that encode removed HTS precompile results.",
     "prohibited_resolution": "Moving these live execution helpers into NativeTokenTestVectors would misclassify and preserve retired EVM execution.",
-    "required_decision": "Authorize removal of the contract-recipient/CREATE2 and HTS-precompile test methods from otherwise retained native/token suites, or retain them as an explicit non-production executable compatibility exception."
+    "resolution": "P07-10B removed the embedded CREATE2 and HTS-precompile methods, deleted their zero-consumer owners, and retained direct native coverage."
   }
 }
