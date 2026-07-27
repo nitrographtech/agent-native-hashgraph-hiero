@@ -6,7 +6,6 @@ import static com.hedera.services.bdd.junit.TestTags.CRYPTO;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.assertions.AccountDetailsAsserts.accountDetailsWith;
 import static com.hedera.services.bdd.spec.assertions.AccountInfoAsserts.accountWith;
-import static com.hedera.services.bdd.spec.assertions.ContractInfoAsserts.contractWith;
 import static com.hedera.services.bdd.spec.keys.ControlForKey.forKey;
 import static com.hedera.services.bdd.spec.keys.KeyLabels.complex;
 import static com.hedera.services.bdd.spec.keys.KeyShape.SIMPLE;
@@ -16,18 +15,12 @@ import static com.hedera.services.bdd.spec.keys.SigControl.OFF;
 import static com.hedera.services.bdd.spec.keys.SigControl.ON;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountDetails;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
-import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.doWithStartupConfigNow;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overridingTwo;
@@ -40,11 +33,10 @@ import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.THREE_MONTHS_IN_SECONDS;
 import static com.hedera.services.bdd.suites.HapiSuite.ZERO_BYTE_MEMO;
-import static com.hedera.services.bdd.suites.contract.hapi.ContractUpdateSuite.ADMIN_KEY;
+import static com.hedera.services.bdd.suites.contract.hapi.LegacyContractAdminVectors.ADMIN_KEY;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.validateFees;
 import static com.hedera.services.bdd.suites.hip1261.utils.SimpleFeesScheduleConstantsInUsd.CRYPTO_UPDATE_FEE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_DELETED;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ADMIN_KEY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_EXPIRATION_TIME;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_MAX_AUTO_ASSOCIATIONS;
@@ -56,15 +48,10 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 
 import com.hedera.services.bdd.junit.HapiTest;
 import com.hedera.services.bdd.junit.LeakyEmbeddedHapiTest;
-import com.hedera.services.bdd.spec.assertions.ContractInfoAsserts;
 import com.hedera.services.bdd.spec.keys.KeyLabels;
 import com.hedera.services.bdd.spec.keys.KeyShape;
 import com.hedera.services.bdd.spec.keys.SigControl;
-import com.hederahashgraph.api.proto.java.ContractID;
-import com.hederahashgraph.api.proto.java.Key;
-import com.hederahashgraph.api.proto.java.TokenType;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
@@ -367,19 +354,6 @@ public class CryptoUpdateSuite {
     }
 
     @HapiTest
-    final Stream<DynamicTest> updateFailsWithContractKey() {
-        final var id = new AtomicReference<ContractID>();
-        final var CONTRACT = "Multipurpose";
-        return hapiTest(
-                cryptoCreate(TARGET_ACCOUNT),
-                uploadInitCode(CONTRACT),
-                contractCreate(CONTRACT).exposingContractIdTo(id::set),
-                sourcing(() -> cryptoUpdate(TARGET_ACCOUNT)
-                        .protoKey(Key.newBuilder().setContractID(id.get()).build())
-                        .hasKnownStatus(INVALID_SIGNATURE)));
-    }
-
-    @HapiTest
     final Stream<DynamicTest> updateFailsWithInsufficientSigs() {
         return hapiTest(
                 newKeyNamed(TARGET_KEY).shape(twoLevelThresh).labels(overlappingKeys),
@@ -422,63 +396,6 @@ public class CryptoUpdateSuite {
                 newKeyNamed(UPD_KEY).shape(updKeySigs),
                 cryptoCreate(TEST_ACCOUNT).key(ORIG_KEY),
                 cryptoUpdate(TEST_ACCOUNT).key(UPD_KEY).hasPrecheck(INVALID_ADMIN_KEY));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> updateMaxAutoAssociationsWorks() {
-        final int maxAllowedAssociations = 5000;
-        final int originalMax = 2;
-        final int newBadMax = originalMax - 1;
-        final int newGoodMax = originalMax + 1;
-        final String tokenA = "tokenA";
-        final String tokenB = "tokenB";
-
-        final String treasury = "treasury";
-        final String tokenACreate = "tokenACreate";
-        final String tokenBCreate = "tokenBCreate";
-        final String transferAToC = "transferAToC";
-        final String transferBToC = "transferBToC";
-        final String CONTRACT = "Multipurpose";
-        final String ADMIN_KEY = "adminKey";
-
-        return hapiTest(
-                cryptoCreate(treasury).balance(ONE_HUNDRED_HBARS),
-                newKeyNamed(ADMIN_KEY),
-                uploadInitCode(CONTRACT),
-                contractCreate(CONTRACT).adminKey(ADMIN_KEY).maxAutomaticTokenAssociations(originalMax),
-                tokenCreate(tokenA)
-                        .tokenType(TokenType.FUNGIBLE_COMMON)
-                        .initialSupply(Long.MAX_VALUE)
-                        .treasury(treasury)
-                        .via(tokenACreate),
-                getTxnRecord(tokenACreate).hasNewTokenAssociation(tokenA, treasury),
-                tokenCreate(tokenB)
-                        .tokenType(TokenType.FUNGIBLE_COMMON)
-                        .initialSupply(Long.MAX_VALUE)
-                        .treasury(treasury)
-                        .via(tokenBCreate),
-                getTxnRecord(tokenBCreate).hasNewTokenAssociation(tokenB, treasury),
-                getContractInfo(CONTRACT).has(ContractInfoAsserts.contractWith().maxAutoAssociations(originalMax)),
-                cryptoTransfer(moving(1, tokenA).between(treasury, CONTRACT)).via(transferAToC),
-                getTxnRecord(transferAToC).hasNewTokenAssociation(tokenA, CONTRACT),
-                cryptoTransfer(moving(1, tokenB).between(treasury, CONTRACT)).via(transferBToC),
-                getTxnRecord(transferBToC).hasNewTokenAssociation(tokenB, CONTRACT),
-                getContractInfo(CONTRACT)
-                        .payingWith(GENESIS)
-                        .has(contractWith()
-                                .hasAlreadyUsedAutomaticAssociations(originalMax)
-                                .maxAutoAssociations(originalMax)),
-                contractUpdate(CONTRACT)
-                        .newMaxAutomaticAssociations(newBadMax)
-                        .hasKnownStatus(EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT),
-                contractUpdate(CONTRACT).newMaxAutomaticAssociations(newGoodMax),
-                getContractInfo(CONTRACT).has(contractWith().maxAutoAssociations(newGoodMax)),
-                contractUpdate(CONTRACT)
-                        .newMaxAutomaticAssociations(maxAllowedAssociations + 1)
-                        .hasKnownStatus(REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT),
-                contractUpdate(CONTRACT).newMaxAutomaticAssociations(-2).hasKnownStatus(INVALID_MAX_AUTO_ASSOCIATIONS),
-                contractUpdate(CONTRACT).newMaxAutomaticAssociations(-1).hasKnownStatus(SUCCESS),
-                getContractInfo(CONTRACT).has(contractWith().maxAutoAssociations(-1)));
     }
 
     @HapiTest

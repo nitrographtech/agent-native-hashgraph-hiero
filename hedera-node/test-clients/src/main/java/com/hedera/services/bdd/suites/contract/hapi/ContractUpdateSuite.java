@@ -77,7 +77,7 @@ import org.junit.jupiter.api.Tag;
 @Tag(SMART_CONTRACT)
 public class ContractUpdateSuite {
     private static final long ONE_DAY = 60L * 60L * 24L;
-    public static final String ADMIN_KEY = "adminKey";
+    private static final String ADMIN_KEY = LegacyContractAdminVectors.ADMIN_KEY;
     public static final String NEW_ADMIN_KEY = "newAdminKey";
     private static final String CONTRACT = "Multipurpose";
     public static final String INITIAL_ADMIN_KEY = "initialAdminKey";
