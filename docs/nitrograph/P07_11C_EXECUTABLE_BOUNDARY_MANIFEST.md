@@ -235,84 +235,84 @@ Repository-wide explicit rejection constructors outside this input remain
 intentional and must be reported separately; they are not successful
 execution dependencies.
 
-## Post-manifest repository-wide correction
+## Repository-wide supplemental census
 
-The implementation census found that the P07-11B evidence and the original
-P07-11C input omitted additional executable owners outside its 48 legacy-verb
-rows and two known failing classes. The repository-wide suite scan found:
+The implementation census found 43 initially unmanifested syntactic sites.
+The complete wrapper sweep found one additional `contractUpdate` in
+`AutoAccountCreationSuite`, correcting the supplemental total to **44**. This
+is a census correction, not a reclassification of P07-11B's 177 removals.
 
-- 28 legacy wrapper occurrences across twelve additional files;
-- 79 DSL `@Contract` or `SpecContract.call()` occurrences across sixteen
-  additional files.
+### P07-11C non-lifecycle sites — 32
 
-This is a taxonomy/scope correction, not a reclassification of any of the 177
-P07-11B removals.
+| Source | Registered root | Wrappers and count | Intent and native ownership | Disposition and consequence |
+| --- | --- | ---: | --- | --- |
+| `consensus/AtomicBatchConsensusServiceTest` | Eight `topicCreateWith*Contract*` roots | `createDefaultContract` 8 | Contract accounts as topic auto-renew accounts; adjacent account-based batch roots retain native topic authorization and failure behavior | `REMOVE_OBSOLETE`; delete the eight roots |
+| `hip1299/UpdateNodeAccountTestEmbedded` | `updateNodeAccountIdSuccessfullyWithContractWithAdminKey`, `updateNodeAccountIdSuccessfullyWithContractWithoutAdminKey`, `updateNodeAccountIdWithContractWithAdminKeyWithZeroBalanceFails` | `createDefaultContract` 3 | Contract accounts as node accounts; account-key and zero-balance node-update roots remain | `REMOVE_OBSOLETE`; delete the three roots |
+| `token/TokenTransactSpecs` | `cannotGiveNftsToDissociatedContractsOrAccounts`, `cannotSendFungibleToDissociatedContractsOrAccounts` | `createDefaultContract` 2 | Mixed contract/account dissociation assertions | `SPLIT_REQUIRED`; remove contract branches and retain direct account dissociation assertions |
+| `crypto/CryptoGetInfoRegression` | `cryptoGetContractBalanceQueryAssociationThrottles` | `createDefaultContract` 1 | Contract-balance throttle behavior only | `REMOVE_OBSOLETE`; delete root |
+| `crypto/AutoAccountCreationSuite` | `noStakePeriodStartIfNotStakingToNode` | `createDefaultContract` 1, `contractUpdate` 1 | Contract/account mutual staking behavior; no independent native assertion survives | `REMOVE_OBSOLETE`; delete root |
+| `crypto/CryptoCreateSuite` | `canonicalEvmAddressesDeterminedByAliases` | DSL `@Contract` 1, `SpecContract.call()` 4 | Contract-originated canonical-address calls | `REMOVE_OBSOLETE`; native alias creation tests remain |
+| `hip991/TopicCustomFeeSubmitMessageTest` | `messageSubmitToPublicTopicWithFee1token` | DSL `@Contract` 1, `SpecContract.call()` 1 | Mixed native topic custom fee plus unrelated contract transfer record | `SPLIT_REQUIRED`; retain native fee collection, remove contract branch |
+| `hip991/AtomicTopicCustomFeeSubmitMessageTest` | `messageSubmitToPublicTopicWithFee1token` | DSL `@Contract` 1, `SpecContract.call()` 1 | Mixed native atomic topic creation/custom fee plus unrelated contract transfer record | `SPLIT_REQUIRED`; retain native fee collection, remove contract branch |
+| `hip904/UnlimitedAutoAssociationSuite` | `autoAssociationThroughSystemContractChangesGasCost`, `autoAssociationThroughSystemContractDoesNotChargeDispatchPayer` | DSL `@Contract` 2, `SpecContract.call()` 3 | HTS system-contract gas and dispatch-payer behavior | `REMOVE_OBSOLETE`; direct native auto-association roots remain |
+| `hip993/UnifiedConsTimeTest` | `childMintTimeIsParentConsensusTime` | DSL `@Contract` 1, `SpecContract.call()` 1 | Precompile child-mint timing | `REMOVE_OBSOLETE`; retained native consensus-time roots remain |
 
-The following additional files have zero native, rejection, historical, query,
-lifecycle, or external reverse-consumer ownership and are therefore
-`REMOVE_OBSOLETE`:
+All sites are direct registered-root constructions except DSL parameter
+injection, which dynamically generates the managed create before the root.
+No non-lifecycle row is unresolved.
 
-- `hip1195/Hip1195StreamParityTest.java`;
-- `hip1195/HookTimingBalanceOrderTest.java`;
-- `hip993/NaturalDispatchOrderingTest.java`;
-- `hip993/ThrottleOnDispatchTest.java`;
-- `throttling/ThrottleCapacityReclamationTest.java`;
-- `hip551/contracts/precompile/AtomicBatchScheduleTest.java`;
-- `hip551/contracts/precompile/AtomicBatchTokenTest.java`;
-- `hip551/contracts/precompile/AtomicBatchAddress16cTest.java`;
-- `hip551/contracts/precompile/AtomicBatchTokenAirdropTest.java`;
-- `integration/RepeatableHip1215Tests.java`.
+### P07-11D lifecycle, reconnect, and authenticated fixture sites — 12
 
-`hip1195/lambdaplex/LambdaplexVerbs.java` has no executable caller after the
-HIP-1195 suite removals. Its only external consumer is
-`lambdaplex/Fraction.java`, which requires only deterministic decimal-to-base
-unit conversion. That neutral conversion moves directly into `Fraction`; the
-execution-oriented Lambdaplex owner and its otherwise unconsumed domain types
-are `REMOVE_OBSOLETE`.
+| Source | Root or helper | Wrappers and count | Invariant | Disposition |
+| --- | --- | ---: | --- | --- |
+| `regression/system/LifecycleTest` | `assertAllGetInfoResponsesIncludeExternalizedLedgerId` | `contractCustomCreate` 1 | Query coverage across restart/upgrade lifecycle | `DEFER_P07_11D` |
+| `reconnect/P06aHistoricalStateReconnectTest` | `historicalStateSurvivesNativeReconnect` | successful `contractCreate` 2, successful `contractCall` 1 | Produces authenticated historical STORAGE/BYTECODE/hook state before activation and reconnect | `DEFER_P07_11D` |
+| same | `rejectedLegacyBodies` | `explicitContractCreate`, `contractCall`, `contractUpdate`, `contractDelete`, `explicitEthereumTransaction` 5 | Fail-closed proof after activation and reconnect | `DEFER_P07_11D` |
+| `reconnect/AuthenticatedHistoricalFixtureConsumerTest` | `rejectedBodies` | `explicitContractCreate`, direct `HapiContractCall` 2 | Authenticated fixture rejection and native continuity | `DEFER_P07_11D` |
+| `file/DiverseStateValidation` | `validateDiverseState` | `contractCallLocal` 1 | Read-only validation of saved historical contract state | `DEFER_P07_11D` |
 
-The following additional mixed owners remain to be reconciled before P07-11C
-can close:
+The dedicated handoff records pre-state, consumers, risk, and required
+validation. None of these files is behaviorally modified by P07-11C.
 
-- contract-key methods in `AtomicBatchConsensusServiceTest`;
-- contract-account methods in `UpdateNodeAccountTestEmbedded`;
-- contract-account cases in `TokenTransactSpecs`,
-  `CryptoGetInfoRegression`, and `AutoAccountCreationSuite`;
-- the contract-address method in `CryptoCreateSuite`;
-- contract-mediated topic-fee methods in
-  `TopicCustomFeeSubmitMessageTest` and
-  `AtomicTopicCustomFeeSubmitMessageTest`;
-- contract-mediated association methods in
-  `UnlimitedAutoAssociationSuite`;
-- the child-mint method in `UnifiedConsTimeTest`;
-- the contract-based lifecycle liveness operation in `LifecycleTest`;
-- fixture/reconnect constructions in `P06aHistoricalStateReconnectTest`,
-  `AuthenticatedHistoricalFixtureConsumerTest`, and
-  `DiverseStateValidation`.
+### Existing intentional rejection boundary
 
-The explicit rejection operations in
-`HistoricalContractExecutionRejection` remain intentional.
+`HistoricalContractExecutionRejection.rejectsEveryExecutableBodyAndContinuesNatively`
+contains five minimal unsupported-body constructors: create, call, update,
+delete, and Ethereum. They are explicit rejection coverage, have no successful
+setup, and remain `RETAIN_INTENTIONAL_REJECTION`.
 
-These mixed owners cannot be silently folded into the original 68-construction
-input. Their retained-native, lifecycle, and fixture callers require an
-amended ownership decision. Until that decision is complete, the expected-zero
-census above applies only to the original corrected input, not to the whole
-repository.
+## Corrected post-implementation boundary
 
-## Validation issue requiring attribution
+- Original corrected P07-11C input removed: 68 constructions.
+- Supplemental non-lifecycle sites removed or split: 32.
+- Supplemental lifecycle/reconnect sites deferred: 12.
+- Existing minimal rejection constructors retained: 5.
+- Unresolved sites: 0.
 
-After the original corrected input was removed:
+The remaining suite-level executable syntax is therefore exactly seventeen
+intentional sites: twelve P07-11D lifecycle/reconnect/fixture sites and five
+minimal rejection constructors. Core DSL and HAPI operation implementations
+are constructors, not registered executable ownership, and remain outside this
+suite census.
 
-- targeted retained `RepeatableIntegrationTests` passed four of four;
-- both former managed-contract `beforeAll` failures disappeared;
-- the full test-client target executed 140 tests successfully and skipped one;
-- final `StreamValidationTest` balance reconciliation failed deterministically
-  for reward account `0.0.801`, expecting `3207204483389181` tinybar and
-  observing `1958552273434530`.
+## StreamValidationTest attribution
 
-A clean rerun after deleting generated test state reproduced the same mismatch.
-This is not an executable-operation expectation, but it appeared only after
-the P07-11C removal set allowed the complete target to reach terminal stream
-validation. P07-11C cannot claim validation closure until the mismatch is
-proven pre-existing/environmental or the relationship between removed fee
-generating tests and the validator is resolved without changing production
-semantics.
+Three isolated worktrees used the same cleanup and
+`:test-clients:test` command:
+
+| Checkpoint | Tests | Expected `0.0.801` | Observed `0.0.801` | First/only failure |
+| --- | ---: | ---: | ---: | --- |
+| `50f0b7c025dd30c129627f7559b7e09e318cac0c` | 142 (1 skipped) | 3207432793891461 | 1958552273434530 | `StreamValidationTest.streamsAreValid` |
+| `1b8c60fa52de3a763d1023ab0346813b436c9731` | 142 (1 skipped) | 3207432793891461 | 1958552273434530 | same |
+| `b024af0048446d6d9e6401787c4f7c58cb782725` | 142 (1 skipped) | 3207204483389181 | 1958552273434530 | same |
+
+`0.0.801` is the node reward account. `BalanceReconciliationValidator`
+derives its expectation by summing transfer lists from the record stream; it
+does not use a static suite-population ledger. It compares that derived total
+with a live balance and has a narrow staking-boundary reconciliation that only
+applies when the complete delta shape matches known sources and recipients.
+The unchanged observed value and baseline failure prove the mismatch predates
+P07-11C. The lower post-cleanup expectation shows removed transactions cease
+contributing to the record-derived model as intended; there is no stale
+P07-11C registration or expected-fee contribution to repair. P07-11C therefore
+does not alter or weaken terminal balance validation.
