@@ -3,10 +3,8 @@ package com.hedera.services.bdd.suites.regression.factories;
 
 import static com.hedera.services.bdd.spec.infrastructure.OpProvider.UNIQUE_PAYER_ACCOUNT;
 import static com.hedera.services.bdd.spec.infrastructure.OpProvider.UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.suites.crypto.AutoAccountCreationSuite.CRYPTO_TRANSFER_RECEIVER;
 import static com.hedera.services.bdd.suites.crypto.AutoAccountCreationSuite.LAZY_CREATE_SPONSOR;
 import static com.hedera.services.bdd.suites.regression.factories.IdFuzzingProviderFactory.onlyEcdsaKeys;
@@ -56,10 +54,8 @@ public class AccountCompletionFuzzingFactory {
             cryptoCreate(UNIQUE_PAYER_ACCOUNT)
                     .balance(UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE)
                     .withRecharging(),
-            uploadInitCode(CONTRACT),
             cryptoCreate(TOKEN_TREASURY).balance(0L),
-            tokenCreate(VANILLA_TOKEN).treasury(TOKEN_TREASURY),
-            contractCreate(CONTRACT)
+            tokenCreate(VANILLA_TOKEN).treasury(TOKEN_TREASURY)
         };
     }
 

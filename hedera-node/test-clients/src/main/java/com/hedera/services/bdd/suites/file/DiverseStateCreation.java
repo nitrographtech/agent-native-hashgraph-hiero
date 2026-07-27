@@ -5,14 +5,9 @@ import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.keys.KeyShape.SIMPLE;
 import static com.hedera.services.bdd.spec.keys.KeyShape.listOf;
 import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractBytecode;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileDelete;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.systemFileDelete;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadSingleInitCode;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.updateLargeFile;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
@@ -32,7 +27,6 @@ import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hiero.base.utility.CommonUtils;
 import org.junit.jupiter.api.DynamicTest;
 
 /**
@@ -136,23 +130,9 @@ public final class DiverseStateCreation extends HapiSuite {
                         .exposingNumTo(num -> entityNums.put(LARGE_FILE, num)),
                 updateLargeFile(
                         GENESIS, LARGE_FILE, ByteString.copyFrom(LARGE_CONTENTS), false, OptionalLong.of(ONE_HBAR)),
-                /* Create some bytecode files */
-                uploadSingleInitCode(
-                        fuseContract, FUSE_EXPIRY_TIME, GENESIS, num -> entityNums.put(FUSE_INITCODE, num)),
-                uploadSingleInitCode(
-                        multiContract, MULTI_EXPIRY_TIME, GENESIS, num -> entityNums.put(MULTI_INITCODE, num)),
-                contractCreate(fuseContract)
-                        .exposingContractIdTo(id -> entityNums.put(FUSE_CONTRACT, id.getContractNum())),
-                contractCreate(multiContract)
-                        .exposingContractIdTo(id -> entityNums.put(MULTI_CONTRACT, id.getContractNum())),
-                contractCall(multiContract, "believeIn", EXPECTED_LUCKY_NO),
-                systemFileDelete(fuseContract).payingWith(GENESIS),
-                systemFileDelete(multiContract).payingWith(GENESIS),
                 getFileInfo(SMALL_FILE).exposingKeyReprTo(repr -> keyReprs.put(SMALL_FILE, repr)),
                 getFileInfo(MEDIUM_FILE).exposingKeyReprTo(repr -> keyReprs.put(MEDIUM_FILE, repr)),
                 getFileInfo(LARGE_FILE).exposingKeyReprTo(repr -> keyReprs.put(LARGE_FILE, repr)),
-                getContractBytecode(FUSE_CONTRACT)
-                        .exposingBytecodeTo(code -> hexedBytecode.put(FUSE_BYTECODE, CommonUtils.hex(code))),
                 withOpContext((spec, opLog) -> {
                     final var toSerialize = Map.of(
                             ENTITY_NUM_KEY, entityNums,

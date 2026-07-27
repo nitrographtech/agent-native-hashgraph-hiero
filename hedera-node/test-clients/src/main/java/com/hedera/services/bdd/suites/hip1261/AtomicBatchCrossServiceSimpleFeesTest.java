@@ -9,7 +9,6 @@ import static com.hedera.services.bdd.spec.keys.KeyShape.SIMPLE;
 import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoApproveAllowance;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
@@ -24,20 +23,16 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAirdrop;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.updateTopic;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.movingUnique;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.movingWithAllowance;
-import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyListNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.validateChargedAccount;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.flattened;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedAtomicBatchFullFeeUsd;
-import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedContractCreateSimpleFeesUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedCryptoApproveAllowanceFullFeeUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedCryptoCreateFullFeeUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedCryptoTransferFTAndNFTFullFeeUsd;
@@ -53,7 +48,6 @@ import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.exp
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedTopicCreateFullFeeUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedTopicSubmitMessageFullFeeUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedTopicUpdateFullFeeUsd;
-import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.getChargedGasForContractCreateInnerTxn;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.validateChargedUsdWithinWithTxnSize;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.validateInnerChargedUsdWithinWithTxnSize;
 import static com.hedera.services.bdd.suites.hip1261.utils.SimpleFeesScheduleConstantsInUsd.TOKEN_ASSOCIATE_BASE_FEE_USD;
@@ -1617,8 +1611,6 @@ public class AtomicBatchCrossServiceSimpleFeesTest {
                             createAccountsAndKeys(),
                             createNonFungibleTokenWithoutCustomFees(NON_FUNGIBLE_TOKEN, OWNER, supplyKey, adminKey),
                             newKeyListNamed("WACL", List.of(PAYER)),
-                            cryptoCreate("contractPayer").balance(ONE_HUNDRED_HBARS),
-                            uploadInitCode(EMPTY_CONSTRUCTOR_CONTRACT),
                             atomicBatch(
                                             // Service 1 — File: PAYER pays
                                             fileCreate("batchFile")
@@ -1650,13 +1642,6 @@ public class AtomicBatchCrossServiceSimpleFeesTest {
                                                     .payingWith(RECEIVER_ASSOCIATED_SECOND)
                                                     .signedBy(RECEIVER_ASSOCIATED_SECOND, supplyKey)
                                                     .via("innerTxnFourth")
-                                                    .batchKey(BATCH_OPERATOR),
-                                            // Service 5 — Smart Contract: contractPayer pays
-                                            contractCreate(EMPTY_CONSTRUCTOR_CONTRACT)
-                                                    .adminKey(adminKey)
-                                                    .payingWith("contractPayer")
-                                                    .signedBy("contractPayer", adminKey)
-                                                    .via("innerTxnFifth")
                                                     .batchKey(BATCH_OPERATOR))
                                     .payingWith(BATCH_OPERATOR)
                                     .signedBy(BATCH_OPERATOR)
@@ -1666,7 +1651,6 @@ public class AtomicBatchCrossServiceSimpleFeesTest {
                             validateChargedAccount("innerTxnSecond", OWNER),
                             validateChargedAccount("innerTxnThird", RECEIVER_ASSOCIATED_FIRST),
                             validateChargedAccount("innerTxnFourth", RECEIVER_ASSOCIATED_SECOND),
-                            validateChargedAccount("innerTxnFifth", "contractPayer"),
                             validateChargedUsdWithinWithTxnSize(
                                     "batchTxn",
                                     txnSize -> expectedAtomicBatchFullFeeUsd(
@@ -1700,21 +1684,7 @@ public class AtomicBatchCrossServiceSimpleFeesTest {
                                             SIGNATURES, 2L,
                                             TOKEN_MINT_NFT, 1L,
                                             PROCESSING_BYTES, (long) txnSize)),
-                                    0.1),
-                            // ContractCreate fee = simple fees + gas read from the actual record
-                            withOpContext((spec, opLog) -> {
-                                final var gasUsd =
-                                        getChargedGasForContractCreateInnerTxn(spec, "innerTxnFifth", "batchTxn");
-                                allRunFor(
-                                        spec,
-                                        validateInnerChargedUsdWithinWithTxnSize(
-                                                "innerTxnFifth",
-                                                "batchTxn",
-                                                txnSize -> expectedContractCreateSimpleFeesUsd(Map.of(
-                                                                SIGNATURES, 1L, PROCESSING_BYTES, (long) txnSize))
-                                                        + gasUsd,
-                                                5.0));
-                            })));
+                                    0.1)));
                 }
 
                 @HapiTest

@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.services.bdd.suites.hip904;
 
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedHbarFee;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedHbarFeeInheritingRoyaltyCollector;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedHtsFee;
@@ -478,17 +476,5 @@ public class TokenAirdropBase {
      */
     protected HapiTokenCreate createTokenWithName(String tokenName) {
         return tokenCreate(tokenName).tokenType(TokenType.FUNGIBLE_COMMON).treasury(OWNER);
-    }
-
-    protected SpecOperation[] deployMutableContract(String name, int maxAutoAssociations) {
-        var t = List.of(
-                newKeyNamed(name),
-                uploadInitCode(name),
-                contractCreate(name)
-                        .maxAutomaticTokenAssociations(maxAutoAssociations)
-                        .adminKey(name)
-                        .gas(500_000L));
-
-        return t.toArray(new SpecOperation[0]);
     }
 }

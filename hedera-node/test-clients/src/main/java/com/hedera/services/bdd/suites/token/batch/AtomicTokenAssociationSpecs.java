@@ -8,12 +8,10 @@ import static com.hedera.services.bdd.spec.assertions.SomeFungibleTransfers.chan
 import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.recordWith;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.crypto.ExpectedTokenRel.relationshipWith;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.burnToken;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createDefaultContract;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -41,7 +39,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_FROZEN
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_IS_TREASURY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INNER_TRANSACTION_FAILED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT;
@@ -58,7 +55,6 @@ import com.hedera.services.bdd.junit.HapiTestLifecycle;
 import com.hedera.services.bdd.junit.LeakyHapiTest;
 import com.hedera.services.bdd.junit.support.TestLifecycle;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
-import com.hedera.services.bdd.spec.transactions.token.TokenMovement;
 import com.hederahashgraph.api.proto.java.TokenID;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.nio.charset.StandardCharsets;
@@ -287,46 +283,6 @@ class AtomicTokenAssociationSpecs {
                                         .batchKey(BATCH_OPERATOR),
                                 cryptoDelete(treasuryWithoutAllPiecesBurned).batchKey(BATCH_OPERATOR))
                         .payingWith(BATCH_OPERATOR));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> associatedContractsMustHaveAdminKeys() {
-        String misc = "someToken";
-        String contract = "defaultContract";
-        return hapiTest(
-                tokenCreate(misc),
-                atomicBatch(createDefaultContract(contract).omitAdminKey().batchKey(BATCH_OPERATOR))
-                        .payingWith(BATCH_OPERATOR),
-                tokenAssociate(contract, misc).hasKnownStatus(INVALID_SIGNATURE));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> contractInfoQueriesAsExpected() {
-        final var contract = "contract";
-        return hapiTest(
-                newKeyNamed(SIMPLE),
-                tokenCreate("a"),
-                tokenCreate("b"),
-                tokenCreate("c"),
-                tokenCreate("tbd").adminKey(SIMPLE),
-                createDefaultContract(contract),
-                atomicBatch(tokenAssociate(contract, "a", "b", "c", "tbd").batchKey(BATCH_OPERATOR))
-                        .payingWith(BATCH_OPERATOR),
-                getContractInfo(contract)
-                        .hasToken(relationshipWith("a"))
-                        .hasToken(relationshipWith("b"))
-                        .hasToken(relationshipWith("c"))
-                        .hasToken(relationshipWith("tbd")),
-                atomicBatch(
-                                tokenDissociate(contract, "b").batchKey(BATCH_OPERATOR),
-                                tokenDelete("tbd").batchKey(BATCH_OPERATOR))
-                        .payingWith(BATCH_OPERATOR),
-                getContractInfo(contract)
-                        .hasToken(relationshipWith("a"))
-                        .hasNoTokenRelationship("b")
-                        .hasToken(relationshipWith("c"))
-                        .hasToken(relationshipWith("tbd"))
-                        .logged());
     }
 
     @HapiTest

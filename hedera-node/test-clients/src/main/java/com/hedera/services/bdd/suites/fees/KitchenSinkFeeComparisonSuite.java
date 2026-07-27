@@ -7,12 +7,9 @@ import static com.hedera.services.bdd.spec.keys.KeyShape.ED25519;
 import static com.hedera.services.bdd.spec.keys.KeyShape.SECP256K1;
 import static com.hedera.services.bdd.spec.keys.KeyShape.listOf;
 import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.contractCallLocalWithFunctionAbi;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountRecords;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractBytecode;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getReceipt;
@@ -23,13 +20,8 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getVersionInfo;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.accountAllowanceHook;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.accountEvmHookStore;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.burnToken;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCallWithFunctionAbi;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractDelete;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoApproveAllowance;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
@@ -38,7 +30,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDeleteAll
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.deleteTopic;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.ethereumCryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileAppend;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileDelete;
@@ -72,7 +63,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUnpause;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUpdateNfts;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.updateTopic;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.wipeTokenAccount;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromAccountToAlias;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
@@ -88,7 +78,6 @@ import static com.hedera.services.bdd.spec.utilops.UtilVerbs.freezeAbort;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overriding;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
-import static com.hedera.services.bdd.suites.HapiSuite.FIVE_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.FREEZE_ADMIN;
 import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
@@ -99,14 +88,11 @@ import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SOURCE_KEY;
 import static com.hedera.services.bdd.suites.HapiSuite.SYSTEM_DELETE_ADMIN;
 import static com.hedera.services.bdd.suites.HapiSuite.SYSTEM_UNDELETE_ADMIN;
 import static com.hedera.services.bdd.suites.HapiSuite.THREE_MONTHS_IN_SECONDS;
-import static com.hedera.services.bdd.suites.contract.Utils.FunctionType.FUNCTION;
-import static com.hedera.services.bdd.suites.contract.Utils.getABIFor;
 import static com.hedera.services.bdd.suites.hip869.NodeCreateTest.generateX509Certificates;
 import static com.hederahashgraph.api.proto.java.TokenType.FUNGIBLE_COMMON;
 import static com.hederahashgraph.api.proto.java.TokenType.NON_FUNGIBLE_UNIQUE;
 
 import com.google.protobuf.ByteString;
-import com.hedera.pbj.runtime.io.buffer.Bytes;
 import com.hedera.services.bdd.junit.HapiTestLifecycle;
 import com.hedera.services.bdd.junit.LeakyHapiTest;
 import com.hedera.services.bdd.junit.support.TestLifecycle;
@@ -123,7 +109,6 @@ import com.hederahashgraph.api.proto.java.Transaction;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -387,9 +372,6 @@ public class KitchenSinkFeeComparisonSuite {
         ops.addAll(consensusTransactions(prefix, feeMap));
         ops.addAll(fileTransactions(prefix, feeMap));
         ops.addAll(scheduleTransactions(prefix, feeMap));
-        ops.addAll(hookTransactions(prefix, feeMap));
-        ops.addAll(contractTransactions(prefix, feeMap));
-        ops.addAll(ethereumTransactions(prefix, feeMap));
         ops.addAll(networkTransactions(prefix, feeMap));
         ops.addAll(utilTransactions(prefix, feeMap));
         ops.addAll(baseCaseAliasRows(prefix, feeMap));
@@ -428,26 +410,12 @@ public class KitchenSinkFeeComparisonSuite {
                 .payingWith(PAYER)
                 .fee(ONE_HUNDRED_HBARS));
 
-        // ===== SETUP: Hook contracts for HOOK_UPDATES / HOOK_EXECUTION =====
-        ops.add(uploadInitCode(TRUE_HOOK_CONTRACT));
-        ops.add(contractCreate(prefix + "HookContract1")
-                .bytecode(TRUE_HOOK_CONTRACT)
-                .gas(5_000_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-        ops.add(uploadInitCode("TruePrePostHook"));
-        ops.add(contractCreate(prefix + "HookContract2")
-                .bytecode("TruePrePostHook")
-                .gas(5_000_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
         // ===== CryptoCreate with varying KEYS and HOOK_UPDATES =====
         final var createKeyVariants = List.of(
                 new KeyVariant("K1", "KEYS=1 (included)", SIMPLE_KEY),
                 new KeyVariant("K3", "KEYS=3 (+2 extra)", LIST_KEY_3),
                 new KeyVariant("K5", "KEYS=5 (+4 extra)", LIST_KEY_5));
-        final int[] hookCounts = {0, 1, 2};
+        final int[] hookCounts = {0};
         for (final var keyVariant : createKeyVariants) {
             for (final int hookCount : hookCounts) {
                 final String hookLabel =
@@ -2062,15 +2030,6 @@ public class KitchenSinkFeeComparisonSuite {
         // Use different amounts based on prefix to ensure unique scheduled transactions
         final long amount = prefix.equals("simple") ? 1L : 2L;
 
-        // ===== SETUP: Contract for scheduled contract call =====
-        ops.add(uploadInitCode(STORAGE_CONTRACT));
-        ops.add(contractCreate(prefix + "ScheduleContract")
-                .bytecode(STORAGE_CONTRACT)
-                .gas(200_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-        final var storeAbi = getABIFor(FUNCTION, "store", STORAGE_CONTRACT);
-
         // ===== SETUP: Schedule for ScheduleGetInfo =====
         ops.add(scheduleCreate(
                         prefix + "ScheduleQuery",
@@ -2103,39 +2062,6 @@ public class KitchenSinkFeeComparisonSuite {
                 (txnName, signers) -> scheduleCreate(
                                 txnName + "Schedule",
                                 cryptoTransfer(tinyBarsFromTo(RECEIVER, PAYER, amount))
-                                        .memo(txnName))
-                        .adminKey(SIMPLE_KEY)
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        addWithSigVariants(
-                ops,
-                prefix + "ScheduleCreateK0Call",
-                "KEYS=0 (no admin), SCHEDULE_CREATE_CONTRACT_CALL_BASE=1",
-                feeMap,
-                new String[] {PAYER},
-                (txnName, signers) -> scheduleCreate(
-                                txnName + "Schedule",
-                                contractCallWithFunctionAbi(
-                                                prefix + "ScheduleContract", storeAbi, BigInteger.valueOf(1))
-                                        .gas(50_000L)
-                                        .memo(txnName))
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        addWithSigVariants(
-                ops,
-                prefix + "ScheduleCreateK1Call",
-                "KEYS=1 (included), SCHEDULE_CREATE_CONTRACT_CALL_BASE=1",
-                feeMap,
-                new String[] {PAYER, SIMPLE_KEY},
-                (txnName, signers) -> scheduleCreate(
-                                txnName + "Schedule",
-                                contractCallWithFunctionAbi(
-                                                prefix + "ScheduleContract", storeAbi, BigInteger.valueOf(2))
-                                        .gas(50_000L)
                                         .memo(txnName))
                         .adminKey(SIMPLE_KEY)
                         .payingWith(PAYER)
@@ -2202,471 +2128,12 @@ public class KitchenSinkFeeComparisonSuite {
     private static final long HOOK_GAS_LIMIT = 25000L;
     private static final long HOOK_GAS_LIMIT_HIGH = 75000L;
 
-    private static List<SpecOperation> hookTransactions(String prefix, Map<String, Long> feeMap) {
-        List<SpecOperation> ops = new ArrayList<>();
-
-        // Upload hook contract bytecode and create hook owner account with a hook
-        ops.add(uploadInitCode(HOOK_CONTRACT));
-        ops.add(contractCreate(prefix + "HookContract")
-                .bytecode(HOOK_CONTRACT)
-                .gas(200_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
-        // Create account with hook attached (tests HOOK_UPDATES extra on CryptoCreate)
-        // HOOK_UPDATES extra: fee=10000000000 per hook update, includedCount=0
-        ops.add(cryptoCreate(prefix + HOOK_OWNER)
-                .balance(ONE_HUNDRED_HBARS)
-                .withHooks(accountAllowanceHook(1L, prefix + "HookContract"))
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
-        // ===== HookStore with varying storage slot updates =====
-        // HookStore baseFee: 49000000
-        addWithSigVariants(
-                ops,
-                prefix + "HookStoreS1",
-                "SLOTS=1",
-                feeMap,
-                new String[] {PAYER, prefix + HOOK_OWNER},
-                (txnName, signers) -> accountEvmHookStore(prefix + HOOK_OWNER, 1L)
-                        .putSlot(Bytes.wrap("slot1"), Bytes.wrap("value1"))
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        addWithSigVariants(
-                ops,
-                prefix + "HookStoreS2",
-                "SLOTS=2",
-                feeMap,
-                new String[] {PAYER, prefix + HOOK_OWNER},
-                (txnName, signers) -> accountEvmHookStore(prefix + HOOK_OWNER, 1L)
-                        .putSlot(Bytes.wrap("slot2"), Bytes.wrap("value2"))
-                        .putSlot(Bytes.wrap("slot3"), Bytes.wrap("value3"))
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        addWithSigVariants(
-                ops,
-                prefix + "HookStoreS5",
-                "SLOTS=5",
-                feeMap,
-                new String[] {PAYER, prefix + HOOK_OWNER},
-                (txnName, signers) -> accountEvmHookStore(prefix + HOOK_OWNER, 1L)
-                        .putSlot(Bytes.wrap("slot4"), Bytes.wrap("value4"))
-                        .putSlot(Bytes.wrap("slot5"), Bytes.wrap("value5"))
-                        .putSlot(Bytes.wrap("slot6"), Bytes.wrap("value6"))
-                        .putSlot(Bytes.wrap("slot7"), Bytes.wrap("value7"))
-                        .putSlot(Bytes.wrap("slot8"), Bytes.wrap("value8"))
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        // ===== HookStore - remove slots =====
-        addWithSigVariants(
-                ops,
-                prefix + "HookStoreRemove1",
-                "REMOVE_SLOTS=1",
-                feeMap,
-                new String[] {PAYER, prefix + HOOK_OWNER},
-                (txnName, signers) -> accountEvmHookStore(prefix + HOOK_OWNER, 1L)
-                        .removeSlot(Bytes.wrap("slot1"))
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        // ===== CryptoTransfer with HOOK_EXECUTION extra =====
-        // HOOK_EXECUTION extra: fee=10000000000 per hook execution, includedCount=0
-        // Upload TruePreHook contract for successful hook executions
-        ops.add(uploadInitCode(TRUE_HOOK_CONTRACT));
-        ops.add(contractCreate(prefix + "TrueHookContract")
-                .bytecode(TRUE_HOOK_CONTRACT)
-                .gas(5_000_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
-        // Create sender account with TruePreHook attached
-        ops.add(cryptoCreate(prefix + "HookSender")
-                .key(SIMPLE_KEY)
-                .balance(ONE_HUNDRED_HBARS)
-                .withHooks(accountAllowanceHook(10L, prefix + "TrueHookContract"))
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
-        // Create receiver account
-        ops.add(cryptoCreate(prefix + "HookReceiver")
-                .key(SIMPLE_KEY)
-                .balance(ONE_HBAR)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-        ops.add(cryptoCreate(prefix + "HookReceiver2")
-                .key(SIMPLE_KEY)
-                .balance(ONE_HBAR)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
-        // ===== SETUP: Tokens for hook + token-transfer cross-product =====
-        ops.add(tokenCreate(prefix + "HookFT")
-                .tokenType(FUNGIBLE_COMMON)
-                .initialSupply(1_000_000L)
-                .treasury(prefix + "HookSender")
-                .blankMemo()
-                .payingWith(PAYER)
-                .signedBy(PAYER, prefix + "HookSender")
-                .fee(ONE_HUNDRED_HBARS));
-
-        ops.add(tokenCreate(prefix + "HookFTCF")
-                .tokenType(FUNGIBLE_COMMON)
-                .initialSupply(1_000_000L)
-                .treasury(prefix + "HookSender")
-                .withCustom(fixedHbarFee(ONE_HBAR / 100, TREASURY))
-                .blankMemo()
-                .payingWith(PAYER)
-                .signedBy(PAYER, prefix + "HookSender")
-                .fee(ONE_HUNDRED_HBARS));
-
-        ops.add(tokenCreate(prefix + "HookFTCF2")
-                .tokenType(FUNGIBLE_COMMON)
-                .initialSupply(1_000_000L)
-                .treasury(prefix + "HookSender")
-                .withCustom(fixedHbarFee(ONE_HBAR / 100, TREASURY))
-                .blankMemo()
-                .payingWith(PAYER)
-                .signedBy(PAYER, prefix + "HookSender")
-                .fee(ONE_HUNDRED_HBARS));
-
-        ops.add(tokenCreate(prefix + "HookNFT")
-                .tokenType(NON_FUNGIBLE_UNIQUE)
-                .initialSupply(0L)
-                .treasury(prefix + "HookSender")
-                .supplyKey(SIMPLE_KEY)
-                .blankMemo()
-                .payingWith(PAYER)
-                .signedBy(PAYER, prefix + "HookSender", SIMPLE_KEY)
-                .fee(ONE_HUNDRED_HBARS));
-        ops.add(mintToken(
-                        prefix + "HookNFT",
-                        List.of(
-                                ByteString.copyFromUtf8("HNFT1"),
-                                ByteString.copyFromUtf8("HNFT2"),
-                                ByteString.copyFromUtf8("HNFT3"),
-                                ByteString.copyFromUtf8("HNFT4"),
-                                ByteString.copyFromUtf8("HNFT5"),
-                                ByteString.copyFromUtf8("HNFT6"),
-                                ByteString.copyFromUtf8("HNFT7"),
-                                ByteString.copyFromUtf8("HNFT8"),
-                                ByteString.copyFromUtf8("HNFT9"),
-                                ByteString.copyFromUtf8("HNFT10")))
-                .payingWith(PAYER)
-                .signedBy(PAYER, SIMPLE_KEY)
-                .fee(ONE_HUNDRED_HBARS));
-        ops.add(mintToken(
-                        prefix + "HookNFT",
-                        List.of(ByteString.copyFromUtf8("HNFT11"), ByteString.copyFromUtf8("HNFT12")))
-                .payingWith(PAYER)
-                .signedBy(PAYER, SIMPLE_KEY)
-                .fee(ONE_HUNDRED_HBARS));
-
-        ops.add(tokenAssociate(
-                        prefix + "HookReceiver",
-                        prefix + "HookFT",
-                        prefix + "HookFTCF",
-                        prefix + "HookFTCF2",
-                        prefix + "HookNFT")
-                .payingWith(PAYER)
-                .signedBy(PAYER, prefix + "HookReceiver")
-                .fee(ONE_HUNDRED_HBARS));
-        ops.add(tokenAssociate(
-                        prefix + "HookReceiver2",
-                        prefix + "HookFT",
-                        prefix + "HookFTCF",
-                        prefix + "HookFTCF2",
-                        prefix + "HookNFT")
-                .payingWith(PAYER)
-                .signedBy(PAYER, prefix + "HookReceiver2")
-                .fee(ONE_HUNDRED_HBARS));
-
-        // CryptoTransfer with 1 hook execution (pre-hook on sender)
-        addWithSigVariants(
-                ops,
-                prefix + "CryptoTransferHE1",
-                "HOOK_EXECUTION=1 (pre), GAS=25000",
-                feeMap,
-                new String[] {PAYER, prefix + "HookSender"},
-                (txnName, signers) -> cryptoTransfer(
-                                tinyBarsFromTo(prefix + "HookSender", prefix + "HookReceiver", ONE_HBAR))
-                        .withPreHookFor(prefix + "HookSender", 10L, HOOK_GAS_LIMIT, "")
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        // CryptoTransfer with 1 hook execution and higher gas limit
-        addWithSigVariants(
-                ops,
-                prefix + "CryptoTransferHE1G75",
-                "HOOK_EXECUTION=1 (pre), GAS=75000 (+50000 extra)",
-                feeMap,
-                new String[] {PAYER, prefix + "HookSender"},
-                (txnName, signers) -> cryptoTransfer(
-                                tinyBarsFromTo(prefix + "HookSender", prefix + "HookReceiver", ONE_HBAR))
-                        .withPreHookFor(prefix + "HookSender", 10L, HOOK_GAS_LIMIT_HIGH, "")
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        // CryptoTransfer with hook execution + multiple token types + custom fees + extra accounts
-        final long[] hookComboSerials = {1L, 2L, 3L};
-        int hookComboIdx = 0;
-        for (final SigVariant sigVariant : SIG_VARIANTS) {
-            ops.add(updatePayerKey(sigVariant));
-            final long serial = hookComboSerials[hookComboIdx++];
-            final String txnName = prefix + "CryptoTransferHookCombo" + sigVariant.suffix();
-            final String[] signers = sigVariant.withRequired(PAYER, prefix + "HookSender");
-            ops.add(cryptoTransfer(
-                            movingHbar(ONE_HBAR).between(prefix + "HookSender", prefix + "HookReceiver"),
-                            movingHbar(ONE_HBAR).between(prefix + "HookSender", prefix + "HookReceiver2"),
-                            movingHbar(ONE_HBAR).between(prefix + "HookSender", PAYER),
-                            moving(10, prefix + "HookFT").between(prefix + "HookSender", prefix + "HookReceiver"),
-                            moving(10, prefix + "HookFTCF").between(prefix + "HookSender", prefix + "HookReceiver"),
-                            movingUnique(prefix + "HookNFT", serial)
-                                    .between(prefix + "HookSender", prefix + "HookReceiver"))
-                    .withPreHookFor(prefix + "HookSender", 10L, HOOK_GAS_LIMIT_HIGH, "")
-                    .payingWith(PAYER)
-                    .signedBy(signers)
-                    .fee(ONE_HUNDRED_HBARS)
-                    .via(txnName));
-            ops.add(captureFee(
-                    txnName,
-                    joinEmphasis(
-                            "HOOK_EXECUTION=1 (pre), GAS=75000 (+50000 extra), ACCOUNTS=4 (+2 extra), "
-                                    + "FUNGIBLE_TOKENS=2 (+1 extra), NON_FUNGIBLE_TOKENS=1 (included), "
-                                    + "TOKEN_TRANSFER_BASE_CUSTOM_FEES=1",
-                            sigEmphasis(signers, sigVariant)),
-                    feeMap));
-        }
-        ops.add(resetPayerKey());
-
-        final long[][] hookComboSerialTriples = {
-            {4L, 5L, 6L},
-            {7L, 8L, 9L},
-            {10L, 11L, 12L}
-        };
-        int hookComboTripleIdx = 0;
-        for (final SigVariant sigVariant : SIG_VARIANTS) {
-            ops.add(updatePayerKey(sigVariant));
-            final long[] serials = hookComboSerialTriples[hookComboTripleIdx++];
-            final String txnName = prefix + "CryptoTransferHookComboSerials3" + sigVariant.suffix();
-            final String[] signers = sigVariant.withRequired(PAYER, prefix + "HookSender");
-            ops.add(cryptoTransfer(
-                            movingHbar(ONE_HBAR).between(prefix + "HookSender", prefix + "HookReceiver"),
-                            movingHbar(ONE_HBAR).between(prefix + "HookSender", prefix + "HookReceiver2"),
-                            movingHbar(ONE_HBAR).between(prefix + "HookSender", PAYER),
-                            moving(10, prefix + "HookFT").between(prefix + "HookSender", prefix + "HookReceiver"),
-                            moving(10, prefix + "HookFTCF").between(prefix + "HookSender", prefix + "HookReceiver"),
-                            moving(10, prefix + "HookFTCF2").between(prefix + "HookSender", prefix + "HookReceiver"),
-                            movingUnique(prefix + "HookNFT", serials)
-                                    .between(prefix + "HookSender", prefix + "HookReceiver"))
-                    .withPreHookFor(prefix + "HookSender", 10L, HOOK_GAS_LIMIT_HIGH, "")
-                    .payingWith(PAYER)
-                    .signedBy(signers)
-                    .fee(ONE_HUNDRED_HBARS)
-                    .via(txnName));
-            ops.add(captureFee(
-                    txnName,
-                    joinEmphasis(
-                            "HOOK_EXECUTION=1 (pre), GAS=75000 (+50000 extra), ACCOUNTS=4 (+2 extra), "
-                                    + "FUNGIBLE_TOKENS=3 (+2 extra), NON_FUNGIBLE_TOKENS=3 (+2 extra), "
-                                    + "TOKEN_TRANSFER_BASE_CUSTOM_FEES=1",
-                            sigEmphasis(signers, sigVariant)),
-                    feeMap));
-        }
-        ops.add(resetPayerKey());
-
-        // Create sender with pre-post hook for 2 hook executions
-        ops.add(uploadInitCode("TruePrePostHook"));
-        ops.add(contractCreate(prefix + "TruePrePostHookContract")
-                .bytecode("TruePrePostHook")
-                .gas(5_000_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
-        ops.add(cryptoCreate(prefix + "HookSender2")
-                .key(SIMPLE_KEY)
-                .balance(ONE_HUNDRED_HBARS)
-                .withHooks(accountAllowanceHook(20L, prefix + "TruePrePostHookContract"))
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
-        // CryptoTransfer with 2 hook executions (pre-post hook on sender)
-        addWithSigVariants(
-                ops,
-                prefix + "CryptoTransferHE2",
-                "HOOK_EXECUTION=2 (pre+post), GAS=25000",
-                feeMap,
-                new String[] {PAYER, prefix + "HookSender2"},
-                (txnName, signers) -> cryptoTransfer(
-                                tinyBarsFromTo(prefix + "HookSender2", prefix + "HookReceiver", ONE_HBAR))
-                        .withPrePostHookFor(prefix + "HookSender2", 20L, HOOK_GAS_LIMIT, "")
-                        .payingWith(PAYER)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        return ops;
-    }
-
     // ==================== CONTRACT TRANSACTIONS ====================
 
     private static final String STORAGE_CONTRACT = "Storage";
     private static final String EMPTY_ONE_CONTRACT = "EmptyOne";
 
-    private static List<SpecOperation> contractTransactions(String prefix, Map<String, Long> feeMap) {
-        List<SpecOperation> ops = new ArrayList<>();
-
-        // Upload contract bytecode (only once, shared between runs)
-        ops.add(uploadInitCode(STORAGE_CONTRACT));
-        ops.add(uploadInitCode(EMPTY_ONE_CONTRACT));
-
-        // ===== ContractCreate with varying GAS extra =====
-        // GAS extra: fee=1 per gas unit
-        ops.add(contractCreate(prefix + "ContractG200k")
-                .bytecode(STORAGE_CONTRACT)
-                .gas(200_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS)
-                .via(prefix + "ContractCreateG200k"));
-        ops.add(captureFee(prefix + "ContractCreateG200k", "GAS=200000", feeMap));
-
-        // ===== ContractCall with varying GAS extra =====
-        final var storeAbi = getABIFor(FUNCTION, "store", STORAGE_CONTRACT);
-        ops.add(contractCallWithFunctionAbi(prefix + "ContractG200k", storeAbi, BigInteger.valueOf(42))
-                .gas(50_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS)
-                .via(prefix + "ContractCallG50k"));
-        ops.add(captureFee(prefix + "ContractCallG50k", "GAS=50000", feeMap));
-
-        ops.add(contractCallWithFunctionAbi(prefix + "ContractG200k", storeAbi, BigInteger.valueOf(100))
-                .gas(100_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS)
-                .via(prefix + "ContractCallG100k"));
-        ops.add(captureFee(prefix + "ContractCallG100k", "GAS=100000", feeMap));
-
-        ops.add(contractCallWithFunctionAbi(prefix + "ContractG200k", storeAbi, BigInteger.valueOf(200))
-                .gas(200_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS)
-                .via(prefix + "ContractCallG200k"));
-        ops.add(captureFee(prefix + "ContractCallG200k", "GAS=200000", feeMap));
-
-        // ===== ContractUpdate (no GAS extra) =====
-        ops.add(contractCreate(prefix + "ContractWithAdmin")
-                .bytecode(STORAGE_CONTRACT)
-                .adminKey(SIMPLE_KEY)
-                .gas(200_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-        ops.add(contractUpdate(prefix + "ContractWithAdmin")
-                .newMemo(MEDIUM_MEMO)
-                .signedBy(PAYER, SIMPLE_KEY)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS)
-                .via(prefix + "ContractUpdate"));
-        ops.add(captureFee(prefix + "ContractUpdate", "no GAS extra", feeMap));
-
-        // ===== ContractDelete (no extras) =====
-        ops.add(contractDelete(prefix + "ContractWithAdmin")
-                .transferAccount(PAYER)
-                .signedBy(PAYER, SIMPLE_KEY)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS)
-                .via(prefix + "ContractDelete"));
-        ops.add(captureFee(prefix + "ContractDelete", "no extras", feeMap));
-
-        // ===== ContractGetInfo (query) =====
-        addQueryWithSigVariants(
-                ops,
-                prefix + "ContractGetInfo",
-                "no extras",
-                feeMap,
-                new String[] {PAYER},
-                (queryName, signers) -> getContractInfo(prefix + "ContractG200k")
-                        .payingWith(PAYER)
-                        .signedBy(signers));
-
-        // ===== ContractCallLocal (query) =====
-        final var retrieveAbi = getABIFor(FUNCTION, "retrieve", STORAGE_CONTRACT);
-        addQueryWithSigVariants(
-                ops,
-                prefix + "ContractCallLocal",
-                "BYTES=32 (included)",
-                feeMap,
-                new String[] {PAYER},
-                (queryName, signers) -> contractCallLocalWithFunctionAbi(prefix + "ContractG200k", retrieveAbi)
-                        .payingWith(PAYER)
-                        .signedBy(signers));
-
-        // ===== ContractGetBytecode (query) =====
-        addQueryWithSigVariants(
-                ops,
-                prefix + "ContractGetBytecode",
-                "BYTES>0 (included)",
-                feeMap,
-                new String[] {PAYER},
-                (queryName, signers) -> getContractBytecode(prefix + "ContractG200k")
-                        .payingWith(PAYER)
-                        .signedBy(signers));
-
-        // ===== ContractGetBytecode base case (explicit included bytes) =====
-        // EmptyOne bytecode is 92 bytes, below the 1000 included STATE_BYTES baseline.
-        final String contractBytecodeBase = prefix + "ContractBytecodeBase";
-        final String contractGetBytecodeBase = prefix + "ContractGetBytecodeBase";
-        ops.add(contractCreate(contractBytecodeBase)
-                .bytecode(EMPTY_ONE_CONTRACT)
-                .gas(200_000L)
-                .payingWith(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-        ops.add(getContractBytecode(contractBytecodeBase)
-                .payingWith(PAYER)
-                .signedBy(PAYER)
-                .fee(ONE_HUNDRED_HBARS)
-                .via(contractGetBytecodeBase));
-        ops.add(captureQueryTotalCost(
-                contractGetBytecodeBase, "BYTES=92 (included), BASE_CASE=1, SIGS=1 (included)", feeMap));
-
-        return ops;
-    }
-
     // ==================== ETHEREUM TRANSACTIONS ====================
-
-    private static List<SpecOperation> ethereumTransactions(String prefix, Map<String, Long> feeMap) {
-        List<SpecOperation> ops = new ArrayList<>();
-
-        // Ensure alias account exists and funded for Ethereum transactions
-        ops.add(cryptoTransfer(tinyBarsFromAccountToAlias(PAYER, SECP_256K1_SOURCE_KEY, FIVE_HBARS))
-                .payingWith(PAYER)
-                .signedBy(PAYER)
-                .fee(ONE_HUNDRED_HBARS));
-
-        // ===== EthereumTransaction (value transfer, no calldata) =====
-        addWithSigVariants(
-                ops,
-                prefix + "EthereumCryptoTransfer",
-                "ETH_CALLDATA=0 (included)",
-                feeMap,
-                new String[] {RELAYER},
-                (txnName, signers) -> ethereumCryptoTransfer(RECEIVER, ONE_HBAR)
-                        .signingWith(SECP_256K1_SOURCE_KEY)
-                        .payingWith(RELAYER)
-                        .maxGasAllowance(FIVE_HBARS)
-                        .gasLimit(2_000_000L)
-                        .signedBy(signers)
-                        .fee(ONE_HUNDRED_HBARS));
-
-        return ops;
-    }
 
     // ==================== NETWORK TRANSACTIONS & QUERIES ====================
 

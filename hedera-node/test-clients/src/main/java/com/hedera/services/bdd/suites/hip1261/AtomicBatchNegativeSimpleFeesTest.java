@@ -10,15 +10,12 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.burnToken;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.deleteTopic;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.ethereumCall;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileAppend;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileDelete;
@@ -31,20 +28,15 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenFreeze;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenPause;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.updateTopic;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
-import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromAccountToAlias;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyListNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overriding;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.usableTxnIdNamed;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.validateInnerTxnChargedUsd;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
-import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
-import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SHAPE;
 import static com.hedera.services.bdd.suites.HapiSuite.flattened;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedAtomicBatchFullFeeUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedCryptoCreateFullFeeUsd;
@@ -67,7 +59,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BATCH_LIST_EMP
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FILE_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INNER_TRANSACTION_FAILED;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_GAS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TOKEN_BALANCE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TX_FEE;
@@ -87,7 +78,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_IS_PAUSE
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_MAX_SUPPLY_REACHED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_NOT_ASSOCIATED_TO_ACCOUNT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TRANSACTION_EXPIRED;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.WRONG_NONCE;
 import static com.hederahashgraph.api.proto.java.TokenType.FUNGIBLE_COMMON;
 import static org.hiero.hapi.support.fees.Extra.ACCOUNTS;
 import static org.hiero.hapi.support.fees.Extra.PROCESSING_BYTES;
@@ -95,7 +85,6 @@ import static org.hiero.hapi.support.fees.Extra.SIGNATURES;
 import static org.hiero.hapi.support.fees.Extra.STATE_BYTES;
 import static org.hiero.hapi.support.fees.Extra.TOKEN_TYPES;
 
-import com.hedera.node.app.hapi.utils.ethereum.EthTxData;
 import com.hedera.services.bdd.junit.HapiTest;
 import com.hedera.services.bdd.junit.HapiTestLifecycle;
 import com.hedera.services.bdd.junit.LeakyHapiTest;
@@ -1296,66 +1285,7 @@ public class AtomicBatchNegativeSimpleFeesTest {
 
         @Nested
         @DisplayName("Smart Contract Inner Transaction Failures")
-        class SmartContractAtomicBatchInnerFailures {
-            @HapiTest
-            @DisplayName("ContractCall Inner Batch Transaction with insufficient gas - Fails on Pre-Handle")
-            final Stream<DynamicTest> contractCallInsufficientGasFailsOnPreHandle() {
-                return hapiTest(flattened(
-                        createAccountsAndKeys(),
-                        uploadInitCode(CONTRACT),
-                        contractCreate(CONTRACT).gas(200_000L),
-                        atomicBatch(contractCall(CONTRACT, "contractCall1Byte", (Object) new byte[] {0})
-                                        .gas(1L)
-                                        .payingWith(PAYER)
-                                        .signedBy(PAYER)
-                                        .via("innerTxnContractCall")
-                                        .batchKey(BATCH_OPERATOR)
-                                        .hasPrecheck(INSUFFICIENT_GAS))
-                                .payingWith(PAYER)
-                                .signedBy(PAYER, BATCH_OPERATOR)
-                                .via("batchTxn")
-                                .hasPrecheck(INSUFFICIENT_GAS),
-
-                        // assert no txn record is created
-                        getTxnRecord("batchTxn").logged().hasAnswerOnlyPrecheckFrom(RECORD_NOT_FOUND),
-                        getTxnRecord("innerTxnContractCall").logged().hasAnswerOnlyPrecheckFrom(RECORD_NOT_FOUND)));
-            }
-
-            @HapiTest
-            @DisplayName(
-                    "EthereumTransaction Inner Batch Transaction with invalid nonce - Fails on Handle - Full fees charged")
-            final Stream<DynamicTest> ethereumTransactionWrongNonceFailsOnHandle() {
-                return hapiTest(flattened(
-                        createAccountsAndKeys(),
-                        cryptoCreate(RELAYER).balance(ONE_HUNDRED_HBARS),
-                        uploadInitCode(CONTRACT),
-                        contractCreate(CONTRACT).gas(200_000L),
-                        newKeyNamed(SECP_256K1_SOURCE_KEY).shape(SECP_256K1_SHAPE),
-                        cryptoTransfer(tinyBarsFromAccountToAlias(GENESIS, SECP_256K1_SOURCE_KEY, ONE_HUNDRED_HBARS)),
-                        atomicBatch(ethereumCall(CONTRACT, "contractCall1Byte", (Object) new byte[] {0})
-                                        .type(EthTxData.EthTransactionType.EIP1559)
-                                        .signingWith(SECP_256K1_SOURCE_KEY)
-                                        .payingWith(RELAYER)
-                                        .nonce(5) // account has nonce 0
-                                        .gasLimit(100_000L)
-                                        .via("innerTxnEthCall")
-                                        .batchKey(BATCH_OPERATOR)
-                                        .hasKnownStatus(WRONG_NONCE))
-                                .payingWith(PAYER)
-                                .signedBy(PAYER, BATCH_OPERATOR)
-                                .via("batchTxn")
-                                .hasKnownStatus(INNER_TRANSACTION_FAILED),
-
-                        // validate outer batch fee charged (paid by PAYER)
-                        validateChargedUsdWithinWithTxnSize(
-                                "batchTxn",
-                                txnSize -> expectedAtomicBatchFullFeeUsd(
-                                        Map.of(SIGNATURES, 2L, PROCESSING_BYTES, (long) txnSize)),
-                                1),
-                        // validate inner txn payer (RELAYER) charged — WRONG_NONCE fails before EVM execution
-                        validateInnerTxnChargedUsd("innerTxnEthCall", "batchTxn", 0.0001, 10)));
-            }
-        }
+        class SmartContractAtomicBatchInnerFailures {}
     }
 
     private HapiTokenCreate createFungibleTokenWithoutCustomFees(

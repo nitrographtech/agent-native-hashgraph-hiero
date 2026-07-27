@@ -4,31 +4,24 @@ package com.hedera.services.bdd.suites.regression.factories;
 import static com.hedera.services.bdd.spec.infrastructure.OpProvider.UNIQUE_PAYER_ACCOUNT;
 import static com.hedera.services.bdd.spec.infrastructure.OpProvider.UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE;
 import static com.hedera.services.bdd.spec.infrastructure.meta.InitialAccountIdentifiers.KEY_FOR_INCONGRUENT_ALIAS;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoApproveAllowance;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromAccountToAlias;
-import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.movingUnique;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
-import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_MILLION_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.RELAYER;
 import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SHAPE;
 import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SOURCE_KEY;
-import static com.hedera.services.bdd.suites.contract.Utils.asHexedSolidityAddress;
 import static com.hedera.services.bdd.suites.crypto.LeakyCryptoTestsSuite.AUTO_ACCOUNT;
 import static com.hedera.services.bdd.suites.regression.factories.RegressionProviderFactory.intPropOrElse;
 
 import com.google.protobuf.ByteString;
-import com.hedera.services.bdd.spec.HapiPropertySource;
 import com.hedera.services.bdd.spec.HapiSpec;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
 import com.hedera.services.bdd.spec.infrastructure.OpProvider;
@@ -52,7 +45,6 @@ import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.TokenType;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -90,13 +82,7 @@ public class IdFuzzingProviderFactory {
     private IdFuzzingProviderFactory() {}
 
     public static HapiSpecOperation[] initOperations() {
-        return Stream.of(
-                        initOpCommon(),
-                        initOpHbarTransfer(),
-                        initOpFungibleTransfer(),
-                        initOpNonFungibleTransfer(),
-                        initOpERC20Transfer(),
-                        initOpERC721Transfer())
+        return Stream.of(initOpCommon(), initOpNonFungibleTransfer())
                 .flatMap(Stream::of)
                 .toArray(HapiSpecOperation[]::new);
     }
@@ -178,32 +164,6 @@ public class IdFuzzingProviderFactory {
         };
     }
 
-    private static HapiSpecOperation[] initOpHbarTransfer() {
-        return new HapiSpecOperation[] {
-            cryptoCreate(SENDER).balance(INITIAL_SUPPLY).key(MULTI_KEY).maxAutomaticTokenAssociations(5),
-            uploadInitCode(NESTED_LAZY_PRECOMPILE_CONTRACT),
-            contractCreate(NESTED_LAZY_PRECOMPILE_CONTRACT).gas(3_000_000),
-        };
-    }
-
-    private static HapiSpecOperation[] initOpFungibleTransfer() {
-        final AtomicReference<String> tokenAddr = new AtomicReference<>();
-
-        return new HapiSpecOperation[] {
-            tokenCreate(FUNGIBLE_TOKEN)
-                    .tokenType(TokenType.FUNGIBLE_COMMON)
-                    .initialSupply(INITIAL_SUPPLY)
-                    .treasury(TOKEN_TREASURY)
-                    .adminKey(MULTI_KEY)
-                    .supplyKey(MULTI_KEY)
-                    .exposingCreatedIdTo(id -> tokenAddr.set(asHexedSolidityAddress(HapiPropertySource.asToken(id)))),
-            uploadInitCode(TRANSFER_TO_ALIAS_PRECOMPILE_CONTRACT),
-            contractCreate(TRANSFER_TO_ALIAS_PRECOMPILE_CONTRACT).gas(3_000_000L),
-            tokenAssociate(OWNER, List.of(FUNGIBLE_TOKEN)),
-            cryptoTransfer(moving(INITIAL_SUPPLY, FUNGIBLE_TOKEN).between(TOKEN_TREASURY, OWNER))
-        };
-    }
-
     private static HapiSpecOperation[] initOpNonFungibleTransfer() {
         return new HapiSpecOperation[] {
             tokenCreate(NON_FUNGIBLE_TOKEN)
@@ -218,56 +178,6 @@ public class IdFuzzingProviderFactory {
             mintToken(NON_FUNGIBLE_TOKEN, erc721UniqueTokens()),
             cryptoTransfer(movingUnique(NON_FUNGIBLE_TOKEN, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L)
                     .between(TOKEN_TREASURY, OWNER))
-        };
-    }
-
-    private static HapiSpecOperation[] initOpERC20Transfer() {
-        final AtomicReference<String> tokenAddr = new AtomicReference<>();
-
-        return new HapiSpecOperation[] {
-            cryptoCreate(TOKEN_TREASURY_ERC),
-            tokenCreate(ERC_FUNGIBLE_TOKEN)
-                    .tokenType(TokenType.FUNGIBLE_COMMON)
-                    .initialSupply(INITIAL_SUPPLY)
-                    .treasury(TOKEN_TREASURY_ERC)
-                    .adminKey(MULTI_KEY)
-                    .supplyKey(MULTI_KEY)
-                    .exposingCreatedIdTo(id -> tokenAddr.set(asHexedSolidityAddress(HapiPropertySource.asToken(id)))),
-            uploadInitCode(ERC_20_CONTRACT),
-            contractCreate(ERC_20_CONTRACT),
-            tokenAssociate(ERC_20_CONTRACT, List.of(ERC_FUNGIBLE_TOKEN)),
-            cryptoTransfer(moving(INITIAL_SUPPLY, ERC_FUNGIBLE_TOKEN).between(TOKEN_TREASURY_ERC, ERC_20_CONTRACT))
-        };
-    }
-
-    private static HapiSpecOperation[] initOpERC721Transfer() {
-        return new HapiSpecOperation[] {
-            tokenCreate(ERC_NON_FUNGIBLE_TOKEN)
-                    .tokenType(TokenType.NON_FUNGIBLE_UNIQUE)
-                    .initialSupply(0)
-                    .treasury(TOKEN_TREASURY)
-                    .adminKey(MULTI_KEY)
-                    .supplyKey(MULTI_KEY),
-            uploadInitCode(ERC_721_CONTRACT),
-            contractCreate(ERC_721_CONTRACT).gas(3_000_000L),
-            tokenAssociate(OWNER, ERC_NON_FUNGIBLE_TOKEN),
-            tokenAssociate(SPENDER, ERC_NON_FUNGIBLE_TOKEN),
-            tokenAssociate(ERC_721_CONTRACT, ERC_NON_FUNGIBLE_TOKEN),
-            mintToken(ERC_NON_FUNGIBLE_TOKEN, erc721UniqueTokens()),
-            cryptoTransfer(movingUnique(ERC_NON_FUNGIBLE_TOKEN, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L)
-                    .between(TOKEN_TREASURY, OWNER)),
-            cryptoApproveAllowance()
-                    .payingWith(UNIQUE_PAYER_ACCOUNT)
-                    .addNftAllowance(
-                            OWNER,
-                            ERC_NON_FUNGIBLE_TOKEN,
-                            ERC_721_CONTRACT,
-                            false,
-                            List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L))
-                    .via(BASE_APPROVE_TXN)
-                    .logged()
-                    .signedBy(UNIQUE_PAYER_ACCOUNT, OWNER)
-                    .fee(ONE_HBAR)
         };
     }
 

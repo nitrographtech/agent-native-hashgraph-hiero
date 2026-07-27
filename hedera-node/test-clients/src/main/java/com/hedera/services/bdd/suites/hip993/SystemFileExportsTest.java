@@ -14,14 +14,11 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.randomUtf8Bytes;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.resourceAsString;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.sysFileUpdateTo;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.nodeUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.utilops.EmbeddedVerbs.simulatePostUpgradeTransaction;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.allVisibleItems;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.blockingOrder;
@@ -88,7 +85,6 @@ import com.hederahashgraph.api.proto.java.NodeUpdateTransactionBody;
 import com.hederahashgraph.api.proto.java.ServicesConfigurationList;
 import com.hederahashgraph.api.proto.java.ThrottleDefinitions;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.math.BigInteger;
 import java.security.KeyStoreException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -196,20 +192,15 @@ public class SystemFileExportsTest {
                 waitUntilNextBlock().withBackgroundTraffic(true),
                 // And now simulate an upgrade boundary
                 simulatePostUpgradeTransaction(),
-                // Verify the new fee schedules (which include a subtype for scheduled contract fees) are in effect
-                uploadInitCode("SimpleUpdate"),
+                // Verify the new fee schedules are in effect for retained scheduled native operations
                 withOpContext((spec, opLog) -> spec.tryReinitializingFees()),
-                contractCreate("SimpleUpdate").gas(300_000L),
                 cryptoCreate("civilian"),
                 scheduleCreate(
-                                "contractCall",
-                                contractCall("SimpleUpdate", "set", BigInteger.valueOf(5), BigInteger.valueOf(42))
-                                        .gas(24_000)
-                                        .memo("")
-                                        .fee(ONE_HBAR))
+                                "scheduledTransfer",
+                                cryptoCreate("scheduledAccount").memo("").fee(ONE_HBAR))
                         .payingWith("civilian")
-                        .via("contractCall"),
-                validateChargedUsdWithin("contractCall", 0.1, 3.0),
+                        .via("scheduledTransfer"),
+                validateChargedUsdWithin("scheduledTransfer", 0.1, 3.0),
                 // Trigger block closure to ensure block is closed
                 doingContextual(TxnUtils::triggerAndCloseAtLeastOneFileIfNotInterrupted));
     }

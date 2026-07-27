@@ -6,10 +6,8 @@ import static com.hedera.services.bdd.spec.infrastructure.OpProvider.UNIQUE_PAYE
 import static com.hedera.services.bdd.spec.infrastructure.OpProvider.UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE;
 import static com.hedera.services.bdd.spec.keys.TrieSigMapGenerator.uniqueWithFullPrefixesFor;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
@@ -96,9 +94,7 @@ public class HollowAccountCompletedFuzzingFactory {
             cryptoCreate(UNIQUE_PAYER_ACCOUNT)
                     .balance(UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE)
                     .withRecharging(),
-            uploadInitCode(CONTRACT),
-            cryptoCreate(TOKEN_TREASURY).balance(0L),
-            contractCreate(CONTRACT)
+            cryptoCreate(TOKEN_TREASURY).balance(0L)
         };
     }
 

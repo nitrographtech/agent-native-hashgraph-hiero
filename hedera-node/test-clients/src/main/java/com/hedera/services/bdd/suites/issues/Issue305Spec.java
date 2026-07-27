@@ -3,10 +3,9 @@ package com.hedera.services.bdd.suites.issues;
 
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
+import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overridingAllOf;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
@@ -46,20 +45,17 @@ public class Issue305Spec {
     final Stream<DynamicTest> congestionMultipliersRefreshOnPropertyUpdate() {
         final var civilian = "civilian";
         final var preCongestionTxn = "preCongestionTxn";
-        final var multipurposeContract = "Multipurpose";
+        final var receiver = "receiver";
         final var normalPrice = new AtomicLong();
         final var multipliedPrice = new AtomicLong();
         final List<TransactionID> submittedTxnIds = new ArrayList<>();
 
         return hapiTest(
                 cryptoCreate(civilian).balance(10 * ONE_HUNDRED_HBARS),
-                uploadInitCode(multipurposeContract),
-                contractCreate(multipurposeContract).payingWith(GENESIS).logging(),
-                contractCall(multipurposeContract)
+                cryptoCreate(receiver),
+                cryptoTransfer(tinyBarsFromTo(civilian, receiver, 1L))
                         .payingWith(civilian)
-                        .gas(200_000)
                         .fee(10 * ONE_HBAR)
-                        .sending(ONE_HBAR)
                         .via(preCongestionTxn),
                 getTxnRecord(preCongestionTxn).providingFeeTo(normalPrice::set),
                 overridingAllOf(Map.of(
@@ -74,11 +70,9 @@ public class Issue305Spec {
                         spec.sleepConsensusTime(Duration.ofMillis(25));
                         allRunFor(
                                 spec,
-                                contractCall(multipurposeContract)
+                                cryptoTransfer(tinyBarsFromTo(civilian, receiver, 1L))
                                         .payingWith(civilian)
-                                        .gas(200_000)
                                         .fee(10 * ONE_HBAR)
-                                        .sending(ONE_HBAR)
                                         .hasPrecheckFrom(BUSY, OK)
                                         .withTxnTransform(txn -> {
                                             submittedTxnIds.add(idOf(txn));

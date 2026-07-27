@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.services.bdd.suites.token;
 
-import static com.hedera.services.bdd.junit.RepeatableReason.NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION;
 import static com.hedera.services.bdd.junit.TestTags.TOKEN;
 import static com.hedera.services.bdd.spec.HapiSpec.defaultHapiSpec;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
@@ -10,11 +9,9 @@ import static com.hedera.services.bdd.spec.assertions.SomeFungibleTransfers.chan
 import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.recordWith;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.crypto.ExpectedTokenRel.relationshipWith;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.burnToken;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createDefaultContract;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -59,9 +56,7 @@ import static com.hederahashgraph.api.proto.java.TokenType.NON_FUNGIBLE_UNIQUE;
 import com.google.protobuf.ByteString;
 import com.hedera.services.bdd.junit.HapiTest;
 import com.hedera.services.bdd.junit.LeakyHapiTest;
-import com.hedera.services.bdd.junit.RepeatableHapiTest;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
-import com.hedera.services.bdd.spec.transactions.token.TokenMovement;
 import com.hederahashgraph.api.proto.java.TokenID;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -220,17 +215,6 @@ public class TokenAssociationSpecs {
     }
 
     @HapiTest
-    final Stream<DynamicTest> associatedContractsMustHaveAdminKeys() {
-        String misc = "someToken";
-        String contract = "defaultContract";
-
-        return defaultHapiSpec("AssociatedContractsMustHaveAdminKeys")
-                .given(tokenCreate(misc))
-                .when(createDefaultContract(contract).omitAdminKey())
-                .then(tokenAssociate(contract, misc).hasKnownStatus(INVALID_SIGNATURE));
-    }
-
-    @HapiTest
     final Stream<DynamicTest> associateNeedsAccountSignature() {
         String token = "someToken";
         String alice = "alice";
@@ -249,34 +233,6 @@ public class TokenAssociationSpecs {
                 tokenDissociate(bob, token).signedBy(DEFAULT_PAYER).hasKnownStatus(INVALID_SIGNATURE),
                 // dissociate token *with* the account key
                 tokenDissociate(bob, token).signedBy(DEFAULT_PAYER, bob).hasKnownStatus(SUCCESS));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> contractInfoQueriesAsExpected() {
-        final var contract = "contract";
-        return defaultHapiSpec("ContractInfoQueriesAsExpected")
-                .given(
-                        newKeyNamed(SIMPLE),
-                        tokenCreate("a"),
-                        tokenCreate("b"),
-                        tokenCreate("c"),
-                        tokenCreate("tbd").adminKey(SIMPLE),
-                        createDefaultContract(contract))
-                .when(
-                        tokenAssociate(contract, "a", "b", "c", "tbd"),
-                        getContractInfo(contract)
-                                .hasToken(relationshipWith("a"))
-                                .hasToken(relationshipWith("b"))
-                                .hasToken(relationshipWith("c"))
-                                .hasToken(relationshipWith("tbd")),
-                        tokenDissociate(contract, "b"),
-                        tokenDelete("tbd"))
-                .then(getContractInfo(contract)
-                        .hasToken(relationshipWith("a"))
-                        .hasNoTokenRelationship("b")
-                        .hasToken(relationshipWith("c"))
-                        .hasToken(relationshipWith("tbd"))
-                        .logged());
     }
 
     @HapiTest

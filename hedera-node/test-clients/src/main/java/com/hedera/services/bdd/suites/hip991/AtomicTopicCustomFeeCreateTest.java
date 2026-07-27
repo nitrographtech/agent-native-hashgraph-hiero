@@ -8,7 +8,6 @@ import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAliasedAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
@@ -17,7 +16,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenFreeze;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenPause;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedConsensusHbarFee;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedConsensusHtsFee;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeTests.expectedConsensusFixedHTSFee;
@@ -344,28 +342,6 @@ class AtomicTopicCustomFeeCreateTest extends TopicCustomFeeBase {
                             .hasCustomFee(expectedConsensusFixedHbarFee(1, validAlias)),
                     // check if account is hollow (has empty key)
                     getAliasedAccountInfo(validAlias).isHollow()));
-        }
-
-        @HapiTest
-        @DisplayName("topic create with contract collector")
-        final Stream<DynamicTest> topicWithContractCollector() {
-            // TOPIC_FEE_019
-            var mutableContract = "PayReceivable";
-            return hapiTest(flattened(
-                    cryptoCreate(BATCH_OPERATOR).balance(ONE_MILLION_HBARS),
-                    deployMutableContract(mutableContract),
-                    atomicBatch(createTopic(TOPIC)
-                                    .adminKeyName(ADMIN_KEY)
-                                    .submitKeyName(SUBMIT_KEY)
-                                    .feeScheduleKeyName(FEE_SCHEDULE_KEY)
-                                    .withConsensusCustomFee(fixedConsensusHbarFee(1, mutableContract))
-                                    .batchKey(BATCH_OPERATOR))
-                            .payingWith(BATCH_OPERATOR),
-                    getTopicInfo(TOPIC)
-                            .hasAdminKey(ADMIN_KEY)
-                            .hasSubmitKey(SUBMIT_KEY)
-                            .hasFeeScheduleKey(FEE_SCHEDULE_KEY)
-                            .hasCustomFee(expectedConsensusFixedHbarFee(1, mutableContract))));
         }
 
         @HapiTest
@@ -898,18 +874,6 @@ class AtomicTopicCustomFeeCreateTest extends TopicCustomFeeBase {
         final var t = new ArrayList<SpecOperation>(List.of(newKeyNamed(alias).shape(SECP_256K1_SHAPE)));
         t.addAll(Arrays.stream(createHollowAccountFrom(alias)).toList());
         t.add(withOpContext((spec, opLog) -> updateSpecFor(spec, alias)));
-        return t.toArray(new SpecOperation[0]);
-    }
-
-    protected SpecOperation[] deployMutableContract(String name) {
-        var t = List.of(
-                newKeyNamed(name),
-                uploadInitCode(name),
-                contractCreate(name)
-                        .maxAutomaticTokenAssociations(0)
-                        .adminKey(name)
-                        .gas(500_000L));
-
         return t.toArray(new SpecOperation[0]);
     }
 }

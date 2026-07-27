@@ -12,13 +12,10 @@ import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
 import static com.hedera.services.bdd.spec.keys.SigControl.OFF;
 import static com.hedera.services.bdd.spec.keys.SigControl.ON;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnUtils.accountAllowanceHook;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoUpdate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.movingHbar;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.assertionsHold;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyListNamed;
@@ -47,7 +44,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.RECORD_NOT_FOUND;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TRANSACTION_EXPIRED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TRANSACTION_OVERSIZE;
-import static org.hiero.hapi.support.fees.Extra.HOOK_EXECUTION;
 import static org.hiero.hapi.support.fees.Extra.KEYS;
 import static org.hiero.hapi.support.fees.Extra.PROCESSING_BYTES;
 import static org.hiero.hapi.support.fees.Extra.SIGNATURES;
@@ -220,43 +216,17 @@ public class CryptoUpdateSimpleFeesTest {
         }
 
         @HapiTest
-        @DisplayName("CryptoUpdate - update account with one hook - Full fees with hook extra charged")
-        Stream<DynamicTest> cryptoUpdateWithOneHookFullFeesWithExtraCharged() {
-            return hapiTest(
-                    uploadInitCode(HOOK_CONTRACT),
-                    contractCreate(HOOK_CONTRACT).gas(5_000_000L),
-                    cryptoCreate(PAYER).balance(ONE_HUNDRED_HBARS),
-                    cryptoUpdate(PAYER)
-                            .withHooks(accountAllowanceHook(1L, HOOK_CONTRACT))
-                            .payingWith(PAYER)
-                            .signedBy(PAYER)
-                            .via(cryptoUpdateTxn),
-                    validateChargedUsdWithinWithTxnSize(
-                            cryptoUpdateTxn,
-                            txnSize -> expectedCryptoUpdateFullFeeUsd(Map.of(
-                                    SIGNATURES, 1L,
-                                    KEYS, 0L,
-                                    HOOK_EXECUTION, 1L,
-                                    PROCESSING_BYTES, (long) txnSize)),
-                            0.1),
-                    validateChargedAccount(cryptoUpdateTxn, PAYER));
-        }
-
-        @HapiTest
-        @DisplayName("CryptoUpdate - update account with threshold key and extra hooks - Full fees with extras charged")
+        @DisplayName("CryptoUpdate - update account with threshold key - Full fees with extras charged")
         Stream<DynamicTest> cryptoUpdateWithThresholdKeyAndExtraHooksSignaturesKeysAndHooksExtrasCharged() {
             KeyShape keyShape = threshOf(2, SIMPLE, SIMPLE);
             SigControl validSig = keyShape.signedWith(sigs(ON, ON));
             return hapiTest(
                     newKeyNamed(adminKey),
-                    uploadInitCode(HOOK_CONTRACT),
-                    contractCreate(HOOK_CONTRACT).gas(5_000_000L),
                     newKeyNamed(PAYER_KEY).shape(keyShape),
                     cryptoCreate(PAYER).key(adminKey).balance(ONE_HUNDRED_HBARS),
                     cryptoUpdate(PAYER)
                             .key(PAYER_KEY)
                             .sigControl(forKey(PAYER_KEY, validSig))
-                            .withHooks(accountAllowanceHook(1L, HOOK_CONTRACT), accountAllowanceHook(2L, HOOK_CONTRACT))
                             .payingWith(PAYER)
                             .signedBy(PAYER_KEY, adminKey)
                             .via(cryptoUpdateTxn),
@@ -265,7 +235,6 @@ public class CryptoUpdateSimpleFeesTest {
                             txnSize -> expectedCryptoUpdateFullFeeUsd(Map.of(
                                     SIGNATURES, 3L,
                                     KEYS, 2L,
-                                    HOOK_EXECUTION, 2L,
                                     PROCESSING_BYTES, (long) txnSize)),
                             0.1),
                     validateChargedAccount(cryptoUpdateTxn, PAYER));

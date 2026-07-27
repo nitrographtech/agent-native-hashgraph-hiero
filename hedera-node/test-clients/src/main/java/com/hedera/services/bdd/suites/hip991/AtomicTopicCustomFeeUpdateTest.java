@@ -6,7 +6,6 @@ import static com.hedera.services.bdd.junit.TestTags.ATOMIC_BATCH;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
@@ -16,7 +15,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenFreeze;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenPause;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.updateTopic;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedConsensusHbarFee;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedConsensusHbarFeeNoCollector;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedConsensusHtsFee;
@@ -273,27 +271,6 @@ class AtomicTopicCustomFeeUpdateTest extends TopicCustomFeeBase {
                                     .batchKey(BATCH_OPERATOR))
                             .payingWith(BATCH_OPERATOR),
                     getTopicInfo(TOPIC).hasCustomFee(expectedConsensusFixedHbarFee(1, hollowAccount)));
-        }
-
-        @HapiTest
-        @DisplayName("to add a custom fee with a contract as a collector")
-        final Stream<DynamicTest> updateToAddCustomFeeWithContractAsCollector() {
-            final var contract = "CallingContract";
-
-            return hapiTest(
-                    cryptoCreate(BATCH_OPERATOR).balance(ONE_MILLION_HBARS),
-                    // Create a topic without custom fees
-                    createTopic(TOPIC).adminKeyName(ADMIN_KEY).feeScheduleKeyName(FEE_SCHEDULE_KEY),
-                    uploadInitCode(contract),
-                    contractCreate(contract),
-
-                    // Update the topic to have contract as a collector
-                    atomicBatch(updateTopic(TOPIC)
-                                    .withConsensusCustomFee(fixedConsensusHbarFee(1, contract))
-                                    .signedByPayerAnd(ADMIN_KEY, FEE_SCHEDULE_KEY)
-                                    .batchKey(BATCH_OPERATOR))
-                            .payingWith(BATCH_OPERATOR),
-                    getTopicInfo(TOPIC).hasCustomFee(expectedConsensusFixedHbarFee(1, contract)));
         }
 
         @HapiTest

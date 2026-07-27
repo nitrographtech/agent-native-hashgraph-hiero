@@ -7,19 +7,14 @@ import static com.hedera.services.bdd.junit.TestTags.SERIAL;
 import static com.hedera.services.bdd.spec.HapiSpec.defaultHapiSpec;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.assertions.AccountInfoAsserts.accountWith;
-import static com.hedera.services.bdd.spec.assertions.ContractInfoAsserts.contractWith;
 import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.recordWith;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoUpdate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.blockingOrder;
@@ -40,7 +35,6 @@ import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_MILLION_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.STAKING_REWARD;
 import static com.hedera.services.bdd.suites.HapiSuite.TINY_PARTS_PER_WHOLE;
-import static com.hedera.services.bdd.suites.contract.records.ContractRecordsSanityCheckSuite.PAYABLE_CONTRACT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_STAKING_ID;
 
 import com.hedera.services.bdd.junit.HapiTest;
@@ -383,8 +377,6 @@ public class StakingSuite {
                                 waitUntilStartOfNextStakingPeriod(STAKING_PERIOD_MINS)))
                 .when(
                         cryptoCreate(ALICE).stakedNodeId(0).balance(ONE_HUNDRED_HBARS),
-                        uploadInitCode(PAYABLE_CONTRACT),
-                        contractCreate(PAYABLE_CONTRACT).stakedNodeId(0L).balance(ONE_HUNDRED_HBARS),
                         waitUntilStartOfNextStakingPeriod(STAKING_PERIOD_MINS))
                 .then(
                         cryptoTransfer(tinyBarsFromTo(GENESIS, FUNDING, 1L)),
@@ -393,19 +385,16 @@ public class StakingSuite {
                         waitUntilStartOfNextStakingPeriod(STAKING_PERIOD_MINS),
                         cryptoTransfer(tinyBarsFromTo(GENESIS, FUNDING, 1L)),
                         // info queries return rewards
-                        getContractInfo(PAYABLE_CONTRACT)
-                                .has(contractWith().stakedNodeId(0L).pendingRewards(333333300L)),
-                        contractUpdate(PAYABLE_CONTRACT).newDeclinedReward(true).via("acceptsReward"),
+                        getAccountInfo(ALICE).has(accountWith().stakedNodeId(0L).pendingRewards(333333300L)),
+                        cryptoUpdate(ALICE).newDeclinedReward(true).via("acceptsReward"),
                         getTxnRecord("acceptsReward")
                                 .logged()
                                 .andAllChildRecords()
-                                .hasPaidStakingRewards(List.of(Pair.of(PAYABLE_CONTRACT, 333333300L))),
-                        contractUpdate(PAYABLE_CONTRACT).newStakedNodeId(111L).hasPrecheck(INVALID_STAKING_ID),
+                                .hasPaidStakingRewards(List.of(Pair.of(ALICE, 333333300L))),
+                        cryptoUpdate(ALICE).newStakedNodeId(111L).hasPrecheck(INVALID_STAKING_ID),
                         // Same period should not trigger reward for the contract again, only for Alice
                         // whose stakedToMe has now changed
-                        contractUpdate(PAYABLE_CONTRACT)
-                                .newStakedAccountId(ALICE)
-                                .via("samePeriodTxn"),
+                        cryptoUpdate(ALICE).newStakedAccountId(BOB).via("samePeriodTxn"),
                         getTxnRecord("samePeriodTxn")
                                 .logged()
                                 .hasPaidStakingRewards(List.of(Pair.of(ALICE, 100 * SUITE_PER_HBAR_REWARD_RATE))));
