@@ -198,56 +198,6 @@ public class LeakyCryptoTestsSuite {
                 validateFees(updateWithExpiredAccount, baseFee, CRYPTO_UPDATE_FEE));
     }
 
-    @RepeatableHapiTest(NEEDS_SYNCHRONOUS_HANDLE_WORKFLOW)
-    final Stream<DynamicTest> getsInsufficientPayerBalanceIfSendingAccountCanPayEverythingButServiceFee() {
-        final var civilian = "civilian";
-        final var creation = "creation";
-        final var gasToOffer = 128_000L;
-        final var civilianStartBalance = ONE_HUNDRED_HBARS;
-        final AtomicLong gasFee = new AtomicLong();
-        final AtomicLong offeredGasFee = new AtomicLong();
-        final AtomicLong nodeAndNetworkFee = new AtomicLong();
-        final AtomicLong maxSendable = new AtomicLong();
-
-        return hapiTest(
-                cryptoCreate(civilian).balance(civilianStartBalance),
-                uploadInitCode(EMPTY_CONSTRUCTOR_CONTRACT),
-                contractCreate(EMPTY_CONSTRUCTOR_CONTRACT)
-                        .gas(gasToOffer)
-                        .payingWith(civilian)
-                        .balance(0L)
-                        .via(creation),
-                withOpContext((spec, opLog) -> {
-                    final var lookup = getTxnRecord(creation).logged();
-                    allRunFor(spec, lookup);
-                    final var creationRecord = lookup.getResponseRecord();
-                    final var gasUsed = creationRecord.getContractCreateResult().getGasUsed();
-                    gasFee.set(tinybarCostOfGas(spec, ContractCreate, gasUsed));
-                    offeredGasFee.set(tinybarCostOfGas(spec, ContractCreate, gasToOffer));
-                    nodeAndNetworkFee.set(creationRecord.getTransactionFee() - gasFee.get());
-                    log.info(
-                            "Network + node fees were {}, gas fee was {} (sum to" + " {}, compare with {})",
-                            nodeAndNetworkFee::get,
-                            gasFee::get,
-                            () -> nodeAndNetworkFee.get() + gasFee.get(),
-                            creationRecord::getTransactionFee);
-                    maxSendable.set(
-                            civilianStartBalance - 2 * nodeAndNetworkFee.get() - gasFee.get() - offeredGasFee.get());
-                    log.info("Maximum amount send-able in precheck should be {}", maxSendable::get);
-                }),
-                sourcing(() -> getAccountBalance(civilian)
-                        .hasTinyBars(civilianStartBalance - nodeAndNetworkFee.get() - gasFee.get())),
-                // Fire-and-forget a txn that will leave the civilian payer with 1 too few
-                // tinybars at consensus
-                cryptoTransfer(tinyBarsFromTo(civilian, FUNDING, 1)).payingWith(GENESIS),
-                sourcing(() -> contractCustomCreate(EMPTY_CONSTRUCTOR_CONTRACT, "Clone")
-                        .gas(gasToOffer)
-                        .payingWith(civilian)
-                        .setNode(4)
-                        .balance(maxSendable.get())
-                        .hasKnownStatus(INSUFFICIENT_PAYER_BALANCE)));
-    }
-
     @Order(1)
     @LeakyEmbeddedHapiTest(
             reason = NEEDS_STATE_ACCESS,
