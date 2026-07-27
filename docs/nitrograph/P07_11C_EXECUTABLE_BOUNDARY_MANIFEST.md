@@ -281,16 +281,22 @@ contains five minimal unsupported-body constructors: create, call, update,
 delete, and Ethereum. They are explicit rejection coverage, have no successful
 setup, and remain `RETAIN_INTENTIONAL_REJECTION`.
 
+`Issue1765Suite.recordOfInvalidContractUpdateSanityChecks` contains one
+`contractUpdate` against a deliberately invalid `1.1.1` contract ID. It
+asserts the `INVALID_CONTRACT_ID` record, memo, fee, and transfer list without
+any successful executable setup. It also remains
+`RETAIN_INTENTIONAL_REJECTION`.
+
 ## Corrected post-implementation boundary
 
 - Original corrected P07-11C input removed: 68 constructions.
 - Supplemental non-lifecycle sites removed or split: 32.
 - Supplemental lifecycle/reconnect sites deferred: 12.
-- Existing minimal rejection constructors retained: 5.
+- Existing minimal rejection constructors retained: 6.
 - Unresolved sites: 0.
 
-The remaining suite-level executable syntax is therefore exactly seventeen
-intentional sites: twelve P07-11D lifecycle/reconnect/fixture sites and five
+The remaining suite-level executable syntax is therefore exactly eighteen
+intentional sites: twelve P07-11D lifecycle/reconnect/fixture sites and six
 minimal rejection constructors. Core DSL and HAPI operation implementations
 are constructors, not registered executable ownership, and remain outside this
 suite census.
