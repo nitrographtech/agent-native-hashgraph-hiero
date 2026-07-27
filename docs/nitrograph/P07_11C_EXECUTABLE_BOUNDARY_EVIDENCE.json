@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-07-27T22:25:00Z",
   "phase": {
     "name": "P07-11C",
-    "status": "SOURCE_AND_LOCAL_VALIDATION_COMPLETE",
+    "status": "CLOSED",
     "starting_commit": "50f0b7c025dd30c129627f7559b7e09e318cac0c",
     "scope_correction_start": "b024af0048446d6d9e6401787c4f7c58cb782725",
     "initial_manifest_commit": "8091610a13",
@@ -186,8 +186,19 @@
     }
   },
   "ci": {
-    "exact_head_run": "PENDING_AFTER_EVIDENCE_COMMIT",
-    "required_interpretation": "Any StreamValidationTest failure matching the isolated baseline is pre-existing and not P07-11C-attributable."
+    "validated_evidence_head": "058dc20f6d881ac25231036cd5185698025df4dc",
+    "exact_head_run": 30310606943,
+    "status": "PASS",
+    "duration": "15m25s",
+    "job": "native-agent",
+    "passed_stages": [
+      "Focused service-composition tests and distributions",
+      "Verify distribution profiles",
+      "Enforce Nitrograph native runtime dependency policy",
+      "Enforce P07 source and fixture ownership policies",
+      "Enforce protected-layer boundary"
+    ],
+    "required_interpretation": "The exact-head CI passed. The local full HAPI target's StreamValidationTest failure matches the isolated baseline and is pre-existing, not P07-11C-attributable."
   },
   "deferred": {
     "phase": "P07-11D",
