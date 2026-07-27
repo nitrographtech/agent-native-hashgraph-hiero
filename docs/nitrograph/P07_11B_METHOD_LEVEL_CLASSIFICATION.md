@@ -14,6 +14,12 @@ syntax tree. Each operation is assigned to its enclosing method or factory.
 Helper-generated operations are traced to their callers. The wrapper-aware
 taxonomy and reconciliation below supersede the earlier literal-name counts.
 
+At `e5742461345b2b425c2d5e6ed78a2ecd5e12ed51`, the same syntax-tree
+inventory was audited in the reverse direction from every construction site
+through providers, intermediate callers, and registration roots. The
+ownership-closure audit below is authoritative for enclosing ownership. It
+does not add executable constructions to the operation census.
+
 Notation:
 
 - operations: `C` = `contractCreate`, `K` = `contractCall`, `E` =
@@ -126,9 +132,9 @@ instead of being counted twice. No scoped source directly constructs
 | `issues/IssueRegressionTests.java` | `IssueRegressionTests.canSwitchSimpleFeesFromFalseToTrueWithoutException` | C2/D | mixed ownership; fee-mode switch smoke test using contract creates; contract | `SPLIT_REQUIRED` | Preserve toggle regression with native fee-bearing operations. |
 | same | `IssueRegressionTests.transferAccountCannotBeDeletedForContractTarget` | C2/D | subject-under-test; contract transfer-account restriction; contract | `REMOVE_P07_11B` | Target entities are contracts and the rule is contract-specific. |
 | `staking/StakingSuite.java` | `StakingSuite.stakingMetadataUpdateIsRewardOpportunity` | C1/D | mixed ownership; staking metadata/reward behavior with incidental contract account; contract | `SPLIT_REQUIRED` | Preserve staking invariant with a native account. |
-| `throttling/SteadyStateThrottlingTest.java` | `SteadyStateThrottlingTest.competingClientFor` | C1 K1/F | dynamic-operation factory; selects load provider by transaction type; contract | `SPLIT_REQUIRED` | Called by `runWithConfig`; remove contract provider branches while retaining native providers. |
-| same | `SteadyStateThrottlingTest.get` | C1/F | dynamic-operation factory; contract-create operation provider; contract | `REMOVE_P07_11B` | Factory branch produces only retired contract creation. |
-| same | anonymous `suggestedInitializers` in contract-call provider | C1/F | reusable setup; initializes contract-call load provider; contract | `REMOVE_P07_11B` | Provider is selected only for contract-call steady-state load. |
+| `throttling/SteadyStateThrottlingTest.java` | `SteadyStateThrottlingTest.competingClientFor` | C1 K1/F | dynamic-operation factory; selects load provider by transaction type; contract | `SPLIT_REQUIRED` | Called by `checkCustomNetworkTps`; remove its `ContractCalls` branch while retaining the native default branch. |
+| same | anonymous `get` in `scCallOps` | K1/F | anonymous operation implementation; contract-call load operation | `REMOVE_P07_11B` | Reachable only from the removable `checkContractCallsTps` registration through `scCallOps`. |
+| same | anonymous `suggestedInitializers` in `scCallOps` | C1/F | anonymous operation implementation; initializes contract-call load provider; contract | `REMOVE_P07_11B` | Reachable only from the removable `checkContractCallsTps` registration through `scCallOps`. |
 
 ## Files, queries, integration, and regression factories
 
@@ -161,7 +167,173 @@ instead of being counted twice. No scoped source directly constructs
 | `token/TokenAssociationSpecs.java` | `associatedContractsMustHaveAdminKeys`; `contractInfoQueriesAsExpected` | each `createDefaultContract` 1/D | subject-under-test; contract association and contract-info behavior | `REMOVE_P07_11B` | Both methods require a successfully created contract account; native association coverage is independent. |
 | `token/batch/AtomicTokenAssociationSpecs.java` | `associatedContractsMustHaveAdminKeys`; `contractInfoQueriesAsExpected` | each `createDefaultContract` 1/D | subject-under-test; batched contract association and contract-info behavior | `REMOVE_P07_11B` | Both methods require a successfully created contract account; native atomic association coverage remains. |
 
-## Reconciliation
+## Complete ownership-closure audit
+
+### Closure model
+
+An executable construction remains counted exactly once in the operation
+census. Enclosing ownership is recorded separately with these structural
+roles:
+
+- **registered executable test** or **suite registration root**: the nearest
+  JUnit/HAPI registration or externally reachable suite entry;
+- **provider factory**: a method that assembles, returns, or selects an
+  operation provider, operation array, or dynamic operation closure;
+- **intermediate delegator**: a caller between a registration root and a
+  provider;
+- **helper**: reusable setup or assertion support containing a construction;
+- **branch owner**: a conditional branch selecting an executable provider;
+- **anonymous operation implementation**: an overridden supplier/provider
+  method containing the concrete construction.
+
+The audit followed each of the 225 constructions to its nearest registered or
+externally reachable root. The 110 construction-bearing registered methods
+already listed in the method tables are self-rooted. The additional indirect
+roots and factories are enumerated below.
+
+### `SteadyStateThrottlingTest` closure
+
+| Ownership node | Structural role | Parent or callers | Downstream executable ownership | Behavioral purpose | Final disposition | Implementation consequence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `checkContractCallsTps` | registered executable test | HAPI registration | `checkTps` and `scCallOps` | contract-call steady-state throughput | `REMOVE_P07_11B` | Delete the complete registered test. |
+| `checkTps` | intermediate delegator; retained registration support | four TPS registrations | `checkCustomNetworkTps` | common native and contract throughput harness | `RETAIN_NATIVE` | Preserve; its three native registered callers remain. |
+| `checkCustomNetworkTps` | intermediate delegator; provider invoker | `checkTps` | supplied provider and `competingClientFor` | common load execution and TPS assertion | `RETAIN_NATIVE` | Preserve the generic native harness. |
+| `scCallOps` | provider factory | only `checkContractCallsTps` | anonymous `suggestedInitializers` and `get` | constructs the contract-call load provider | `REMOVE_P07_11B` | Delete after its sole registered caller is removed. |
+| `scCallOps.suggestedInitializers` | anonymous operation implementation; executable construction site | contained by `scCallOps` | `contractCreate` 1 | deploys the contract used by load | `REMOVE_P07_11B` | Removed with `scCallOps`. |
+| `scCallOps.get` | operation supplier; anonymous operation implementation; executable construction site | contained by `scCallOps` | ordinary `contractCall` 1 | supplies successful contract calls | `REMOVE_P07_11B` | Removed with `scCallOps`. |
+| `competingClientFor` | provider factory; branch owner | `checkCustomNetworkTps` | native default branch and `ContractCalls` branch | chooses competing load by transaction family | `SPLIT_REQUIRED` | Preserve the native default branch. |
+| `competingClientFor.ContractCalls` | branch owner; executable construction site | selected only for `"ContractCalls"` | `contractCreate` 1 and ordinary `contractCall` 1 | contract-specific competing load | `REMOVE_P07_11B` | Surgically remove the branch when its only root is deleted. |
+
+The complete executable path is:
+
+```text
+checkContractCallsTps
+├─ scCallOps
+│  ├─ suggestedInitializers → contractCreate
+│  └─ get → contractCall
+└─ checkTps
+   └─ checkCustomNetworkTps
+      ├─ applies scCallOps
+      └─ competingClientFor
+         └─ ContractCalls branch → contractCreate + contractCall
+```
+
+There is no retained or deferred caller of `scCallOps`. In contrast,
+`checkTps`, `checkCustomNetworkTps`, and the default branch of
+`competingClientFor` support the retained `checkXfersTps`,
+`checkFungibleMintsTps`, and `checkCryptoCreatesTps` registrations.
+
+### Other indirect ownership closures
+
+| Closure | Registered or external roots | Providers, helpers, and caller path | Root disposition | Provider/helper disposition |
+| --- | ---: | --- | --- | --- |
+| Kitchen Sink fee comparison | `kitchenSinkFeeComparisonCrypto`, `kitchenSinkFeeComparisonFull` (2) | `runCryptoTransactions → cryptoTransactions`; `runAllTransactions → cryptoTransactions, scheduleTransactions, hookTransactions, contractTransactions, ethereumTransactions` | both `SPLIT_REQUIRED` | `runCryptoTransactions` `RETAIN_NATIVE`; `runAllTransactions` `SPLIT_REQUIRED`; category factories retain their method-table dispositions |
+| `DiverseStateCreation` | `getSpecsInSuite` (1 suite registration root) | `getSpecsInSuite → createDiverseState` | `SPLIT_REQUIRED` | `createDiverseState` `SPLIT_REQUIRED` |
+| Token airdrop fee setup | 35 registered methods | each root calls `TokenAirdropSimpleFeesTest.createAccountsAndKeys` | all `RETAIN_NATIVE` | helper `SPLIT_REQUIRED`; remove only its contract setup |
+| Token claim/cancel fee setup | 26 registered methods | each root calls `TokenClaimAndCancelAirdropSimpleFeesTest.createAccountsAndKeys` | all `RETAIN_NATIVE` | helper `SPLIT_REQUIRED`; remove only its contract setup |
+| Topic contract collectors | `AtomicTopicCustomFeeCreateTest.TopicCreatePositiveScenarios.topicWithContractCollector`, `TopicCustomFeeCreateTest.TopicCreatePositiveScenarios.topicWithContractCollector` (2) | each root calls its suite's `deployMutableContract` | both `REMOVE_P07_11B` | both helpers `REMOVE_P07_11B` |
+| Repeatable schedule signatures | the two `signScheduleRevertsOnUnrelated…` registrations (2) | each root calls both `addEd25519SigViaContractAndExpect` and `addEcdsaSigViaContractAndExpect` | both `REMOVE_P07_11B` | both helpers `REMOVE_P07_11B`; four invocation edges |
+| Account-completion fuzzing | `HollowAccountCompletionFuzzing.hollowAccountCompletionFuzzing` (1) | external root → `AccountCompletionFuzzingFactory.initOperations` | `SPLIT_REQUIRED` | factory `SPLIT_REQUIRED` |
+| Completed-hollow fuzzing | `CompletedHollowAccountOperationsFuzzing.completedHollowAccountOperationsFuzzing` (1) | external root → `HollowAccountCompletedFuzzingFactory.initOperations` | `SPLIT_REQUIRED` | factory `SPLIT_REQUIRED` |
+| ID fuzzing | `AtomicBatchFuzzing.atomicMixedOperations`, `AddressAliasIdFuzzing.addressAliasIdFuzzing` (2) | roots → `IdFuzzingProviderFactory.initOperations` → four `initOp…` factories | both `SPLIT_REQUIRED` | aggregator `SPLIT_REQUIRED`; four executable initializer factories `REMOVE_P07_11B` |
+| Steady-state contract load | `checkContractCallsTps` (1) | complete path documented above | `REMOVE_P07_11B` | `scCallOps` `REMOVE_P07_11B`; `competingClientFor` `SPLIT_REQUIRED`; shared delegators retained |
+
+The 35 `TokenAirdropSimpleFeesTest` roots are:
+`multipleTokenAirdropFTToReceiverWithoutFreeAutoAssociationsAggregateAirdropFullCharging`,
+`tokenAirdropAutoCreateAccountWithFTMovingToED25519AliasFullCharging`,
+`tokenAirdropAutoCreateAccountWithNFTMovingToECDSAAliasFullCharging`,
+`tokenAirdropAutoCreateHollowAccountWithFTMovingResultingInPendingAirdropAndFullCharging`,
+`tokenAirdropFTAndNFTToAssociatedReceiverBaseFeesFullCharging`,
+`tokenAirdropFTAndNFTToAssociatedReceiverWithInsufficientPayerBalanceFailsOnIngest`,
+`tokenAirdropFTAndNFTToAssociatedReceiverWithInsufficientPayerBalanceFailsOnPreHandle`,
+`tokenAirdropFTAndNFTToAssociatedReceiverWithInsufficientTxnFeeFailsOnIngest`,
+`tokenAirdropFTAndNFTToAssociatedReceiverWithInsufficientTxnFeeFailsOnPreHandle`,
+`tokenAirdropFTAndNFTToMultipleAssociatedReceiversExtrasFeesFullCharging`,
+`tokenAirdropFTToAssociatedReceiverBaseFeesFullCharging`,
+`tokenAirdropFTToAssociatedReceiverFromSenderWithInvalidSignatureFailsOnIngest`,
+`tokenAirdropFTToAssociatedReceiverFromSenderWithInvalidSignatureFailsOnPreHandle`,
+`tokenAirdropFTToAssociatedReceiverFromSenderWithThresholdKeyFullCharging`,
+`tokenAirdropFTToAssociatedReceiverSigRequiredFullCharging`,
+`tokenAirdropFTToMultipleAssociatedReceiversExtrasFeesFullCharging`,
+`tokenAirdropNFTToAssociatedReceiverBaseFeesFullCharging`,
+`tokenAirdropNFTToMultipleAssociatedReceiversExtrasFeesFullCharging`,
+`tokenAirdropReceiverAssociatedWithAndWithoutFreeAutoAssociationsResultsInPendingAndSuccessfulAirdropsFullCharging`,
+`tokenAirdropReceiverFreeAutoAssociationsBaseFeesFullCharging`,
+`tokenAirdropReceiverNoFreeAutoAssociationsExtraAirdropFullCharging`,
+`tokenAirdropReceiverNoFreeAutoAssociationsMultiplePendingAirdropsFullCharging`,
+`tokenAirdropReceiverNoFreeAutoAssociationsResultsInPendingBaseFeesFullCharging`,
+`tokenAirdropReceiverWithAndWithoutFreeAutoAssociationsResultsInPendingAndSuccessfulAirdropsFullCharging`,
+`tokenAirdropReceiverWithExhaustedFreeAutoAssociationsResultsInFaildTxnAndFullCharging`,
+`tokenAirdropWithAccountFrozenForTokenFailsOnHandleAndFeesFullCharging`,
+`tokenAirdropWithAllowanceIsNotSupportedFailsOnIngest`,
+`tokenAirdropWithDuplicateNFTSerialFailsOnIngest`,
+`tokenAirdropWithDuplicatePendingAirdropFailsOnHandleAndFeesFullCharging`,
+`tokenAirdropWithEmptyTokenTransferBodyFailsOnIngest`,
+`tokenAirdropWithInsufficientTokenBalanceFailsOnHandleAndFeesFullCharging`,
+`tokenAirdropWithInvalidNFTSerialFailsOnHandleAndFeesFullCharging`,
+`tokenAirdropWithMultipleSendersForATokenFailsOnIngest`,
+`tokenAirdropWithPausedTokenFailsOnHandleAndFeesFullCharging`, and
+`tokenAirdropWithSenderNotAssociatedToTokenFailsOnHandleAndFeesFullCharging`.
+
+The 26 `TokenClaimAndCancelAirdropSimpleFeesTest` roots are:
+`tokenAirdropCancelPendingAirdropToHollowAccountWithFTMovingFullFeesCharging`,
+`tokenAirdropClaimPendingAirdropToHollowAccountWithFTMovingFullFeesCharging`,
+`tokenCancelAirdropWithExtraSignaturesFullCharging`,
+`tokenCancelClaimedFTAirdropFailsOnHandle`,
+`tokenCancelFTAirdropFullFeesCharging`,
+`tokenCancelFTAirdropThatIsAlreadyCanceledFailsOnHandle`,
+`tokenCancelMultipleFTAirdropBaseFeesFullCharging`,
+`tokenCancelMultiplePendingFTAndNFTAirdropsFeesFullCharging`,
+`tokenCancelMultiplePendingNFTAirdropsFeesFullCharging`,
+`tokenCancelNonExistingFTAirdropFailsOnHandle`,
+`tokenCancelPendingNFTAirdropFeesFullCharging`,
+`tokenClaimAirdropBaseFeesFullCharging`,
+`tokenClaimAirdropWithExtraSignaturesFullCharging`,
+`tokenClaimAirdropWithMissingReceiverSignatureFailsOnHandle`,
+`tokenClaimAirdropWithMissingSenderSignatureFailsOnIngest`,
+`tokenClaimFTAirdropThatIsAlreadyCanceledFailsOnHandle`,
+`tokenClaimFTAirdropThatIsAlreadyClaimedFailsOnHandle`,
+`tokenClaimMultiplePendingFTAirdropsFeesFullCharging`,
+`tokenClaimMultiplePendingFTAndNFTAirdropsFeesFullCharging`,
+`tokenClaimMultiplePendingNFTAirdropsFeesFullCharging`,
+`tokenClaimNFTMultiplePendingAirdropsForTheSameSerialAllClaimsAfterFirstOneFailOnHandle`,
+`tokenClaimNFTPendingAirdropWithWrongSerialFailsOnHandle`,
+`tokenClaimNonExistingFTAirdropFailsOnHandle`,
+`tokenClaimPendingAirdropForHollowAccountWithoutSignatureFailsOnHandle`,
+`tokenClaimPendingNFTAirdropFeesFullCharging`, and
+`tokenClaimPendingNFTAirdropWhenSenderNoLongerOwnsTheTokenFailsOnHandle`.
+
+### Ownership-node reconciliation
+
+| Ownership level | Count | `REMOVE_P07_11B` | `SPLIT_REQUIRED` | `RETAIN_NATIVE` | `DEFER_P07_11C` | `UNRESOLVED` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| registered or externally reachable roots | **183** | 70 | 22 | 61 | 30 | 0 |
+| provider/factory owners | **19** | 10 | 8 | 1 | 0 | 0 |
+| intermediate caller nodes | **2** | 0 | 0 | 2 | 0 | 0 |
+| construction-bearing helpers | **7** | 5 | 2 | 0 | 0 | 0 |
+| explicit conditional branch owners | **1** | 1 | 0 | 0 | 0 | 0 |
+
+The registered-root total comprises 110 construction-bearing roots already
+present in the method census and 73 indirect roots added by this closure
+audit. The provider/factory total comprises 15 construction-bearing
+providers, plus `runCryptoTransactions`, `runAllTransactions`,
+`IdFuzzingProviderFactory.initOperations`, and `scCallOps`. The two
+intermediate callers are `checkTps` and `checkCustomNetworkTps`.
+
+There are **92** distinct caller, registration, provider-application, or
+containment edges in the indirect closure graph. The 225
+owner-to-construction links are reported separately by the operation census
+and are not included in the 92. This pass added 80 previously absent explicit
+ownership nodes: 73 indirect roots, four outer provider/factory owners, two
+intermediate delegators, and the `competingClientFor.ContractCalls` branch
+owner.
+
+No helper or provider marked `REMOVE_P07_11B` has a retained or deferred
+consumer. Mixed provider closures are `SPLIT_REQUIRED`; common delegators
+with native callers are `RETAIN_NATIVE`. The ownership-node `UNRESOLVED`
+count is **0**.
+
+## Operation reconciliation
 
 ### Protected P07-11C enumeration
 
