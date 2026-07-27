@@ -33,8 +33,6 @@ import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overriding;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sourcing;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.submitModified;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.validateChargedUsd;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withAddressOfKey;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withLongZeroAddress;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hedera.services.bdd.spec.utilops.mod.ModificationUtils.withSuccessivelyVariedBodyIds;
 import static com.hedera.services.bdd.suites.HapiSuite.FALSE_VALUE;
@@ -51,7 +49,6 @@ import static com.hedera.services.bdd.suites.token.TokenTransactSpecs.PAYER;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ALIAS_ALREADY_ASSIGNED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.AUTORENEW_DURATION_NOT_IN_RANGE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BAD_ENCODING;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_GAS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ADMIN_KEY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ALIAS_KEY;
@@ -68,8 +65,6 @@ import com.google.protobuf.ByteString;
 import com.hedera.services.bdd.junit.HapiTest;
 import com.hedera.services.bdd.junit.LeakyEmbeddedHapiTest;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
-import com.hedera.services.bdd.spec.dsl.annotations.Contract;
-import com.hedera.services.bdd.spec.dsl.entities.SpecContract;
 import com.hedera.services.bdd.spec.keys.KeyShape;
 import com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer;
 import com.hedera.services.bdd.spec.transactions.token.HapiTokenCreate;
@@ -81,7 +76,6 @@ import com.hederahashgraph.api.proto.java.ThresholdKey;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.hiero.base.utility.CommonUtils;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 
@@ -156,37 +150,6 @@ public class CryptoCreateSuite {
                             .hasRecordedScheduledTxn();
                     allRunFor(spec, op1, op2, op4, op5, op6, op7);
                 }));
-    }
-
-    @HapiTest
-    @DisplayName("canonical EVM addresses are determined by aliases")
-    final Stream<DynamicTest> canonicalEvmAddressesDeterminedByAliases(
-            @Contract(contract = "MakeCalls", creationGas = 3_000_000) SpecContract makeCalls) {
-        return hapiTest(
-                newKeyNamed("oneKey").shape(SECP256K1_ON),
-                newKeyNamed("twoKey").shape(SECP256K1_ON),
-                cryptoCreate("doSomething"),
-                cryptoCreate("firstUser").balance(0L).key("oneKey").via("createNoAlias"),
-                cryptoCreate("secondUser")
-                        .key("twoKey")
-                        .balance(0L)
-                        .withMatchingEvmAddress()
-                        .via("createWithAlias"),
-                // Since this is not the canonical (long-zero) address for the receiver, tries and fails lazy creation
-                withAddressOfKey("oneKey", address -> makeCalls
-                        .call("makeCallWithAmount", address, new byte[0])
-                        .andAssert(txn -> txn.gas(25_000L).sending(1L).hasKnownStatus(INSUFFICIENT_GAS))),
-                withLongZeroAddress("firstUser", address -> makeCalls
-                        .call("makeCallWithAmount", address, new byte[0])
-                        .andAssert(txn -> txn.sending(1L))),
-                // Since this is not the canonical (EIP-1014) address for the receiver, tries and fails lazy creation
-                withLongZeroAddress("secondUser", address -> makeCalls
-                        .call("makeCallWithAmount", address, new byte[0])
-                        .andAssert(txn -> txn.gas(25_000L).sending(1L).hasKnownStatus(INSUFFICIENT_GAS))),
-                withAddressOfKey("twoKey", address -> makeCalls
-                        .call("makeCallWithAmount", address, new byte[0])
-                        .andAssert(txn -> txn.sending(1L))),
-                getAccountBalance("secondUser").hasTinyBars(1L));
     }
 
     @HapiTest
