@@ -1,0 +1,211 @@
+{
+  "schema": "nitrograph.p07.11c-executable-boundary-evidence.v1",
+  "generated_at_utc": "2026-07-27T22:25:00Z",
+  "phase": {
+    "name": "P07-11C",
+    "status": "SOURCE_AND_LOCAL_VALIDATION_COMPLETE",
+    "starting_commit": "50f0b7c025dd30c129627f7559b7e09e318cac0c",
+    "scope_correction_start": "b024af0048446d6d9e6401787c4f7c58cb782725",
+    "initial_manifest_commit": "8091610a13",
+    "initial_boundary_source_commit": "1b8c60fa52de3a763d1023ab0346813b436c9731",
+    "expanded_cleanup_commit": "b024af0048446d6d9e6401787c4f7c58cb782725",
+    "corrected_manifest_commits": [
+      "65e0f635aa65ce796dec6e8fd1634cfa2c2e1282",
+      "2ec218d4fee3f4d12fd5936b774efe2d08b3a05c"
+    ],
+    "final_non_lifecycle_source_commit": "19a0648fd641c2f318ca48fffa44ff5045bbedb2",
+    "lifecycle_handoff_commit": "f7df85169ecb582437d6ca592bf5affd9222bcf5",
+    "pull_request": 30
+  },
+  "documents": {
+    "manifest": {
+      "path": "docs/nitrograph/P07_11C_EXECUTABLE_BOUNDARY_MANIFEST.md",
+      "sha256": "22c2e73abf322ed30535026a3598fcc60760951d8cff7b8b01f7e0e622f83324"
+    },
+    "lifecycle_reconnect_handoff": {
+      "path": "docs/nitrograph/P07_11D_LIFECYCLE_RECONNECT_HANDOFF.md",
+      "sha256": "db74b854cb03864ba22305e1cc28510f79141ce34a4eb785a3a9175bc2287d0e"
+    },
+    "p07_11b_evidence": {
+      "path": "docs/nitrograph/P07_11B_CONTRACT_SETUP_REMOVAL_EVIDENCE.json",
+      "sha256": "6f6056058108d1d804519cd15d089fde418af1567d5239d20d68964ea40157b9",
+      "unchanged": true
+    }
+  },
+  "implementation": {
+    "original_corrected_scope": {
+      "executable_constructions_removed": 68,
+      "source_files_deleted": 20,
+      "repeatable_integration_before_all_failure_removed": true,
+      "hip1195_before_all_failure_removed": true,
+      "contract_update_suite_deleted": true,
+      "contract_records_sanity_check_suite_deleted": true,
+      "obsolete_contract_query_coverage_removed": true,
+      "execution_only_lambdaplex_removed": true
+    },
+    "supplemental_census": {
+      "initially_reported_sites": 43,
+      "corrected_sites": 44,
+      "correction": "One contractUpdate construction in AutoAccountCreationSuite was absent from the initial syntactic scan.",
+      "p07_11c_non_lifecycle_sites": 32,
+      "p07_11d_lifecycle_reconnect_sites": 12,
+      "unresolved": 0
+    },
+    "supplemental_source_change": {
+      "files_modified": 10,
+      "files_deleted": 0,
+      "insertions": 11,
+      "deletions": 569,
+      "obsolete_roots_removed": 18,
+      "mixed_roots_split": 4,
+      "native_assertions_preserved": [
+        "NFT transfer to a dissociated native account fails and succeeds after reassociation",
+        "fungible transfer to a dissociated native account fails and succeeds after reassociation",
+        "native topic custom fee collection",
+        "native atomic topic creation and custom fee collection"
+      ]
+    },
+    "cumulative_from_p07_11c_start_before_evidence": {
+      "files_changed": 38,
+      "insertions": 481,
+      "deletions": 6284,
+      "files_deleted": 20
+    },
+    "behaviorally_unchanged_p07_11d_owners": [
+      "LifecycleTest",
+      "P06aHistoricalStateReconnectTest",
+      "AuthenticatedHistoricalFixtureConsumerTest",
+      "DiverseStateValidation"
+    ],
+    "core_hapi_operation_implementations_changed": false,
+    "production_source_changed": false
+  },
+  "final_suite_executable_census": {
+    "successful_non_lifecycle_sites": 0,
+    "unclassified_sites": 0,
+    "remaining_total": 18,
+    "p07_11d_lifecycle_reconnect_fixture": {
+      "total": 12,
+      "successful_state_generation": 3,
+      "lifecycle_contract_info_generation": 1,
+      "explicit_rejection": 7,
+      "historical_local_query": 1
+    },
+    "intentional_non_success_rejection": {
+      "total": 6,
+      "HistoricalContractExecutionRejection": 5,
+      "Issue1765Suite_invalid_contract_update": 1
+    },
+    "dsl_or_hapi_core_constructor_sites_excluded_from_suite_ownership_census": true
+  },
+  "stream_validation_attribution": {
+    "account": "0.0.801",
+    "account_role": "node reward account",
+    "expected_source": "BalanceReconciliationValidator sums transfer lists from record streams, then conditionally applies a narrow known-staking-boundary delta reconciliation.",
+    "observed_source": "live HapiGetAccountBalance query",
+    "checkpoint_comparison": [
+      {
+        "commit": "50f0b7c025dd30c129627f7559b7e09e318cac0c",
+        "tests_completed": 142,
+        "skipped": 1,
+        "failed": 1,
+        "expected": 3207432793891461,
+        "observed": 1958552273434530,
+        "first_failure": "StreamValidationTest.streamsAreValid",
+        "log_sha256": "30f66cc12a497cb0f589fb99e879540afd9f6ce3e7e903c3694ccdd78190855f"
+      },
+      {
+        "commit": "1b8c60fa52de3a763d1023ab0346813b436c9731",
+        "tests_completed": 142,
+        "skipped": 1,
+        "failed": 1,
+        "expected": 3207432793891461,
+        "observed": 1958552273434530,
+        "first_failure": "StreamValidationTest.streamsAreValid",
+        "log_sha256": "3f040b65b06c2aeac50038f578ed4b85c576651cd2c81fd6f135f2f8f3c055de"
+      },
+      {
+        "commit": "b024af0048446d6d9e6401787c4f7c58cb782725",
+        "tests_completed": 142,
+        "skipped": 1,
+        "failed": 1,
+        "expected": 3207204483389181,
+        "observed": 1958552273434530,
+        "first_failure": "StreamValidationTest.streamsAreValid",
+        "log_sha256": "a2bfbaa4b583b8ef487642edabe922415e707eb21cf6a1f422809de622b1fe28"
+      }
+    ],
+    "final_source_clean_run": {
+      "tests_completed": 142,
+      "skipped": 1,
+      "failed": 1,
+      "expected": 3207432793891461,
+      "observed": 1958552273434530,
+      "first_failure": "StreamValidationTest.streamsAreValid",
+      "log_sha256": "7d6793bc9d71590f8be91398a2d464bde65f01e07119f5bcff002eaabcb8131d"
+    },
+    "root_cause_classification": "PRE_EXISTING_TERMINAL_RECORD_STREAM_RECONCILIATION_DEFECT",
+    "p07_11c_attributable": false,
+    "reason_no_repair_was_made": "The starting checkpoint fails with the identical observed balance and the same sole failing test. The expectation changes with record-stream population, proving removed transactions are not retained as stale static contributions. Changing P07-11C source would weaken or conceal a pre-existing validator defect."
+  },
+  "validation": {
+    "environment": {
+      "jdk": "Temurin 25.0.2",
+      "gradle_project": ":test-clients"
+    },
+    "compileJava": "PASS",
+    "compileTestJava": "PASS",
+    "git_diff_check": "PASS",
+    "targeted_modified_suite_filter": {
+      "result": "NOT_DISCOVERABLE",
+      "detail": "The main-source HAPI suites are not selectable with conventional Gradle --tests filters; Gradle reported zero tests and no matching tests."
+    },
+    "targeted_StreamValidationTest": {
+      "result": "NOT_SELF_CONTAINED",
+      "detail": "When run after the harness stopped, the validator could not connect to 127.0.0.1:50211. Its authoritative invocation is the terminal test in each clean full run."
+    },
+    "full_test": {
+      "result": "PASS_WITH_PROVEN_PRE_EXISTING_FAILURE",
+      "p07_11c_attributable_failures": 0,
+      "pre_existing_failures": [
+        "StreamValidationTest.streamsAreValid node reward balance reconciliation"
+      ]
+    },
+    "spotlessJavaCheck": {
+      "result": "FAIL_PRE_EXISTING_UNRELATED",
+      "p07_11c_modified_file_violations": 0,
+      "reported_unchanged_files_begin_with": [
+        "P06aPublicFixtureIdentity.java",
+        "TestBase.java",
+        "TssKeyMaterial.java",
+        "StatusLookupAttempt.java",
+        "BlockTransactionalUnit.java",
+        "TransactionParts.java"
+      ],
+      "unrelated_files_reformatted": false
+    }
+  },
+  "ci": {
+    "exact_head_run": "PENDING_AFTER_EVIDENCE_COMMIT",
+    "required_interpretation": "Any StreamValidationTest failure matching the isolated baseline is pre-existing and not P07-11C-attributable."
+  },
+  "deferred": {
+    "phase": "P07-11D",
+    "implementation_started": false,
+    "sites": 12,
+    "required_gates": [
+      "fixture lifecycle",
+      "save and restart",
+      "real reconnect",
+      "protected-map validation",
+      "mirror regression"
+    ]
+  },
+  "conclusion": {
+    "p07_11c_source_complete": true,
+    "p07_11c_local_validation_complete": true,
+    "p07_11c_attributable_defects": 0,
+    "repository_wide_pr_readiness_claimed": false,
+    "p07_11d_ready": true
+  }
+}
