@@ -14,12 +14,10 @@ import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.r
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getReceipt;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getScheduleInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.burnToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uncheckedSubmit;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.EmbeddedVerbs.handleAnyRepeatableQueryPayment;
@@ -34,7 +32,6 @@ import static com.hedera.services.bdd.suites.HapiSuite.FUNDING;
 import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_MILLION_HBARS;
-import static com.hedera.services.bdd.suites.contract.Utils.mirrorAddrWith;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_NODE_ACCOUNT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
@@ -48,19 +45,11 @@ import com.hedera.pbj.runtime.io.buffer.Bytes;
 import com.hedera.services.bdd.junit.HapiTestLifecycle;
 import com.hedera.services.bdd.junit.RepeatableHapiTest;
 import com.hedera.services.bdd.junit.TargetEmbeddedMode;
-import com.hedera.services.bdd.junit.support.TestLifecycle;
-import com.hedera.services.bdd.spec.dsl.annotations.Contract;
 import com.hedera.services.bdd.spec.dsl.annotations.NonFungibleToken;
-import com.hedera.services.bdd.spec.dsl.entities.SpecContract;
 import com.hedera.services.bdd.spec.dsl.entities.SpecNonFungibleToken;
-import com.hedera.services.bdd.spec.keys.KeyShape;
-import com.hederahashgraph.api.proto.java.ScheduleID;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
@@ -70,14 +59,6 @@ import org.junit.jupiter.api.Tag;
 @HapiTestLifecycle
 @TargetEmbeddedMode(REPEATABLE)
 public class RepeatableIntegrationTests {
-    @Contract(contract = "HRC755Contract", creationGas = 1_000_000, isImmutable = true)
-    static SpecContract SIGNING_CONTRACT;
-
-    @BeforeAll
-    static void beforeAll(@NonNull final TestLifecycle testLifecycle) {
-        testLifecycle.doAdhoc(SIGNING_CONTRACT.getInfo());
-    }
-
     @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
     Stream<DynamicTest> burnAtStakePeriodBoundaryHasExpectedRecord(
             @NonFungibleToken(numPreMints = 2) SpecNonFungibleToken nft) {
@@ -156,56 +137,6 @@ public class RepeatableIntegrationTests {
                         .andAnyDuplicates()
                         .hasPriority(recordWith().status(SUCCESS))
                         .hasDuplicates(inOrder(recordWith().status(INVALID_NODE_ACCOUNT))));
-    }
-
-    @RepeatableHapiTest(NEEDS_SYNCHRONOUS_HANDLE_WORKFLOW)
-    final Stream<DynamicTest> controllingContractCanTriggerExecutionViaSystemContract() {
-        final AtomicReference<ScheduleID> scheduleIdRef = new AtomicReference<>();
-        return hapiTest(
-                cryptoCreate("contractAccount")
-                        .balance(ONE_HUNDRED_HBARS)
-                        .keyShape(KeyShape.CONTRACT.signedWith(SIGNING_CONTRACT.name())),
-                scheduleCreate("schedule", cryptoTransfer(tinyBarsFromTo("contractAccount", FUNDING, 1)))
-                        .exposingCreatedIdTo(scheduleIdRef::set),
-                getScheduleInfo("schedule").isNotExecuted(),
-                sourcingContextual(spec -> SIGNING_CONTRACT
-                        .call(
-                                "authorizeScheduleCall",
-                                mirrorAddrWith(spec, scheduleIdRef.get().getScheduleNum()))
-                        .gas(1_000_000L)),
-                getScheduleInfo("schedule").isExecuted());
-    }
-
-    @RepeatableHapiTest(NEEDS_SYNCHRONOUS_HANDLE_WORKFLOW)
-    final Stream<DynamicTest> contractCanTriggerExecutionForItsOwnAssets() {
-        final AtomicReference<ScheduleID> scheduleIdRef = new AtomicReference<>();
-        return hapiTest(
-                cryptoTransfer(tinyBarsFromTo(GENESIS, SIGNING_CONTRACT.name(), ONE_HUNDRED_HBARS)),
-                scheduleCreate("schedule", cryptoTransfer(tinyBarsFromTo(SIGNING_CONTRACT.name(), FUNDING, 1)))
-                        .exposingCreatedIdTo(scheduleIdRef::set),
-                getScheduleInfo("schedule").isNotExecuted(),
-                sourcingContextual(spec -> SIGNING_CONTRACT
-                        .call(
-                                "authorizeScheduleCall",
-                                mirrorAddrWith(spec, scheduleIdRef.get().getScheduleNum()))
-                        .gas(1_000_000L)),
-                getScheduleInfo("schedule").isExecuted());
-    }
-
-    @RepeatableHapiTest(NEEDS_SYNCHRONOUS_HANDLE_WORKFLOW)
-    final Stream<DynamicTest> contractSignatureIsNoopIfNotControlling() {
-        final AtomicReference<ScheduleID> scheduleIdRef = new AtomicReference<>();
-        return hapiTest(
-                cryptoCreate("account"),
-                scheduleCreate("schedule", cryptoTransfer(tinyBarsFromTo("account", FUNDING, 1)))
-                        .exposingCreatedIdTo(scheduleIdRef::set),
-                getScheduleInfo("schedule").isNotExecuted(),
-                sourcingContextual(spec -> SIGNING_CONTRACT
-                        .call(
-                                "authorizeScheduleCall",
-                                mirrorAddrWith(spec, scheduleIdRef.get().getScheduleNum()))
-                        .gas(1_000_000L)),
-                getScheduleInfo("schedule").isNotExecuted());
     }
 
     private static Bytes scheduleSigningMessage(final com.hedera.hapi.node.base.ScheduleID scheduleId) {

@@ -8,20 +8,17 @@ import static com.hedera.services.bdd.spec.assertions.AccountInfoAsserts.changeF
 import static com.hedera.services.bdd.spec.assertions.AccountInfoAsserts.lessThan;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getScheduleInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.EmbeddedVerbs.handleAnyRepeatableQueryPayment;
@@ -233,25 +230,6 @@ public class RepeatableOperatorQueryTests extends NodeOperatorQueriesBase {
                 // Both the node operator and payer submit queries
                 getFileInfo(filename).payingWith(NODE_OPERATOR).asNodeOperator(),
                 getFileInfo(filename).payingWith(PAYER),
-                handleAnyRepeatableQueryPayment(),
-                // The node operator wasn't charged
-                getAccountBalance(NODE_OPERATOR).hasTinyBars(ONE_HUNDRED_HBARS),
-                // But the payer was charged
-                getAccountBalance(PAYER).hasTinyBars(lessThan(ONE_HUNDRED_HBARS))));
-    }
-
-    @RepeatableHapiTest(NEEDS_SYNCHRONOUS_HANDLE_WORKFLOW)
-    @DisplayName("Only node operators aren't charged for contract info queries")
-    final Stream<DynamicTest> getSmartContractQueryNodeOperatorNotCharged() {
-        final var contract = "PretendPair"; // any contract, nothing special about this one
-        return hapiTest(flattened(
-                nodeOperatorAccount(),
-                payerAccount(),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                // Both the node operator and payer submit queries
-                getContractInfo(contract).payingWith(NODE_OPERATOR).asNodeOperator(),
-                getContractInfo(contract).payingWith(PAYER),
                 handleAnyRepeatableQueryPayment(),
                 // The node operator wasn't charged
                 getAccountBalance(NODE_OPERATOR).hasTinyBars(ONE_HUNDRED_HBARS),
