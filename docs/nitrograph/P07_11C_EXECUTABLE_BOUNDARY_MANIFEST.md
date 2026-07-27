@@ -234,3 +234,85 @@ Within the corrected 68-construction P07-11C input:
 Repository-wide explicit rejection constructors outside this input remain
 intentional and must be reported separately; they are not successful
 execution dependencies.
+
+## Post-manifest repository-wide correction
+
+The implementation census found that the P07-11B evidence and the original
+P07-11C input omitted additional executable owners outside its 48 legacy-verb
+rows and two known failing classes. The repository-wide suite scan found:
+
+- 28 legacy wrapper occurrences across twelve additional files;
+- 79 DSL `@Contract` or `SpecContract.call()` occurrences across sixteen
+  additional files.
+
+This is a taxonomy/scope correction, not a reclassification of any of the 177
+P07-11B removals.
+
+The following additional files have zero native, rejection, historical, query,
+lifecycle, or external reverse-consumer ownership and are therefore
+`REMOVE_OBSOLETE`:
+
+- `hip1195/Hip1195StreamParityTest.java`;
+- `hip1195/HookTimingBalanceOrderTest.java`;
+- `hip993/NaturalDispatchOrderingTest.java`;
+- `hip993/ThrottleOnDispatchTest.java`;
+- `throttling/ThrottleCapacityReclamationTest.java`;
+- `hip551/contracts/precompile/AtomicBatchScheduleTest.java`;
+- `hip551/contracts/precompile/AtomicBatchTokenTest.java`;
+- `hip551/contracts/precompile/AtomicBatchAddress16cTest.java`;
+- `hip551/contracts/precompile/AtomicBatchTokenAirdropTest.java`;
+- `integration/RepeatableHip1215Tests.java`.
+
+`hip1195/lambdaplex/LambdaplexVerbs.java` has no executable caller after the
+HIP-1195 suite removals. Its only external consumer is
+`lambdaplex/Fraction.java`, which requires only deterministic decimal-to-base
+unit conversion. That neutral conversion moves directly into `Fraction`; the
+execution-oriented Lambdaplex owner and its otherwise unconsumed domain types
+are `REMOVE_OBSOLETE`.
+
+The following additional mixed owners remain to be reconciled before P07-11C
+can close:
+
+- contract-key methods in `AtomicBatchConsensusServiceTest`;
+- contract-account methods in `UpdateNodeAccountTestEmbedded`;
+- contract-account cases in `TokenTransactSpecs`,
+  `CryptoGetInfoRegression`, and `AutoAccountCreationSuite`;
+- the contract-address method in `CryptoCreateSuite`;
+- contract-mediated topic-fee methods in
+  `TopicCustomFeeSubmitMessageTest` and
+  `AtomicTopicCustomFeeSubmitMessageTest`;
+- contract-mediated association methods in
+  `UnlimitedAutoAssociationSuite`;
+- the child-mint method in `UnifiedConsTimeTest`;
+- the contract-based lifecycle liveness operation in `LifecycleTest`;
+- fixture/reconnect constructions in `P06aHistoricalStateReconnectTest`,
+  `AuthenticatedHistoricalFixtureConsumerTest`, and
+  `DiverseStateValidation`.
+
+The explicit rejection operations in
+`HistoricalContractExecutionRejection` remain intentional.
+
+These mixed owners cannot be silently folded into the original 68-construction
+input. Their retained-native, lifecycle, and fixture callers require an
+amended ownership decision. Until that decision is complete, the expected-zero
+census above applies only to the original corrected input, not to the whole
+repository.
+
+## Validation issue requiring attribution
+
+After the original corrected input was removed:
+
+- targeted retained `RepeatableIntegrationTests` passed four of four;
+- both former managed-contract `beforeAll` failures disappeared;
+- the full test-client target executed 140 tests successfully and skipped one;
+- final `StreamValidationTest` balance reconciliation failed deterministically
+  for reward account `0.0.801`, expecting `3207204483389181` tinybar and
+  observing `1958552273434530`.
+
+A clean rerun after deleting generated test state reproduced the same mismatch.
+This is not an executable-operation expectation, but it appeared only after
+the P07-11C removal set allowed the complete target to reach terminal stream
+validation. P07-11C cannot claim validation closure until the mismatch is
+proven pre-existing/environmental or the relationship between removed fee
+generating tests and the validator is resolved without changing production
+semantics.

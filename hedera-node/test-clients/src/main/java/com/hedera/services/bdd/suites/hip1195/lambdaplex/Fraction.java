@@ -3,6 +3,7 @@ package com.hedera.services.bdd.suites.hip1195.lambdaplex;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 public record Fraction(long numerator, long denominator) {
     /**
@@ -15,7 +16,9 @@ public record Fraction(long numerator, long denominator) {
      * @return the price as a fraction in least terms, denominated in base units
      */
     public static Fraction from(BigDecimal price, int inputTokenDecimals, int outputTokenDecimals) {
-        var numerator = LambdaplexVerbs.toBigInteger(price, outputTokenDecimals);
+        var numerator = price.movePointRight(outputTokenDecimals)
+                .setScale(0, RoundingMode.HALF_UP)
+                .toBigIntegerExact();
         var denominator = BigInteger.TEN.pow(inputTokenDecimals);
         final var gcd = numerator.gcd(denominator);
         if (!gcd.equals(BigInteger.ZERO)) {
