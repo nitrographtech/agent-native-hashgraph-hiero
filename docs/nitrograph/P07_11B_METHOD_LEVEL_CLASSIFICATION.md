@@ -7,9 +7,12 @@ This documentation-only classification is based on
 P07-11C owners, `ContractUpdateSuite` and `ContractRecordsSanityCheckSuite`.
 No production or test source was changed during this pass.
 
-The inventory was produced from the Java syntax tree, not from line-oriented
-matching. Each operation is therefore assigned to its enclosing method or
-factory. Helper-generated operations were also traced to their callers.
+The inventory was repaired at
+`0e767eab6a20b787c2c39b862f333330b410dbcd` by deriving the complete
+operation taxonomy from `TxnVerbs` and `QueryVerbs`, then scanning the Java
+syntax tree. Each operation is assigned to its enclosing method or factory.
+Helper-generated operations are traced to their callers. The wrapper-aware
+taxonomy and reconciliation below supersede the earlier literal-name counts.
 
 Notation:
 
@@ -19,6 +22,21 @@ Notation:
 - dependencies: `contract` includes bytecode/ABI/deployment verbs, `result`
   includes live contract result, log, action, gas, sidecar, or child-record
   assertions.
+
+## Complete operation taxonomy
+
+| Aggregate family | Concrete factories and logical wrappers |
+| --- | --- |
+| `contractCreate` | `contractCreate`, `createDefaultContract`, `contractCustomCreate`; zero scoped `explicitContractCreate` occurrences |
+| `contractCall` | `contractCall`, `contractCallWithFunctionAbi`, `contractCallWithTuple`, and the logical `contractCallWithSendRecordSanityChecks` wrapper; zero scoped `contractCallFrom` or `explicitContractCall` occurrences |
+| `ethereumCall` | `ethereumCall`, `ethereumCryptoTransfer`, `ethereumCryptoTransferToAlias`; zero scoped `ethereumCallWithFunctionAbi`, `ethereumCryptoTransferToExplicit`, `ethereumCryptoTransferToAddress`, `ethereumContractCreate`, or `explicitEthereumTransaction` occurrences |
+| executable local query | `contractCallLocal`, `contractCallLocalWithFunctionAbi`; zero scoped `explicitContractCallLocal` or `contractCallLocalFrom` occurrences |
+
+`contractCallWithSendRecordSanityChecks` is a suite-local logical wrapper: its
+single internal `contractCall` construction is reported under that subtype
+instead of being counted twice. No scoped source directly constructs
+`HapiContractCreate`, `HapiContractCall`, `HapiEthereumCall`,
+`HapiEthereumContractCreate`, or `HapiContractCallLocal` with `new`.
 
 ## Accounts, aliases, and native assets
 
@@ -51,7 +69,11 @@ Notation:
 | Source | Class and method | Operations/form | Behavioral purpose and dependencies | Final disposition | Supporting evidence |
 | --- | --- | --- | --- | --- | --- |
 | `consensus/AtomicTopicCreateSuite.java` | `AtomicTopicCreateSuite.signingRequirementsEnforced` | C1/D | mixed ownership; native topic signature rules plus contract auto-renew account; contract | `SPLIT_REQUIRED` | Retain native payer/auto-renew signature cases; remove the contract-without-admin-key branch and its deployment. |
+| same | `AtomicTopicCreateSuite.topicCreateWithContractWithAdminKeyForAutoRenewAccount` | `createDefaultContract` 1/D | subject-under-test; contract auto-renew account | `REMOVE_P07_11B` | The auto-renew account is created only as a contract; native account coverage is separate. |
+| same | `AtomicTopicCreateSuite.topicCreateWithContractWithoutAdminKeyForAutoRenewAccountFails` | `createDefaultContract` 1/D | rejection or negative-path coverage; contract auto-renew account | `REMOVE_P07_11B` | The rejected signer is specifically a contract account. |
 | `consensus/TopicCreateSuite.java` | `TopicCreateSuite.signingRequirementsEnforced` | C1/D | mixed ownership; native topic signature rules plus contract auto-renew account; contract | `SPLIT_REQUIRED` | Retain native signature cases; remove contract deployment and contract-account assertion. |
+| same | `TopicCreateSuite.topicCreateWithContractWithAdminKeyForAutoRenewAccount` | `createDefaultContract` 1/D | subject-under-test; contract auto-renew account | `REMOVE_P07_11B` | The auto-renew account is created only as a contract. |
+| same | `TopicCreateSuite.topicCreateWithContractWithoutAdminKeyForAutoRenewAccountFails` | `createDefaultContract` 1/D | rejection or negative-path coverage; contract auto-renew account | `REMOVE_P07_11B` | The rejected signer is specifically a contract account. |
 | `hip991/AtomicTopicCustomFeeCreateTest.java` | `AtomicTopicCustomFeeCreateTest.deployMutableContract` | C1/H | reusable setup; contract fee collector; contract | `REMOVE_P07_11B` | Sole caller is the contract-as-collector scenario; native collectors have separate cases. |
 | `hip991/AtomicTopicCustomFeeUpdateTest.java` | `TopicCreatePositiveScenarios.updateToAddCustomFeeWithContractAsCollector` | C1/D | subject-under-test; contract custom-fee collector; contract | `REMOVE_P07_11B` | The tested collector type depends on retired contract creation. |
 | `hip991/TopicCustomFeeCreateTest.java` | `TopicCustomFeeCreateTest.deployMutableContract` | C1/H | reusable setup; contract fee collector; contract | `REMOVE_P07_11B` | Sole caller is the contract-as-collector scenario. |
@@ -91,9 +113,10 @@ Notation:
 | --- | --- | --- | --- | --- | --- |
 | `fees/CryptoSimpleFeesSuite.java` | `cryptoCreateWithSingleHook`; `cryptoCreateWithTwoHooks`; `cryptoCreateWithFiveHooks`; `cryptoCreateWithHooksAndKeys`; `cryptoUpdateWithSingleHook`; `cryptoUpdateWithMultipleHooks`; `cryptoUpdateWithHookDeletion`; `cryptoUpdateWithHookCreationAndDeletion`; `cryptoUpdateWithHookAndKey` | each C1/D | subject-under-test; hook creation/update charging; contract/result | `REMOVE_P07_11B` | Each method's fee delta is executable hook ownership; native create/update fee methods remain. |
 | `fees/KitchenSinkFeeComparisonSuite.java` | `cryptoTransactions` | C2/F | dynamic-operation factory; native crypto matrix plus hook setup; contract | `SPLIT_REQUIRED` | Called by crypto-only and full runs; retain native operations and remove hook contract setup. |
-| same | `scheduleTransactions` | C1/F | dynamic-operation factory; native schedules plus scheduled contract setup; contract | `SPLIT_REQUIRED` | Retain native schedule matrix and remove executable schedule segment. |
+| same | `scheduleTransactions` | C1 plus `contractCallWithFunctionAbi` 2/F | dynamic-operation factory; native schedules plus scheduled contract setup; contract | `SPLIT_REQUIRED` | Retain native schedule matrix and remove both executable schedule-call variants and their setup. |
 | same | `hookTransactions` | C3/F | dynamic-operation factory; executable hook fee matrix; contract/result | `REMOVE_P07_11B` | Called only by `runAllTransactions`; complete category is retired. |
-| same | `contractTransactions` | C3/F | dynamic-operation factory; contract-service fee matrix; contract/result | `REMOVE_P07_11B` | Called only by `runAllTransactions`; complete category is retired. |
+| same | `contractTransactions` | C3, `contractCallWithFunctionAbi` 3, `contractCallLocalWithFunctionAbi` 1/F | dynamic-operation factory; contract-service fee and local-query matrix; contract/result | `REMOVE_P07_11B` | Called only by `runAllTransactions`; complete category is retired. |
+| same | `ethereumTransactions` | `ethereumCryptoTransfer` 1/F | dynamic-operation factory; Ethereum transaction fee matrix | `REMOVE_P07_11B` | Called only by `runAllTransactions`; its complete category requires retired Ethereum execution. |
 | `file/DiverseStateCreation.java` | `DiverseStateCreation.createDiverseState` | C2 K1/D | mixed ownership; native diverse file/state creation plus live contract state; contract/bytecode/query | `SPLIT_REQUIRED` | Retain file and metadata creation; remove contract deployment/call, contract deletion, bytecode query, and related serialization entries. |
 | `hip993/SystemFileExportsTest.java` | `SystemFileExportsTest.syntheticFeeSchedulesUpdateHappensAtUpgradeBoundary` | C1 K1/D | mixed ownership; system-file upgrade behavior plus contract fee probe; contract/result | `SPLIT_REQUIRED` | Preserve system-file export/update assertions using retained native fee probes. |
 | `integration/hip1259/Hip1259EnabledTests.java` | `variousTransactionTypesFeesGoToFeeCollector` | C1 K2/D | mixed ownership; fee-collector behavior across native and contract bodies; contract | `SPLIT_REQUIRED` | Retain native transaction types and remove contract entries. |
@@ -119,7 +142,12 @@ Notation:
 | same | `maxRefundIsEnforced` | C1 K2/D | subject-under-test; EVM gas refund; contract/result | `REMOVE_P07_11B` | Behavior is execution-gas specific. |
 | same | `serviceFeeRefundedIfConsGasExhausted` | C1 K3/D | subject-under-test; EVM gas/service-fee refund; contract/result | `REMOVE_P07_11B` | Behavior is execution-gas specific. |
 | `integration/RepeatableHip1215Tests.java` | `RepeatableHip1215Tests.hasCapacityUntilFullyScheduled` | K1/D | subject-under-test; scheduled contract-call capacity; contract | `REMOVE_P07_11B` | Load body is retired execution; native schedule capacity has separate ownership. |
-| `integration/RepeatableIntegrationTests.java` | `addEcdsaSigViaContractAndExpect`; `addEd25519SigViaContractAndExpect` | each K1/D | subject-under-test; contract-mediated signature addition; contract/result | `REMOVE_P07_11B` | Both methods invoke a contract to create the asserted behavior. |
+| `integration/RepeatableIntegrationTests.java` | `signSystemContractAppendsFromAddressSignature` | `contractCallWithFunctionAbi` 1/D | subject-under-test; successful system-contract schedule signing | `REMOVE_P07_11B` | The method directly invokes executable schedule-signing behavior; its native schedule setup does not provide an independent assertion after the call is removed. |
+| same | `unrelatedCallToSignSystemContractIsNoop` | `contractCallWithFunctionAbi` 1/D | rejection or negative-path coverage; unrelated executable system-contract call | `REMOVE_P07_11B` | The asserted no-op is caused solely by an executable ABI transaction call. |
+| same | `signScheduleRevertsOnUnrelatedEd25519SigAndAppendsRelatedEcdsaSig` | K2/H | subject-under-test; helper-generated contract schedule signing | `REMOVE_P07_11B` | Calls `addEd25519SigViaContractAndExpect` and `addEcdsaSigViaContractAndExpect` once each; both assertions require executable calls. |
+| same | `signScheduleRevertsOnUnrelatedEcdsaSigAndAppendsRelatedEd25519Sig` | K2/H | subject-under-test; helper-generated contract schedule signing | `REMOVE_P07_11B` | Calls the same two helpers once each in reverse order; both assertions require executable calls. |
+| same | `addEd25519SigViaContractAndExpect` | `contractCall` 1/H | assertion support; constructs ED25519 signature map and executable call | `REMOVE_P07_11B` | Exactly two callers, both approved for removal above; no retained or deferred caller exists. |
+| same | `addEcdsaSigViaContractAndExpect` | `contractCall` 1/H | assertion support; native signing feeds executable contract call | `REMOVE_P07_11B` | Exactly two callers, both approved for removal above; `NativeEcdsaSigning` ownership outside this helper is unaffected. |
 | `issues/Issue305Spec.java` | covered above | — | — | — | — |
 | `misc/InvalidgRPCValuesTest.java` | `InvalidgRPCValuesTest.transactionsWithOnlySigMap` | C1/D | mixed ownership; malformed native and contract transaction-body matrix; contract | `SPLIT_REQUIRED` | Retain malformed native vectors; remove contract-create vector or move an intentional legacy rejection to P07-11C. |
 | `queries/AsNodeOperatorQueriesTestEmbedded.java` | `getContractBytecodeQueryNoSigRequired`; `getSmartContractQuerySigNotRequired` | each C1/D | executable-query ownership; contract setup/query | `DEFER_P07_11C` | Both create a contract solely to exercise retained/retired contract query boundaries. |
@@ -130,34 +158,129 @@ Notation:
 | `regression/factories/HollowAccountCompletedFuzzingFactory.java` | `HollowAccountCompletedFuzzingFactory.initOperations` | C1/F | dynamic-operation factory; completed-hollow-account operation pool | `SPLIT_REQUIRED` | Called by `CompletedHollowAccountOperationsFuzzing`; remove contract operation only. |
 | `regression/factories/IdFuzzingProviderFactory.java` | `initOpHbarTransfer`; `initOpFungibleTransfer`; `initOpERC20Transfer`; `initOpERC721Transfer` | each C1/F | dynamic-operation factory; contract/precompile transfer setup | `REMOVE_P07_11B` | All four feed `initOperations`, which feeds `AtomicBatchFuzzing` and `AddressAliasIdFuzzing`; replace/remove executable provider entries while retaining native fuzz providers. |
 | `SystemFileExportsTest.java` | covered above | — | — | — | — |
+| `token/TokenAssociationSpecs.java` | `associatedContractsMustHaveAdminKeys`; `contractInfoQueriesAsExpected` | each `createDefaultContract` 1/D | subject-under-test; contract association and contract-info behavior | `REMOVE_P07_11B` | Both methods require a successfully created contract account; native association coverage is independent. |
+| `token/batch/AtomicTokenAssociationSpecs.java` | `associatedContractsMustHaveAdminKeys`; `contractInfoQueriesAsExpected` | each `createDefaultContract` 1/D | subject-under-test; batched contract association and contract-info behavior | `REMOVE_P07_11B` | Both methods require a successfully created contract account; native atomic association coverage remains. |
 
 ## Reconciliation
 
-The syntax-tree census outside the two shared P07-11C owners is:
+### Protected P07-11C enumeration
 
-| Operation | Direct/helper/factory occurrences |
+`ContractUpdateSuite` remains behaviorally unchanged. Its 19 enclosing
+methods contain 20 ordinary `contractCreate` operations, one
+`contractCustomCreate`, seven ordinary `contractCall` operations, and one
+ordinary `contractCallLocal`. Every method remains `DEFER_P07_11C`.
+The enclosing methods are:
+
+- `updateMaxAutomaticAssociationsAndRequireKey`;
+- `idVariantsTreatedAsExpected`;
+- `updateStakingFieldsWorks`;
+- `eip1014AddressAlwaysHasPriority`;
+- `updateWithBothMemoSettersWorks`;
+- `updatingExpiryWorks`;
+- `rejectsExpiryTooFarInTheFuture`;
+- `updateAutoRenewWorks`;
+- `updateAutoRenewAccountWorks`;
+- `updateAdminKeyWorks`;
+- `immutableContractKeyFormIsStandard`;
+- `canMakeContractImmutableWithEmptyKeyList`;
+- `givenAdminKeyMustBeValid`;
+- `fridayThe13thSpec`;
+- `updateDoesNotChangeBytecode`;
+- `tryContractUpdateWithMaxAutoAssociations`;
+- `playGame`;
+- `cannotUpdateImmutableContractExceptExpiry`;
+- `cannotUpdateContractExceptExpiryWithWrongKey`.
+
+`ContractRecordsSanityCheckSuite` remains behaviorally unchanged:
+
+- `contractDeleteRecordSanityChecks`: ordinary `contractCreate` 1;
+- `contractCreateRecordSanityChecks`: ordinary `contractCreate` 1;
+- `contractCallWithSendRecordSanityChecks`: ordinary `contractCreate` 1 and
+  one logical `contractCallWithSendRecordSanityChecks` call wrapper;
+- `circularTransfersRecordSanityChecks`: `createDefaultContract` 1,
+  `contractCallWithTuple` 1, and `contractCallWithFunctionAbi` 1;
+- `contractUpdateRecordSanityChecks`: ordinary `contractCreate` 1.
+
+All five methods remain `DEFER_P07_11C`. This enumeration adds subtype detail
+without reclassifying historical ownership.
+
+### Aggregate census
+
+| Aggregate family | P07-11B scope | Shared P07-11C owners | Total |
+| --- | ---: | ---: | ---: |
+| `contractCreate` | 115 | 26 | **141** |
+| all `contractCall` family operations | 54 | 10 | **64** |
+| `ethereumCall` | 9 | 0 | **9** |
+| executable local query | 10 | 1 | **11** |
+
+### Subtype census
+
+| Aggregate family | Concrete subtype | Count |
+| --- | --- | ---: |
+| `contractCreate` | ordinary `contractCreate` | 129 |
+| `contractCreate` | `createDefaultContract` | 11 |
+| `contractCreate` | `contractCustomCreate` | 1 |
+| `contractCall` | ordinary `contractCall` | 54 |
+| `contractCall` | `contractCallWithFunctionAbi` | 8 |
+| `contractCall` | `contractCallWithTuple` | 1 |
+| `contractCall` | logical `contractCallWithSendRecordSanityChecks` | 1 |
+| `ethereumCall` | ordinary `ethereumCall` | 6 |
+| `ethereumCall` | `ethereumCryptoTransfer` | 1 |
+| `ethereumCall` | `ethereumCryptoTransferToAlias` | 2 |
+| executable local query | ordinary `contractCallLocal` | 10 |
+| executable local query | `contractCallLocalWithFunctionAbi` | 1 |
+
+Each subtype sum equals its aggregate-family total. In particular, the one
+ordinary call physically inside `contractCallWithSendRecordSanityChecks` is
+reported under the logical wrapper subtype, reducing the ordinary subtype
+from its raw factory-name count of 55 to 54 without changing the aggregate of
+64.
+
+### Ownership and method census
+
+| Final disposition | Methods/factories | Create | Call | Ethereum | Local |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `REMOVE_P07_11B` | 79 | 81 | 35 | 9 | 7 |
+| `SPLIT_REQUIRED` | 23 | 28 | 17 | 0 | 0 |
+| `DEFER_P07_11C` | 30 | 32 | 12 | 0 | 4 |
+| `RETAIN_NATIVE` | 0 | 0 | 0 | 0 | 0 |
+| `UNRESOLVED` | 0 | 0 | 0 | 0 | 0 |
+| **Total** | **132** | **141** | **64** | **9** | **11** |
+
+The 30 deferred methods comprise 24 methods in the two protected owners, five
+executable-query methods in the three query suites, and
+`FileUpdateSuite.gasLimitOverMaxGasLimitFailsPrecheck`.
+
+### Generation census and caller closures
+
+| Generation form | Operation constructions |
 | --- | ---: |
-| `contractCreate` | 105 |
-| `contractCall` | 47 |
-| `ethereumCall` | 6 |
-| executable local query | 9 |
+| direct in registered/enclosing behavior | 192 |
+| helper-contained | 7 |
+| dynamically generated by operation factories | 26 |
+| **Total** | **225** |
 
-The excluded shared owners contribute:
+The seven helper-contained constructions are owned by the two
+`RepeatableIntegrationTests` signature helpers, the two airdrop
+`createAccountsAndKeys` helpers, and three `deployMutableContract` helpers.
+Their caller ownership is:
 
-| Owner | Create | Call | Ethereum | Local |
-| --- | ---: | ---: | ---: | ---: |
-| `ContractUpdateSuite` | 20 | 7 | 0 | 1 |
-| `ContractRecordsSanityCheckSuite` | 4 | 1 | 0 | 0 |
+- `addEd25519SigViaContractAndExpect` and
+  `addEcdsaSigViaContractAndExpect`: two callers each, four invocation edges
+  total; both callers and both helpers are `REMOVE_P07_11B`;
+- `TokenAirdropSimpleFeesTest.createAccountsAndKeys` and
+  `TokenClaimAndCancelAirdropSimpleFeesTest.createAccountsAndKeys`: retained
+  native callers require `SPLIT_REQUIRED`; only contract setup is removable;
+- `TokenAirdropBase.deployMutableContract`: zero remaining callers and
+  `REMOVE_P07_11B`;
+- the HIP-991 `deployMutableContract` helpers: one contract-collector caller
+  each; helper and caller are `REMOVE_P07_11B`.
 
-Thus the authoritative 61-file totals reconcile exactly:
-
-- `contractCreate`: 105 + 24 = **129**;
-- `contractCall`: 47 + 8 = **55**;
-- `ethereumCall`: 6 + 0 = **6**;
-- executable local queries: 9 + 1 = **10**.
-
-There are 97 enclosing methods/factories in 37 files outside the shared owners.
-There are no `UNRESOLVED` dispositions.
+Dynamic factories are the five Kitchen Sink category factories, six
+regression initializer factories, and three steady-state throttle provider
+methods. Their caller consequences are recorded in their method rows:
+mixed native factories are `SPLIT_REQUIRED`, while execution-only provider
+branches are `REMOVE_P07_11B`.
 
 ## Subsequent bounded deletion scope
 
@@ -182,6 +305,9 @@ methods/helpers without first splitting a retained enclosing method:
 
 - `crypto/CryptoTransferSuite.java`;
 - `crypto/LeakyCryptoTestsSuite.java`;
+- the two contract-auto-renew methods in
+  `consensus/AtomicTopicCreateSuite.java`;
+- the two contract-auto-renew methods in `consensus/TopicCreateSuite.java`;
 - `hip1261/CryptoTransferSimpleFeesTest.java`;
 - `hip1261/CryptoTransferWithCustomFeesSimpleFeesTest.java`;
 - `hip1261/TokenAirdropSimpleFeesTest.java` (helper branch only);
@@ -196,6 +322,8 @@ methods/helpers without first splitting a retained enclosing method:
 - `integration/RepeatableHip1215Tests.java`;
 - `integration/RepeatableIntegrationTests.java`;
 - the execution-only methods of `integration/hip1259/Hip1259EnabledTests.java`;
+- `token/TokenAssociationSpecs.java` contract-account methods;
+- `token/batch/AtomicTokenAssociationSpecs.java` contract-account methods;
 - `issues/IssueRegressionTests.java` method
   `transferAccountCannotBeDeletedForContractTarget`.
 
