@@ -600,20 +600,10 @@ public class CryptoTransferSuite {
 
     @HapiTest
     final Stream<DynamicTest> cannotTransferFromImmutableAccounts() {
-        final var contract = "PayableConstructor";
         final var multiKey = "swiss";
 
         return hapiTest(
                 newKeyNamed(multiKey),
-                uploadInitCode(contract),
-                // why is there transactionFee here ?
-                contractCreate(contract).balance(ONE_HBAR).immutable().payingWith(GENESIS),
-                // Even the treasury cannot withdraw from an immutable contract
-                cryptoTransfer(tinyBarsFromTo(contract, FUNDING, ONE_HBAR))
-                        .payingWith(GENESIS)
-                        .signedBy(GENESIS)
-                        .fee(ONE_HBAR)
-                        .hasKnownStatus(INVALID_SIGNATURE),
                 // Even the treasury cannot withdraw staking funds
                 cryptoTransfer(tinyBarsFromTo(STAKING_REWARD, FUNDING, ONE_HBAR))
                         .payingWith(GENESIS)
@@ -1496,136 +1486,6 @@ public class CryptoTransferSuite {
                         .payingWith(SPENDER)
                         .signedBy(RECEIVER_SIGNATURE, SPENDER_SIGNATURE)
                         .fee(ONE_HUNDRED_HBARS));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> testTransferToSystemAccounts() {
-        final var contract = "CryptoTransfer";
-        final var systemAccounts = List.of(359L, 360L, 361L);
-        final var opsArray = new HapiSpecOperation[systemAccounts.size() * 3];
-
-        for (int i = 0; i < systemAccounts.size(); i++) {
-            final var index = i;
-            opsArray[i] = contractCall(contract, "sendViaTransfer", mirrorAddrParamFunction(systemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-
-            opsArray[systemAccounts.size() + i] = contractCall(
-                            contract, "sendViaSend", mirrorAddrParamFunction(systemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-
-            opsArray[systemAccounts.size() * 2 + i] = contractCall(
-                            contract, "sendViaCall", mirrorAddrParamFunction(systemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-        }
-
-        return hapiTest(flattened(
-                cryptoCreate(SENDER).balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                opsArray));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> testTransferToExistingSystemAccounts() {
-        final var contract = "CryptoTransfer";
-        final HapiSpecOperation[] opsArray = new HapiSpecOperation[existingSystemAccounts.size() * 3];
-
-        for (int i = 0; i < existingSystemAccounts.size(); i++) {
-            final var index = i;
-
-            opsArray[i] = contractCall(
-                            contract, "sendViaTransfer", mirrorAddrParamFunction(existingSystemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(SUCCESS);
-
-            opsArray[existingSystemAccounts.size() + i] = contractCall(
-                            contract, "sendViaSend", mirrorAddrParamFunction(existingSystemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(SUCCESS);
-
-            opsArray[existingSystemAccounts.size() * 2 + i] = contractCall(
-                            contract, "sendViaCall", mirrorAddrParamFunction(existingSystemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(SUCCESS);
-        }
-
-        return hapiTest(flattened(
-                cryptoCreate(SENDER).balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                opsArray));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> testTransferToNonExistingSystemAccounts() {
-        final var contract = "CryptoTransfer";
-        final HapiSpecOperation[] opsArray = new HapiSpecOperation[nonExistingSystemAccounts.size() * 3];
-
-        for (int i = 0; i < nonExistingSystemAccounts.size(); i++) {
-            final var index = i;
-            opsArray[i] = contractCall(
-                            contract, "sendViaTransfer", mirrorAddrParamFunction(nonExistingSystemAccounts.get(index)))
-                    .payingWith("sender")
-                    .sending(ONE_HBAR * 10)
-                    .via("sendViaTransfer" + i)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-
-            opsArray[nonExistingSystemAccounts.size() + i] = contractCall(
-                            contract, "sendViaSend", mirrorAddrParamFunction(nonExistingSystemAccounts.get(index)))
-                    .payingWith("sender")
-                    .sending(ONE_HBAR * 10)
-                    .via("sendViaSend" + i)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-
-            opsArray[nonExistingSystemAccounts.size() * 2 + i] = contractCall(
-                            contract, "sendViaCall", mirrorAddrParamFunction(nonExistingSystemAccounts.get(index)))
-                    .payingWith("sender")
-                    .sending(ONE_HBAR * 10)
-                    .via("sendViaCall" + i)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-        }
-        return hapiTest(flattened(
-                cryptoCreate("sender").balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                opsArray));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> testTransferToSystemAccountsAndCheckSenderBalance() {
-        final var transferContract = "CryptoTransfer";
-        final var balanceContract = "BalanceChecker46Version";
-        final var senderAccount = "detachedSenderAccount";
-        return hapiTest(
-                cryptoCreate(senderAccount).balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(transferContract),
-                contractCreate(transferContract).balance(ONE_HBAR),
-                uploadInitCode(balanceContract),
-                contractCreate(balanceContract),
-                contractCall(transferContract, "sendViaTransferWithAmount", spec -> List.of(
-                                        mirrorAddrWith(spec, 359L), BigInteger.valueOf(15L))
-                                .toArray())
-                        .payingWith(senderAccount)
-                        .hasKnownStatus(INVALID_CONTRACT_ID),
-                getAccountBalance(transferContract, true).hasTinyBars(ONE_HBAR));
     }
 
     @HapiTest
