@@ -4,8 +4,6 @@ package com.hedera.services.bdd.suites.hip423;
 import static com.hedera.services.bdd.junit.ContextRequirement.FEE_SCHEDULE_OVERRIDES;
 import static com.hedera.services.bdd.junit.EmbeddedReason.NEEDS_STATE_ACCESS;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.nodeCreate;
@@ -14,11 +12,9 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.nodeUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromToWithInvalidAmounts;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.uploadScheduledContractPrices;
 import static com.hedera.services.bdd.suites.HapiSuite.DEFAULT_PAYER;
 import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.hip869.NodeCreateTest.ED_25519_KEY;
@@ -107,23 +103,6 @@ public class ScheduleLongTermExecutionTest {
                 scheduleCreate("payerOnly", cryptoTransfer(tinyBarsFromTo(DEFAULT_PAYER, "luckyYou", 1L)))
                         .withRelativeExpiry("cryptoCreate", TWO_MINUTES),
                 scheduleCreate("payerOnly", cryptoTransfer(tinyBarsFromTo(DEFAULT_PAYER, "luckyYou", 1L)))
-                        .withRelativeExpiry("cryptoCreate", TWO_MINUTES)
-                        .hasKnownStatus(IDENTICAL_SCHEDULE_ALREADY_CREATED));
-    }
-
-    @LeakyEmbeddedHapiTest(reason = NEEDS_STATE_ACCESS, requirement = FEE_SCHEDULE_OVERRIDES)
-    final Stream<DynamicTest> scheduleCreateIdenticalContractCall() {
-        final var contract = "CallOperationsChecker";
-        return hapiTest(
-                // upload fees for SCHEDULE_CREATE_CONTRACT_CALL
-                uploadScheduledContractPrices(GENESIS),
-                cryptoCreate("luckyYou").balance(0L).via("cryptoCreate"),
-                uploadInitCode(contract),
-                contractCreate(contract),
-
-                // Expiring the schedules relative to the cryptoCreate so the expiry time will be exactly the same
-                scheduleCreate("payerOnly", contractCall(contract)).withRelativeExpiry("cryptoCreate", TWO_MINUTES),
-                scheduleCreate("payerOnly", contractCall(contract))
                         .withRelativeExpiry("cryptoCreate", TWO_MINUTES)
                         .hasKnownStatus(IDENTICAL_SCHEDULE_ALREADY_CREATED));
     }

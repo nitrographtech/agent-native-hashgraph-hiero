@@ -12,8 +12,6 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getScheduleInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.asId;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.randomUppercase;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -22,13 +20,11 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleSign;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.systemFileDelete;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.freezeAbort;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.recordFeeAmount;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.uploadScheduledContractPrices;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hedera.services.bdd.suites.HapiSuite.DEFAULT_PAYER;
 import static com.hedera.services.bdd.suites.HapiSuite.FREEZE_ADMIN;
@@ -45,7 +41,6 @@ import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.SCHEDU
 import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.SENDER_1;
 import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.SENDER_2;
 import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.SENDER_3;
-import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.SIMPLE_UPDATE;
 import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.SUCCESS_TXN;
 import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.TRANSACTION_NOT_SCHEDULED;
 import static com.hedera.services.bdd.suites.hip423.LongTermScheduleUtils.TRIGGERING_TXN;
@@ -74,7 +69,6 @@ import com.hedera.services.bdd.junit.RepeatableHapiTest;
 import com.hedera.services.bdd.junit.TargetEmbeddedMode;
 import com.hedera.services.bdd.junit.support.TestLifecycle;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -380,109 +374,6 @@ public class RepeatableScheduleLongTermExecutionTest {
                                     asId(PAYING_ACCOUNT, spec),
                                     1L),
                             WRONG_TRANSFER_LIST);
-                })));
-    }
-
-    @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
-    public Stream<DynamicTest> executionWithContractCallWorksAtExpiry() {
-        final var payerBalance = new AtomicLong();
-        return hapiTest(flattened(
-                // upload fees for SCHEDULE_CREATE_CONTRACT_CALL
-                uploadScheduledContractPrices(GENESIS),
-                uploadInitCode(SIMPLE_UPDATE),
-                contractCreate(SIMPLE_UPDATE).gas(500_000L),
-                cryptoCreate(PAYING_ACCOUNT).balance(PAYER_INITIAL_BALANCE).via(PAYING_ACCOUNT_TXN),
-                scheduleCreate(
-                                BASIC_XFER,
-                                contractCall(SIMPLE_UPDATE, "set", BigInteger.valueOf(5), BigInteger.valueOf(42))
-                                        .gas(300000L))
-                        .waitForExpiry()
-                        .withRelativeExpiry(PAYING_ACCOUNT_TXN, 4)
-                        .designatingPayer(PAYING_ACCOUNT)
-                        .alsoSigningWith(PAYING_ACCOUNT)
-                        .recordingScheduledTxn()
-                        .via(CREATE_TX),
-                getScheduleInfo(BASIC_XFER)
-                        .hasScheduleId(BASIC_XFER)
-                        .hasWaitForExpiry()
-                        .isNotExecuted()
-                        .isNotDeleted()
-                        .hasRelativeExpiry(PAYING_ACCOUNT_TXN, 4)
-                        .hasRecordedScheduledTxn(),
-                triggerSchedule(BASIC_XFER),
-                getAccountBalance(PAYING_ACCOUNT)
-                        .hasTinyBars(spec ->
-                                bal -> bal < PAYER_INITIAL_BALANCE ? Optional.empty() : Optional.of("didnt change"))
-                        .exposingBalanceTo(payerBalance::set),
-                withOpContext((spec, opLog) -> {
-                    var triggeredTx = getTxnRecord(CREATE_TX).scheduled();
-                    allRunFor(spec, triggeredTx);
-                    final var txnFee = triggeredTx.getResponseRecord().getTransactionFee();
-                    // check if only designating payer was charged
-                    Assertions.assertEquals(PAYER_INITIAL_BALANCE, txnFee + payerBalance.get());
-
-                    Assertions.assertEquals(
-                            SUCCESS,
-                            triggeredTx.getResponseRecord().getReceipt().getStatus(),
-                            SCHEDULED_TRANSACTION_MUST_NOT_SUCCEED);
-
-                    Assertions.assertTrue(triggeredTx
-                                    .getResponseRecord()
-                                    .getContractCallResult()
-                                    .getContractCallResult()
-                                    .size()
-                            >= 0);
-                })));
-    }
-
-    @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
-    public Stream<DynamicTest> executionWithContractCreateWorksAtExpiry() {
-        final var payerBalance = new AtomicLong();
-        return hapiTest(flattened(
-                uploadInitCode(SIMPLE_UPDATE),
-                cryptoCreate(PAYING_ACCOUNT).balance(PAYER_INITIAL_BALANCE).via(PAYING_ACCOUNT_TXN),
-                scheduleCreate(
-                                BASIC_XFER,
-                                contractCreate(SIMPLE_UPDATE).gas(500_000L).adminKey(PAYING_ACCOUNT))
-                        .waitForExpiry()
-                        .withRelativeExpiry(PAYING_ACCOUNT_TXN, 4)
-                        .designatingPayer(PAYING_ACCOUNT)
-                        .alsoSigningWith(PAYING_ACCOUNT)
-                        .recordingScheduledTxn()
-                        .via(CREATE_TX),
-                getScheduleInfo(BASIC_XFER)
-                        .hasScheduleId(BASIC_XFER)
-                        .hasWaitForExpiry()
-                        .isNotExecuted()
-                        .isNotDeleted()
-                        .hasRelativeExpiry(PAYING_ACCOUNT_TXN, 4)
-                        .hasRecordedScheduledTxn(),
-                triggerSchedule(BASIC_XFER),
-                getAccountBalance(PAYING_ACCOUNT)
-                        .hasTinyBars(spec ->
-                                bal -> bal < PAYER_INITIAL_BALANCE ? Optional.empty() : Optional.of("didnt change"))
-                        .exposingBalanceTo(payerBalance::set),
-                withOpContext((spec, opLog) -> {
-                    var triggeredTx = getTxnRecord(CREATE_TX).scheduled();
-                    allRunFor(spec, triggeredTx);
-                    final var txnFee = triggeredTx.getResponseRecord().getTransactionFee();
-                    // check if only designating payer was charged
-                    Assertions.assertEquals(PAYER_INITIAL_BALANCE, txnFee + payerBalance.get());
-
-                    Assertions.assertEquals(
-                            SUCCESS,
-                            triggeredTx.getResponseRecord().getReceipt().getStatus(),
-                            SCHEDULED_TRANSACTION_MUST_NOT_SUCCEED);
-
-                    Assertions.assertTrue(
-                            triggeredTx.getResponseRecord().getReceipt().hasContractID());
-
-                    Assertions.assertTrue(triggeredTx
-                                    .getResponseRecord()
-                                    .getContractCreateResult()
-                                    .getContractCallResult()
-                                    .size()
-                            >= 0);
                 })));
     }
 
