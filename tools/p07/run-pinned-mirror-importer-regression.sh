@@ -8,12 +8,21 @@ harness="$repo_root/tools/p07/mirror/P06bFixtureRegressionTest.java"
 expectations="$repo_root/tools/p07/mirror/expected-corpora.tsv"
 importer=${MIRROR_IMPORTER_DIR:?set MIRROR_IMPORTER_DIR to a hiero-mirror-node checkout}
 output_dir=${P07_MIRROR_OUTPUT_DIR:-"$repo_root/build/p07-mirror-regression"}
+corpora=${P07_MIRROR_CORPORA:-all}
 
-fixture_a_records=${P07_FIXTURE_A_RECORDS:?set P07_FIXTURE_A_RECORDS}
-fixture_a_blocks=${P07_FIXTURE_A_BLOCKS:?set P07_FIXTURE_A_BLOCKS}
-fixture_b_records=${P07_FIXTURE_B_RECORDS:?set P07_FIXTURE_B_RECORDS}
-fixture_b_blocks=${P07_FIXTURE_B_BLOCKS:?set P07_FIXTURE_B_BLOCKS}
-native_records=${P07_NATIVE_RECORDS:?set P07_NATIVE_RECORDS}
+case "$corpora" in
+    all|fixtures)
+        fixture_a_records=${P07_FIXTURE_A_RECORDS:?set P07_FIXTURE_A_RECORDS}
+        fixture_a_blocks=${P07_FIXTURE_A_BLOCKS:?set P07_FIXTURE_A_BLOCKS}
+        fixture_b_records=${P07_FIXTURE_B_RECORDS:?set P07_FIXTURE_B_RECORDS}
+        fixture_b_blocks=${P07_FIXTURE_B_BLOCKS:?set P07_FIXTURE_B_BLOCKS}
+        ;;
+    native) ;;
+    *) echo "P07_MIRROR_CORPORA must be all, fixtures, or native" >&2; exit 1 ;;
+esac
+case "$corpora" in
+    all|native) native_records=${P07_NATIVE_RECORDS:?set P07_NATIVE_RECORDS} ;;
+esac
 
 fail() {
     echo "P07 pinned mirror importer regression: $1" >&2
@@ -40,6 +49,12 @@ cp "$harness" "$target"
 mkdir -p "$output_dir"
 summary="$output_dir/summary.tsv"
 : >"$summary"
+selected_expectations="$output_dir/selected-expectations.tsv"
+case "$corpora" in
+    all) cp "$expectations" "$selected_expectations" ;;
+    fixtures) awk '/^#/ || $1 == "fixture-a" || $1 == "fixture-b"' "$expectations" >"$selected_expectations" ;;
+    native) awk '/^#/ || $1 == "exact-head-native"' "$expectations" >"$selected_expectations" ;;
+esac
 
 expected_row() {
     corpus=$1
@@ -70,9 +85,9 @@ run_records() {
         P07_EXPECTED_LOGS="$expected_logs" \
         P07_EXPECTED_ACTIONS="$expected_actions" \
         P07_EXPECTED_SIDECARS="$expected_sidecars" \
-        ./gradlew :importer:test \
+        ./gradlew :importer:cleanTest :importer:test \
             --tests org.hiero.mirror.importer.parser.record.P06bFixtureRegressionTest.importsRecordsAndSidecars \
-            --no-daemon --rerun-tasks
+            --no-daemon --no-build-cache
     )
     report="$worktree/importer/build/test-results/test/TEST-org.hiero.mirror.importer.parser.record.P06bFixtureRegressionTest.xml"
     [ -f "$report" ] || fail "record importer XML is missing for $corpus"
@@ -91,9 +106,9 @@ run_blocks() {
         cd "$worktree"
         P06B_BLOCK_STREAMS="$blocks_path" \
         P07_EXPECTED_BLOCKS="$expected_blocks" \
-        ./gradlew :importer:test \
+        ./gradlew :importer:cleanTest :importer:test \
             --tests org.hiero.mirror.importer.parser.record.P06bFixtureRegressionTest.importsBlocks \
-            --no-daemon --rerun-tasks
+            --no-daemon --no-build-cache
     )
     report="$worktree/importer/build/test-results/test/TEST-org.hiero.mirror.importer.parser.record.P06bFixtureRegressionTest.xml"
     [ -f "$report" ] || fail "block importer XML is missing for $corpus"
@@ -103,13 +118,19 @@ run_blocks() {
     printf '%s\t%s\n' "$corpus-blocks" "$line" >>"$summary"
 }
 
-run_records fixture-a "$fixture_a_records"
-run_blocks fixture-a "$fixture_a_blocks"
-run_records fixture-b "$fixture_b_records"
-run_blocks fixture-b "$fixture_b_blocks"
-run_records exact-head-native "$native_records"
+case "$corpora" in
+    all|fixtures)
+        run_records fixture-a "$fixture_a_records"
+        run_blocks fixture-a "$fixture_a_blocks"
+        run_records fixture-b "$fixture_b_records"
+        run_blocks fixture-b "$fixture_b_blocks"
+        ;;
+esac
+case "$corpora" in
+    all|native) run_records exact-head-native "$native_records" ;;
+esac
 
-"$repo_root/tools/p07/verify-mirror-importer-summary.sh" "$summary" "$expectations"
+"$repo_root/tools/p07/verify-mirror-importer-summary.sh" "$summary" "$selected_expectations"
 summary_sha=$(sha256sum "$summary" | awk '{print $1}')
 printf 'PINNED_IMPORTER=%s\n' "$readonly_pin"
 printf 'HARNESS_SHA256=%s\n' "$(sha256sum "$harness" | awk '{print $1}')"

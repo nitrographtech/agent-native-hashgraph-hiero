@@ -52,6 +52,9 @@ P07_MIRROR_OUTPUT_DIR=/tmp/p07-mirror-output \
 tools/p07/run-pinned-mirror-importer-regression.sh
 ```
 
+`P07_MIRROR_CORPORA=fixtures` or `P07_MIRROR_CORPORA=native` runs a
+deterministic subset; the default is `all`.
+
 Docker access is required by the importer. On a host where access is granted
 through a group, wrap the command with the host's normal group launcher, for
 example `sg docker -c '…'`.
