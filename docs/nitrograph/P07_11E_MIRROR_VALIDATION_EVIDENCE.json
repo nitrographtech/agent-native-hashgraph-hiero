@@ -1,12 +1,12 @@
 {
   "phase": "P07-11E",
-  "status": "CERTIFICATION_COMPLETE_PENDING_EXACT_HEAD_CI",
-  "readiness": "PENDING_EXACT_HEAD_CI",
+  "status": "CLOSED",
+  "readiness": "READY_FOR_REVIEW",
   "starting_commit": "9d72fe0dd79d4d3b5c5adada826509a2992f8c03",
   "manifest_commit": "db4a7153e7b320cf46f85cd1f1bfba23402dcd3b",
   "documentation_reconciliation_commit": "61e21590318cd4bf3a114dce09df2d85635b7fad",
-  "evidence_commit": null,
-  "final_certification_head": null,
+  "evidence_commit": "9c920c1b3545f3d84659782a248096b7c4d76e06",
+  "final_certification_head": "recorded by the certification-only commit containing this update",
   "pull_request": 30,
   "checksums": {
     "p07_11d_manifest_sha256": "d86fb87432dc108f4ce9e20627a3eda2a3c3d6505a9a36634f1af1262b53c88f",
@@ -203,29 +203,25 @@
     "final_phase_labels_reconciled": true
   },
   "exact_head_ci": {
-    "run_id": null,
-    "tested_commit": null,
-    "status": "PENDING",
+    "run_id": 30321465453,
+    "tested_commit": "9c920c1b3545f3d84659782a248096b7c4d76e06",
+    "status": "PASS",
     "required_job": "native-agent",
-    "required_job_result": "PENDING"
+    "required_job_result": "PASS",
+    "completed_at": "2026-07-28T02:08:00Z"
   },
   "pull_request_readiness": {
-    "title_and_description_reviewed": false,
-    "phase_evidence_linked": false,
-    "known_external_defects_disclosed": false,
+    "title_and_description_reviewed": true,
+    "phase_evidence_linked": true,
+    "known_external_defects_disclosed": true,
     "draft": true,
     "mergeable": true,
-    "local_remote_heads_match": false,
-    "worktree_clean": false,
-    "classification": "PENDING_EXACT_HEAD_CI"
+    "local_remote_heads_match_at_evidence_head": true,
+    "worktree_clean_at_evidence_head": true,
+    "classification": "READY_FOR_REVIEW"
   },
   "remaining_work": {
-    "p07_11e": [
-      "commit and push this evidence",
-      "update PR title and description",
-      "run and pass exact-head CI",
-      "issue final readiness classification"
-    ],
+    "p07_11e": [],
     "outside_p07_11e": [
       "separately authorized dead dependency and resource closure",
       "pre-existing StreamValidationTest terminal account reconciliation defect",
