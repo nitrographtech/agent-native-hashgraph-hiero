@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 package com.hedera.services.bdd.suites.hip993;
 
-import static com.hedera.node.app.hapi.utils.CommonUtils.pbjTimestampToInstant;
-import static com.hedera.node.app.hapi.utils.CommonUtils.timestampToInstant;
 import static com.hedera.services.bdd.junit.RepeatableReason.NEEDS_LAST_ASSIGNED_CONSENSUS_TIME;
 import static com.hedera.services.bdd.junit.RepeatableReason.NEEDS_SYNCHRONOUS_HANDLE_WORKFLOW;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
@@ -18,18 +16,10 @@ import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hedera.services.bdd.suites.HapiSuite.FUNDING;
 import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
-import static com.hedera.services.bdd.suites.utils.contracts.precompile.TokenKeyType.SUPPLY_KEY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BUSY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import com.hedera.services.bdd.junit.HapiTest;
 import com.hedera.services.bdd.junit.RepeatableHapiTest;
-import com.hedera.services.bdd.spec.dsl.annotations.Contract;
-import com.hedera.services.bdd.spec.dsl.annotations.NonFungibleToken;
-import com.hedera.services.bdd.spec.dsl.entities.SpecContract;
-import com.hedera.services.bdd.spec.dsl.entities.SpecNonFungibleToken;
-import java.math.BigInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -74,26 +64,5 @@ public class UnifiedConsTimeTest {
                         .andAllChildRecords()
                         .hasNonStakingChildRecordCount(0)
                         .hasPriority(recordWith().status(BUSY)));
-    }
-
-    @HapiTest
-    @DisplayName("child mint time is parent consensus time not synthetic time")
-    final Stream<DynamicTest> childMintTimeIsParentConsensusTime(
-            @NonFungibleToken final SpecNonFungibleToken token,
-            @Contract(contract = "HTSCalls", creationGas = 1_000_000) final SpecContract htsCalls) {
-        return hapiTest(
-                token.authorizeContracts(htsCalls).alsoAuthorizing(SUPPLY_KEY),
-                htsCalls.call("mintTokenCall", token, BigInteger.ZERO, new byte[][] {{(byte) 0xab}})
-                        .with(op -> op.via("childMintTxn").gas(2_000_000L)),
-                token.serialNo(1L).doWith(nft -> getTxnRecord("childMintTxn")
-                        .andAllChildRecords()
-                        .exposingAllTo(records -> {
-                            assertEquals(
-                                    timestampToInstant(records.getFirst().getConsensusTimestamp()),
-                                    pbjTimestampToInstant(nft.mintTimeOrThrow()));
-                            assertNotEquals(
-                                    records.getFirst().getConsensusTimestamp(),
-                                    records.getLast().getConsensusTimestamp());
-                        })));
     }
 }

@@ -5,23 +5,18 @@ import static com.hedera.services.bdd.junit.TestTags.SERIAL;
 import static com.hedera.services.bdd.junit.TestTags.TOKEN;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.assertions.AccountInfoAsserts.lessThan;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.contractCallLocal;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractBytecode;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getScheduleInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.logIt;
@@ -176,50 +171,6 @@ public class DisabledNodeOperatorTest extends NodeOperatorQueriesBase implements
                             final var getFileInfoAsNodeOperator =
                                     getFileInfo(FILE).payingWith(NODE_OPERATOR).asNodeOperator();
                             allRunFor(spec, getFileInfoAsNodeOperator);
-                        })
-                        .isInstanceOf(IllegalStateException.class)
-                        .hasMessageContaining("io.grpc.StatusRuntimeException: UNAVAILABLE: io exception"))));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> nodeOperatorQueryPortNotAccessibleForContractCall() {
-        return hapiTest(flattened(
-                nodeOperatorAccount(),
-                payerAccount(),
-                uploadInitCode("CreateTrivial"),
-                contractCreate("CreateTrivial").gas(3_000_000L).payingWith(PAYER),
-                contractCall("CreateTrivial", "create").gas(785_000),
-                contractCallLocal("CreateTrivial", "getIndirect").gas(300_000L).payingWith(PAYER),
-                sleepFor(3000),
-                getAccountBalance(PAYER).hasTinyBars(lessThan(ONE_HUNDRED_HBARS)),
-                withOpContext((spec, opLog) -> assertThatThrownBy(() -> {
-                            final var getContractCallLocalAsNodeOperator = contractCallLocal(
-                                            "CreateTrivial", "getIndirect")
-                                    .gas(300_000L)
-                                    .payingWith(PAYER)
-                                    .asNodeOperator();
-                            allRunFor(spec, getContractCallLocalAsNodeOperator);
-                        })
-                        .isInstanceOf(IllegalStateException.class)
-                        .hasMessageContaining("io.grpc.StatusRuntimeException: UNAVAILABLE: io exception"))));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> nodeOperatorQueryPortNotAccessibleForContractBytecode() {
-        return hapiTest(flattened(
-                nodeOperatorAccount(),
-                payerAccount(),
-                uploadInitCode("CreateTrivial"),
-                contractCreate("CreateTrivial").gas(3_000_000L).payingWith(PAYER),
-                contractCall("CreateTrivial", "create").gas(785_000),
-                getContractBytecode("CreateTrivial").payingWith(PAYER),
-                sleepFor(3000),
-                getAccountBalance(PAYER).hasTinyBars(lessThan(ONE_HUNDRED_HBARS)),
-                withOpContext((spec, opLog) -> assertThatThrownBy(() -> {
-                            final var getContractBytecodeAsNodeOperator = getContractBytecode("CreateTrivial")
-                                    .payingWith(PAYER)
-                                    .asNodeOperator();
-                            allRunFor(spec, getContractBytecodeAsNodeOperator);
                         })
                         .isInstanceOf(IllegalStateException.class)
                         .hasMessageContaining("io.grpc.StatusRuntimeException: UNAVAILABLE: io exception"))));

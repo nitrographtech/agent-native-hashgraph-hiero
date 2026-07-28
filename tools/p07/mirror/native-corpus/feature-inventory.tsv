@@ -1,0 +1,16 @@
+# feature	evidence	required
+accounts	CRYPTOCREATEACCOUNT transaction type	yes
+transfers	CRYPTOTRANSFER transaction type	yes
+aliases_or_hollow_accounts	entity.evm_address rows	yes
+token_creation	TOKENCREATION transaction type	yes
+token_mint	TOKENMINT transaction type	yes
+token_transfer	token_transfer rows	yes
+token_association	TOKENASSOCIATE transaction type	yes
+custom_fees	custom_fee rows	yes
+topics	CONSENSUSCREATETOPIC and CONSENSUSSUBMITMESSAGE transaction types	yes
+schedules	SCHEDULECREATE and SCHEDULESIGN transaction types	yes
+files	FILECREATE and FILEUPDATE transaction types	yes
+node_operations	NODECREATE or NODEUPDATE transaction type	yes
+staking_or_rewards	staking_reward_transfer rows	yes
+atomic_batches	ATOMIC_BATCH transaction type	yes
+fee_or_congestion	transaction rows with charged_tx_fee greater than zero	yes

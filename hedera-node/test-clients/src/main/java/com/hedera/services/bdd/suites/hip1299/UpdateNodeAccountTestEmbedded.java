@@ -13,7 +13,6 @@ import static com.hedera.services.bdd.spec.keys.KeyShape.sigs;
 import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
 import static com.hedera.services.bdd.spec.keys.SigControl.OFF;
 import static com.hedera.services.bdd.spec.keys.SigControl.ON;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createDefaultContract;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -432,72 +431,6 @@ public class UpdateNodeAccountTestEmbedded {
         }
 
         @EmbeddedHapiTest(NEEDS_STATE_ACCESS)
-        final Stream<DynamicTest> updateNodeAccountIdSuccessfullyWithContractWithAdminKey()
-                throws CertificateEncodingException {
-            final String initialNodeAccount = "initialNodeAccount";
-            final String PAYER = "payer";
-            final String contractWithAdminKey = "nonCryptoAccount";
-            final var certificateBytes = gossipCertificates.getFirst().getEncoded();
-            AtomicLong newAccountId = new AtomicLong();
-            return hapiTest(
-                    newKeyNamed("adminKey"),
-                    newKeyNamed("contractAdminKey"),
-                    createDefaultContract(contractWithAdminKey)
-                            .adminKey("contractAdminKey")
-                            .exposingContractIdTo(id -> newAccountId.set(id.getContractNum())),
-                    cryptoCreate(PAYER).balance(ONE_MILLION_HBARS),
-                    cryptoCreate(initialNodeAccount),
-                    nodeCreate("testNode", initialNodeAccount)
-                            .adminKey("adminKey")
-                            .gossipCaCertificate(certificateBytes),
-                    cryptoTransfer(movingHbar(ONE_HBAR).between(PAYER, contractWithAdminKey)),
-                    nodeUpdate("testNode")
-                            .accountId(contractWithAdminKey)
-                            .payingWith(PAYER)
-                            .signedBy(PAYER, initialNodeAccount, contractWithAdminKey, "adminKey")
-                            .via("updateTxn"),
-                    validateFees("updateTxn", 0.0012, NODE_UPDATE_BASE_FEE_USD + 3 * SIGNATURE_FEE_AFTER_MULTIPLIER),
-                    viewNode(
-                            "testNode",
-                            node -> assertEquals(
-                                    newAccountId.get(),
-                                    node.accountId().accountNum(),
-                                    "Node accountId should be updated")));
-        }
-
-        @EmbeddedHapiTest(NEEDS_STATE_ACCESS)
-        final Stream<DynamicTest> updateNodeAccountIdSuccessfullyWithContractWithoutAdminKey()
-                throws CertificateEncodingException {
-            final String initialNodeAccount = "initialNodeAccount";
-            final String PAYER = "payer";
-            final String contractWithoutAdminKey = "nonCryptoAccount";
-            final var certificateBytes = gossipCertificates.getFirst().getEncoded();
-            AtomicLong newAccountId = new AtomicLong();
-            return hapiTest(
-                    newKeyNamed("adminKey"),
-                    createDefaultContract(contractWithoutAdminKey)
-                            .exposingContractIdTo(id -> newAccountId.set(id.getContractNum())),
-                    cryptoCreate(PAYER).balance(ONE_MILLION_HBARS),
-                    cryptoCreate(initialNodeAccount),
-                    nodeCreate("testNode", initialNodeAccount)
-                            .adminKey("adminKey")
-                            .gossipCaCertificate(certificateBytes),
-                    cryptoTransfer(movingHbar(ONE_HBAR).between(PAYER, contractWithoutAdminKey)),
-                    nodeUpdate("testNode")
-                            .accountId(contractWithoutAdminKey)
-                            .payingWith(PAYER)
-                            .signedBy(PAYER, initialNodeAccount, contractWithoutAdminKey, "adminKey")
-                            .via("updateTxn"),
-                    validateFees("updateTxn", 0.0012, NODE_UPDATE_BASE_FEE_USD + 3 * SIGNATURE_FEE_AFTER_MULTIPLIER),
-                    viewNode(
-                            "testNode",
-                            node -> assertEquals(
-                                    newAccountId.get(),
-                                    node.accountId().accountNum(),
-                                    "Node accountId should be updated")));
-        }
-
-        @EmbeddedHapiTest(NEEDS_STATE_ACCESS)
         final Stream<DynamicTest> restrictNodeAccountDeletion() throws CertificateEncodingException {
             final var adminKey = "adminKey";
             final var account = "account";
@@ -861,40 +794,6 @@ public class UpdateNodeAccountTestEmbedded {
                             .sigControl(forKey("accountKey", invalidSig))
                             .signedByPayerAnd(initialNodeAccount, newNodeAccount)
                             .hasKnownStatus(INVALID_SIGNATURE),
-                    viewNode(
-                            "testNode",
-                            node -> assertNotEquals(
-                                    newAccountId.get(),
-                                    node.accountId().accountNum(),
-                                    "Node accountId should not be updated")));
-        }
-
-        @EmbeddedHapiTest(NEEDS_STATE_ACCESS)
-        final Stream<DynamicTest> updateNodeAccountIdWithContractWithAdminKeyWithZeroBalanceFails()
-                throws CertificateEncodingException {
-            final String initialNodeAccount = "initialNodeAccount";
-            final String PAYER = "payer";
-            final String contractWithAdminKey = "nonCryptoAccount";
-            final var certificateBytes = gossipCertificates.getFirst().getEncoded();
-            AtomicLong newAccountId = new AtomicLong();
-            return hapiTest(
-                    newKeyNamed("adminKey"),
-                    newKeyNamed("contractAdminKey"),
-                    createDefaultContract(contractWithAdminKey)
-                            .adminKey("contractAdminKey")
-                            .exposingContractIdTo(id -> newAccountId.set(id.getContractNum())),
-                    cryptoCreate(PAYER).balance(ONE_MILLION_HBARS),
-                    cryptoCreate(initialNodeAccount),
-                    nodeCreate("testNode", initialNodeAccount)
-                            .adminKey("adminKey")
-                            .gossipCaCertificate(certificateBytes),
-                    nodeUpdate("testNode")
-                            .accountId(contractWithAdminKey)
-                            .payingWith(PAYER)
-                            .signedBy(PAYER, initialNodeAccount, contractWithAdminKey, "adminKey")
-                            .via("updateTxn")
-                            .hasKnownStatus(NODE_ACCOUNT_HAS_ZERO_BALANCE),
-                    validateFees("updateTxn", 0.0012, NODE_UPDATE_BASE_FEE_USD + 3 * SIGNATURE_FEE_AFTER_MULTIPLIER),
                     viewNode(
                             "testNode",
                             node -> assertNotEquals(

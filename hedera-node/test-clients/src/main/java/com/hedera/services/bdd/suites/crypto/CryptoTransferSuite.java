@@ -5,16 +5,12 @@ import static com.google.protobuf.ByteString.copyFromUtf8;
 import static com.hedera.node.app.hapi.utils.EthSigsUtils.recoverAddressFromPubKey;
 import static com.hedera.services.bdd.junit.TestTags.CRYPTO;
 import static com.hedera.services.bdd.spec.HapiPropertySource.asAccount;
-import static com.hedera.services.bdd.spec.HapiPropertySource.asAccountString;
 import static com.hedera.services.bdd.spec.HapiPropertySource.asTopicString;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.assertions.AccountInfoAsserts.accountWith;
 import static com.hedera.services.bdd.spec.assertions.AccountInfoAsserts.changeFromSnapshot;
 import static com.hedera.services.bdd.spec.assertions.AutoAssocAsserts.accountTokenPairsInAnyOrder;
-import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.includingFungibleMovement;
-import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.includingNonfungibleMovement;
 import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.recordWith;
-import static com.hedera.services.bdd.spec.assertions.TransferListAsserts.including;
 import static com.hedera.services.bdd.spec.keys.ControlForKey.forKey;
 import static com.hedera.services.bdd.spec.keys.KeyShape.ED25519;
 import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
@@ -26,14 +22,11 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountDetails;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAliasedAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getReceipt;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.crypto.ExpectedTokenRel.relationshipWith;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.randomUtf8Bytes;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.burnToken;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoApproveAllowance;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
@@ -46,7 +39,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenDissociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUpdate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.wipeTokenAccount;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromToWithAlias;
@@ -85,19 +77,12 @@ import static com.hedera.services.bdd.suites.HapiSuite.ONE_MILLION_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SHAPE;
 import static com.hedera.services.bdd.suites.HapiSuite.STAKING_REWARD;
 import static com.hedera.services.bdd.suites.HapiSuite.TOKEN_TREASURY;
-import static com.hedera.services.bdd.suites.HapiSuite.flattened;
 import static com.hedera.services.bdd.suites.contract.Utils.aaWith;
 import static com.hedera.services.bdd.suites.contract.Utils.accountIdFromEvmAddress;
-import static com.hedera.services.bdd.suites.contract.Utils.accountIdFromHexedMirrorAddress;
 import static com.hedera.services.bdd.suites.contract.Utils.asSolidityAddress;
-import static com.hedera.services.bdd.suites.contract.Utils.captureOneChildCreate2MetaFor;
-import static com.hedera.services.bdd.suites.contract.Utils.mirrorAddrParamFunction;
-import static com.hedera.services.bdd.suites.contract.Utils.mirrorAddrWith;
 import static com.hedera.services.bdd.suites.contract.Utils.ocWith;
 import static com.hedera.services.bdd.suites.crypto.AutoAccountCreationSuite.A_TOKEN;
 import static com.hedera.services.bdd.suites.file.FileUpdateSuite.CIVILIAN;
-import static com.hedera.services.bdd.suites.utils.NativeAccountTestVectors.existingSystemAccounts;
-import static com.hedera.services.bdd.suites.utils.NativeAccountTestVectors.nonExistingSystemAccounts;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE;
@@ -107,7 +92,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUN
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ALIAS_KEY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ALLOWANCE_OWNER_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_AUTORENEW_ACCOUNT;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_CONTRACT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_CUSTOM_FEE_COLLECTOR;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_MAX_AUTO_ASSOCIATIONS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
@@ -121,7 +105,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.UNEXPECTED_TOK
 import static com.hederahashgraph.api.proto.java.TokenType.FUNGIBLE_COMMON;
 import static com.hederahashgraph.api.proto.java.TokenType.NON_FUNGIBLE_UNIQUE;
 import static org.hiero.base.utility.CommonUtils.hex;
-import static org.hiero.base.utility.CommonUtils.unhex;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.protobuf.ByteString;
@@ -142,7 +125,6 @@ import com.hederahashgraph.api.proto.java.TokenSupplyType;
 import com.hederahashgraph.api.proto.java.TokenTransferList;
 import com.hederahashgraph.api.proto.java.TokenType;
 import com.hederahashgraph.api.proto.java.TransferList;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -475,145 +457,12 @@ public class CryptoTransferSuite {
                 getTxnRecord(FT_XFER));
     }
 
-    @SuppressWarnings("java:S5669")
-    @HapiTest
-    final Stream<DynamicTest> canUseEip1014AliasesForXfers() {
-        final var partyCreation2 = "partyCreation2";
-        final var counterCreation2 = "counterCreation2";
-        final var contract = "CreateDonor";
-
-        final AtomicReference<String> partyAliasAddr = new AtomicReference<>();
-        final AtomicReference<String> partyMirrorAddr = new AtomicReference<>();
-        final AtomicReference<String> counterAliasAddr = new AtomicReference<>();
-        final AtomicReference<String> counterMirrorAddr = new AtomicReference<>();
-        final AtomicReference<TokenID> ftId = new AtomicReference<>();
-        final AtomicReference<TokenID> nftId = new AtomicReference<>();
-        final AtomicReference<String> partyLiteral = new AtomicReference<>();
-        final AtomicReference<AccountID> partyId = new AtomicReference<>();
-        final AtomicReference<String> counterLiteral = new AtomicReference<>();
-        final AtomicReference<AccountID> counterId = new AtomicReference<>();
-
-        final byte[] salt = unhex("aabbccddeeff0011aabbccddeeff0011aabbccddeeff0011aabbccddeeff0011");
-        final byte[] otherSalt = unhex("aabbccddee880011aabbccddee880011aabbccddee880011aabbccddee880011");
-
-        return hapiTest(
-                newKeyNamed(MULTI_KEY),
-                cryptoCreate(TOKEN_TREASURY),
-                uploadInitCode(contract),
-                contractCreate(contract).adminKey(MULTI_KEY).payingWith(GENESIS),
-                contractCall(contract, "buildDonor", salt)
-                        .sending(1000)
-                        .payingWith(GENESIS)
-                        .gas(2_000_000L)
-                        .via(partyCreation2),
-                captureOneChildCreate2MetaFor(PARTY, partyCreation2, partyMirrorAddr, partyAliasAddr),
-                contractCall(contract, "buildDonor", otherSalt)
-                        .sending(1000)
-                        .payingWith(GENESIS)
-                        .gas(2_000_000L)
-                        .via(counterCreation2),
-                captureOneChildCreate2MetaFor(COUNTERPARTY, counterCreation2, counterMirrorAddr, counterAliasAddr),
-                tokenCreate(FUNGIBLE_TOKEN).treasury(TOKEN_TREASURY).initialSupply(1_000_000),
-                tokenCreate(NON_FUNGIBLE_TOKEN)
-                        .treasury(TOKEN_TREASURY)
-                        .initialSupply(0)
-                        .tokenType(NON_FUNGIBLE_UNIQUE)
-                        .supplyKey(MULTI_KEY),
-                mintToken(NON_FUNGIBLE_TOKEN, List.of(copyFromUtf8(TOKEN_METADATA))),
-                withOpContext((spec, opLog) -> {
-                    final var registry = spec.registry();
-                    ftId.set(registry.getTokenID(FUNGIBLE_TOKEN));
-                    nftId.set(registry.getTokenID(NON_FUNGIBLE_TOKEN));
-                    partyId.set(accountIdFromHexedMirrorAddress(spec, partyMirrorAddr.get()));
-                    partyLiteral.set(asAccountString(partyId.get()));
-                    counterId.set(accountIdFromHexedMirrorAddress(spec, counterMirrorAddr.get()));
-                    counterLiteral.set(asAccountString(counterId.get()));
-                }),
-                sourcing(() -> tokenAssociate(partyLiteral.get(), List.of(FUNGIBLE_TOKEN, NON_FUNGIBLE_TOKEN))
-                        .signedBy(DEFAULT_PAYER, MULTI_KEY)),
-                sourcing(() -> tokenAssociate(counterLiteral.get(), List.of(FUNGIBLE_TOKEN, NON_FUNGIBLE_TOKEN))
-                        .signedBy(DEFAULT_PAYER, MULTI_KEY)),
-                sourcing(() -> getContractInfo(partyLiteral.get()).logged()),
-                sourcing(() -> cryptoTransfer(
-                                moving(500_000, FUNGIBLE_TOKEN).between(TOKEN_TREASURY, partyLiteral.get()),
-                                movingUnique(NON_FUNGIBLE_TOKEN, 1L).between(TOKEN_TREASURY, partyLiteral.get()))
-                        .signedBy(DEFAULT_PAYER, TOKEN_TREASURY)),
-                cryptoTransfer((spec, b) -> b.setTransfers(TransferList.newBuilder()
-                                .addAccountAmounts(aaWith(spec, partyAliasAddr.get(), -1))
-                                .addAccountAmounts(aaWith(partyId.get(), -1))
-                                .addAccountAmounts(aaWith(counterId.get(), +2))))
-                        .signedBy(DEFAULT_PAYER, MULTI_KEY)
-                        .hasKnownStatus(ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS),
-                // Check signing requirements aren't distorted by aliases
-                cryptoTransfer((spec, b) -> b.setTransfers(TransferList.newBuilder()
-                                .addAccountAmounts(aaWith(spec, partyAliasAddr.get(), -2))
-                                .addAccountAmounts(aaWith(spec, counterAliasAddr.get(), +2))))
-                        .signedBy(DEFAULT_PAYER)
-                        .hasKnownStatus(INVALID_SIGNATURE),
-                cryptoTransfer((spec, b) -> b.addTokenTransfers(TokenTransferList.newBuilder()
-                                .setToken(nftId.get())
-                                .addNftTransfers(ocWith(
-                                        Utils.accountIdWithHexedEvmAddress(
-                                                spec.shard(), spec.realm(), partyAliasAddr.get()),
-                                        counterId.get(),
-                                        1L))))
-                        .signedBy(DEFAULT_PAYER)
-                        .hasKnownStatus(INVALID_SIGNATURE),
-                cryptoTransfer((spec, b) -> b.addTokenTransfers(TokenTransferList.newBuilder()
-                                .setToken(ftId.get())
-                                .addTransfers(aaWith(spec, partyAliasAddr.get(), -500))
-                                .addTransfers(aaWith(spec, counterAliasAddr.get(), +500))))
-                        .signedBy(DEFAULT_PAYER)
-                        .hasKnownStatus(INVALID_SIGNATURE),
-                // Now do the actual transfers
-                cryptoTransfer((spec, b) -> b.setTransfers(TransferList.newBuilder()
-                                .addAccountAmounts(aaWith(spec, partyAliasAddr.get(), -2))
-                                .addAccountAmounts(aaWith(spec, counterAliasAddr.get(), +2))))
-                        .signedBy(DEFAULT_PAYER, MULTI_KEY)
-                        .via(HBAR_XFER),
-                cryptoTransfer((spec, b) -> b.addTokenTransfers(TokenTransferList.newBuilder()
-                                .setToken(nftId.get())
-                                .addNftTransfers(ocWith(
-                                        Utils.accountIdWithHexedEvmAddress(spec, partyAliasAddr.get()),
-                                        Utils.accountIdWithHexedEvmAddress(spec, counterAliasAddr.get()),
-                                        1L))))
-                        .signedBy(DEFAULT_PAYER, MULTI_KEY)
-                        .via(NFT_XFER),
-                cryptoTransfer((spec, b) -> b.addTokenTransfers(TokenTransferList.newBuilder()
-                                .setToken(ftId.get())
-                                .addTransfers(aaWith(spec, partyAliasAddr.get(), -500))
-                                .addTransfers(aaWith(spec, counterAliasAddr.get(), +500))))
-                        .signedBy(DEFAULT_PAYER, MULTI_KEY)
-                        .via(FT_XFER),
-                sourcing(() -> getTxnRecord(HBAR_XFER)
-                        .hasPriority(recordWith()
-                                .transfers(including(tinyBarsFromTo(partyLiteral.get(), counterLiteral.get(), 2))))),
-                sourcing(() -> getTxnRecord(NFT_XFER)
-                        .hasPriority(recordWith()
-                                .tokenTransfers(includingNonfungibleMovement(movingUnique(NON_FUNGIBLE_TOKEN, 1L)
-                                        .between(partyLiteral.get(), counterLiteral.get()))))),
-                sourcing(() -> getTxnRecord(FT_XFER)
-                        .hasPriority(recordWith()
-                                .tokenTransfers(includingFungibleMovement(moving(500, FUNGIBLE_TOKEN)
-                                        .between(partyLiteral.get(), counterLiteral.get()))))));
-    }
-
     @HapiTest
     final Stream<DynamicTest> cannotTransferFromImmutableAccounts() {
-        final var contract = "PayableConstructor";
         final var multiKey = "swiss";
 
         return hapiTest(
                 newKeyNamed(multiKey),
-                uploadInitCode(contract),
-                // why is there transactionFee here ?
-                contractCreate(contract).balance(ONE_HBAR).immutable().payingWith(GENESIS),
-                // Even the treasury cannot withdraw from an immutable contract
-                cryptoTransfer(tinyBarsFromTo(contract, FUNDING, ONE_HBAR))
-                        .payingWith(GENESIS)
-                        .signedBy(GENESIS)
-                        .fee(ONE_HBAR)
-                        .hasKnownStatus(INVALID_SIGNATURE),
                 // Even the treasury cannot withdraw staking funds
                 cryptoTransfer(tinyBarsFromTo(STAKING_REWARD, FUNDING, ONE_HBAR))
                         .payingWith(GENESIS)
@@ -1496,136 +1345,6 @@ public class CryptoTransferSuite {
                         .payingWith(SPENDER)
                         .signedBy(RECEIVER_SIGNATURE, SPENDER_SIGNATURE)
                         .fee(ONE_HUNDRED_HBARS));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> testTransferToSystemAccounts() {
-        final var contract = "CryptoTransfer";
-        final var systemAccounts = List.of(359L, 360L, 361L);
-        final var opsArray = new HapiSpecOperation[systemAccounts.size() * 3];
-
-        for (int i = 0; i < systemAccounts.size(); i++) {
-            final var index = i;
-            opsArray[i] = contractCall(contract, "sendViaTransfer", mirrorAddrParamFunction(systemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-
-            opsArray[systemAccounts.size() + i] = contractCall(
-                            contract, "sendViaSend", mirrorAddrParamFunction(systemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-
-            opsArray[systemAccounts.size() * 2 + i] = contractCall(
-                            contract, "sendViaCall", mirrorAddrParamFunction(systemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-        }
-
-        return hapiTest(flattened(
-                cryptoCreate(SENDER).balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                opsArray));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> testTransferToExistingSystemAccounts() {
-        final var contract = "CryptoTransfer";
-        final HapiSpecOperation[] opsArray = new HapiSpecOperation[existingSystemAccounts.size() * 3];
-
-        for (int i = 0; i < existingSystemAccounts.size(); i++) {
-            final var index = i;
-
-            opsArray[i] = contractCall(
-                            contract, "sendViaTransfer", mirrorAddrParamFunction(existingSystemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(SUCCESS);
-
-            opsArray[existingSystemAccounts.size() + i] = contractCall(
-                            contract, "sendViaSend", mirrorAddrParamFunction(existingSystemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(SUCCESS);
-
-            opsArray[existingSystemAccounts.size() * 2 + i] = contractCall(
-                            contract, "sendViaCall", mirrorAddrParamFunction(existingSystemAccounts.get(index)))
-                    .payingWith(SENDER)
-                    .sending(ONE_HBAR * 10)
-                    .gas(100000)
-                    .hasKnownStatus(SUCCESS);
-        }
-
-        return hapiTest(flattened(
-                cryptoCreate(SENDER).balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                opsArray));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> testTransferToNonExistingSystemAccounts() {
-        final var contract = "CryptoTransfer";
-        final HapiSpecOperation[] opsArray = new HapiSpecOperation[nonExistingSystemAccounts.size() * 3];
-
-        for (int i = 0; i < nonExistingSystemAccounts.size(); i++) {
-            final var index = i;
-            opsArray[i] = contractCall(
-                            contract, "sendViaTransfer", mirrorAddrParamFunction(nonExistingSystemAccounts.get(index)))
-                    .payingWith("sender")
-                    .sending(ONE_HBAR * 10)
-                    .via("sendViaTransfer" + i)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-
-            opsArray[nonExistingSystemAccounts.size() + i] = contractCall(
-                            contract, "sendViaSend", mirrorAddrParamFunction(nonExistingSystemAccounts.get(index)))
-                    .payingWith("sender")
-                    .sending(ONE_HBAR * 10)
-                    .via("sendViaSend" + i)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-
-            opsArray[nonExistingSystemAccounts.size() * 2 + i] = contractCall(
-                            contract, "sendViaCall", mirrorAddrParamFunction(nonExistingSystemAccounts.get(index)))
-                    .payingWith("sender")
-                    .sending(ONE_HBAR * 10)
-                    .via("sendViaCall" + i)
-                    .gas(100000)
-                    .hasKnownStatus(INVALID_CONTRACT_ID);
-        }
-        return hapiTest(flattened(
-                cryptoCreate("sender").balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                opsArray));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> testTransferToSystemAccountsAndCheckSenderBalance() {
-        final var transferContract = "CryptoTransfer";
-        final var balanceContract = "BalanceChecker46Version";
-        final var senderAccount = "detachedSenderAccount";
-        return hapiTest(
-                cryptoCreate(senderAccount).balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(transferContract),
-                contractCreate(transferContract).balance(ONE_HBAR),
-                uploadInitCode(balanceContract),
-                contractCreate(balanceContract),
-                contractCall(transferContract, "sendViaTransferWithAmount", spec -> List.of(
-                                        mirrorAddrWith(spec, 359L), BigInteger.valueOf(15L))
-                                .toArray())
-                        .payingWith(senderAccount)
-                        .hasKnownStatus(INVALID_CONTRACT_ID),
-                getAccountBalance(transferContract, true).hasTinyBars(ONE_HBAR));
     }
 
     @HapiTest

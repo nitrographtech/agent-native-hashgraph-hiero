@@ -7,14 +7,12 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleSign;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.HapiSuite.SYSTEM_ADMIN;
@@ -51,25 +49,17 @@ public class InvalidgRPCValuesTest {
 
     @HapiTest
     final Stream<DynamicTest> transactionsWithOnlySigMap() {
-        final var contract = "BalanceLookup";
         return hapiTest(
                 cryptoTransfer(tinyBarsFromTo(GENESIS, SYSTEM_ADMIN, 1L))
                         .via(FAILED_CRYPTO_TRANSACTION)
                         .asTxnWithOnlySigMap()
                         .hasPrecheck(INVALID_TRANSACTION_BODY),
-                uploadInitCode(contract),
-                fileUpdate(contract)
+                fileUpdate("failedFile")
                         .via("failedFileTransaction")
                         .asTxnWithOnlySigMap()
                         .hasPrecheck(INVALID_TRANSACTION_BODY),
-                contractCreate(contract)
-                        .balance(1_000L)
-                        .via("failedContractTransaction")
-                        .asTxnWithOnlySigMap()
-                        .hasPrecheck(INVALID_TRANSACTION_BODY),
                 getTxnRecord(FAILED_CRYPTO_TRANSACTION).hasCostAnswerPrecheck(INVALID_ACCOUNT_ID),
-                getTxnRecord("failedFileTransaction").hasCostAnswerPrecheck(INVALID_ACCOUNT_ID),
-                getTxnRecord("failedContractTransaction").hasCostAnswerPrecheck(INVALID_ACCOUNT_ID));
+                getTxnRecord("failedFileTransaction").hasCostAnswerPrecheck(INVALID_ACCOUNT_ID));
     }
 
     @HapiTest

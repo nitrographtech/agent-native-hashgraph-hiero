@@ -1,0 +1,4 @@
+# corpus	records	transactions	results	logs	actions	sidecars	blocks
+fixture-a	11	754	3	1	3	5	139
+fixture-b	34	861	3	1	0	4	131
+exact-head-native	3639	8841	0	16	0	0	-

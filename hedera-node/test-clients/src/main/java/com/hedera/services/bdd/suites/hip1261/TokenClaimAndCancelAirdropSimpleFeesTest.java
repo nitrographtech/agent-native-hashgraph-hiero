@@ -22,7 +22,6 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAliasedAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.crypto.ExpectedTokenRel.relationshipWith;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
@@ -31,7 +30,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCancelAirdrop;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenClaimAirdrop;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.HapiTokenClaimAirdrop.pendingAirdrop;
 import static com.hedera.services.bdd.spec.transactions.token.HapiTokenClaimAirdrop.pendingNFTAirdrop;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
@@ -1336,8 +1334,6 @@ public class TokenClaimAndCancelAirdropSimpleFeesTest {
     private List<SpecOperation> createAccountsAndKeys() {
         return List.of(
                 cryptoCreate(PAYER).balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(HOOK_CONTRACT),
-                contractCreate(HOOK_CONTRACT).gas(5_000_000),
                 cryptoCreate(OWNER).balance(ONE_HUNDRED_HBARS),
                 cryptoCreate(RECEIVER_ASSOCIATED_FIRST).balance(ONE_HBAR),
                 cryptoCreate(RECEIVER_WITHOUT_FREE_AUTO_ASSOCIATIONS)

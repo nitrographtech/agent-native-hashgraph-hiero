@@ -8,23 +8,18 @@ import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.r
 import static com.hedera.services.bdd.spec.keys.KeyShape.PREDEFINED_SHAPE;
 import static com.hedera.services.bdd.spec.keys.KeyShape.sigs;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenNftInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.grantTokenKyc;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUpdateNfts;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.wipeTokenAccount;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fractionalFee;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
@@ -35,13 +30,10 @@ import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_MILLION_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.THREE_MONTHS_IN_SECONDS;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INNER_TRANSACTION_FAILED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.REVERTED_SUCCESS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_HAS_NO_KYC_KEY;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_WAS_DELETED;
 import static com.hederahashgraph.api.proto.java.TokenType.NON_FUNGIBLE_UNIQUE;
 
 import com.hedera.services.bdd.junit.HapiTest;
@@ -73,238 +65,7 @@ class AtomicBatchInvalidSignaturesTests {
 
     @Nested
     @DisplayName("Contract Association Batch Tests")
-    class ContractAssociationBatch {
-
-        @HapiTest
-        @DisplayName("Batch with token creation, contract creation, and association - missing admin key")
-        Stream<DynamicTest> fullBatchTokenContractAssociationWithoutAdminKey() {
-            final var batchOperator = "batchOperator";
-            final var misc = "someToken";
-            final var contract = "CalldataSize";
-            final var associateTxnId = "associateTxnId";
-
-            return hapiTest(
-                    cryptoCreate(batchOperator).balance(ONE_HUNDRED_HBARS),
-                    tokenCreate(misc),
-                    uploadInitCode(contract),
-                    contractCreate(contract).omitAdminKey(), // Contract without admin key
-
-                    // Batch only contains the association (which should fail)
-                    atomicBatch(tokenAssociate(contract, misc)
-                                    .via(associateTxnId)
-                                    .batchKey(batchOperator)
-                                    .payingWith(batchOperator)
-                                    .hasKnownStatus(INVALID_SIGNATURE))
-                            .signedByPayerAnd(batchOperator)
-                            .via("failedBatch")
-                            .hasKnownStatus(INNER_TRANSACTION_FAILED),
-
-                    // Verify token and contract exist but no association occurred
-                    getContractInfo(contract).hasNoTokenRelationship(misc));
-        }
-
-        @HapiTest
-        @DisplayName("Batch with multiple contract associations - mixed admin key scenarios")
-        Stream<DynamicTest> mixedContractAssociationScenarios() {
-            final var batchOperator = "batchOperator";
-            final var token1 = "token1";
-            final var token2 = "token2";
-            final var contractWithKey = "contractWithKey";
-            final var contractWithoutKey = "contractWithoutKey";
-            final var adminKey = "adminKey";
-            final var associate1TxnId = "associate1TxnId";
-            final var associate2TxnId = "associate2TxnId";
-
-            return hapiTest(
-                    cryptoCreate(batchOperator).balance(ONE_HUNDRED_HBARS),
-                    newKeyNamed(adminKey),
-                    tokenCreate(token1),
-                    tokenCreate(token2),
-                    uploadInitCode("CalldataSize"), // Upload once
-                    contractCreate(contractWithKey).bytecode("CalldataSize").adminKey(adminKey), // Has admin key
-                    contractCreate(contractWithoutKey).bytecode("CalldataSize").omitAdminKey(), // No admin key
-
-                    // Batch mixing valid and invalid associations
-                    atomicBatch(
-                                    // This should work - contract has admin key
-                                    tokenAssociate(contractWithKey, token1)
-                                            .via(associate1TxnId)
-                                            .batchKey(batchOperator)
-                                            .payingWith(batchOperator),
-
-                                    // This should fail - contract has no admin key
-                                    tokenAssociate(contractWithoutKey, token2)
-                                            .via(associate2TxnId)
-                                            .batchKey(batchOperator)
-                                            .payingWith(batchOperator)
-                                            .hasKnownStatus(INVALID_SIGNATURE))
-                            .signedByPayerAnd(batchOperator, adminKey)
-                            .via("mixedAssocBatch")
-                            .hasKnownStatus(INNER_TRANSACTION_FAILED),
-
-                    // Verify the first transaction would have succeeded but was reverted due to batch failure
-                    getTxnRecord(associate1TxnId).hasPriority(recordWith().status(REVERTED_SUCCESS)),
-
-                    // Verify the second transaction failed as expected (causing the batch to fail)
-                    getTxnRecord(associate2TxnId).hasPriority(recordWith().status(INVALID_SIGNATURE)),
-
-                    // Verify the contracts exist but associations were rolled back
-                    getContractInfo(contractWithKey).hasNoTokenRelationship(token1),
-                    getContractInfo(contractWithoutKey).hasNoTokenRelationship(token2));
-        }
-
-        @HapiTest
-        @DisplayName("Batch with multiple contracts and complex association patterns")
-        Stream<DynamicTest> complexContractAssociationPatterns() {
-            final var batchOperator = "batchOperator";
-            final var adminKey1 = "adminKey1";
-            final var adminKey2 = "adminKey2";
-            final var token1 = "token1";
-            final var token2 = "token2";
-            final var contract1 = "contract1";
-            final var contract2 = "contract2";
-            final var contractNoKey = "contractNoKey";
-            final var associate1TxnId = "associate1TxnId";
-            final var associate2TxnId = "associate2TxnId";
-            final var associate3TxnId = "associate3TxnId";
-
-            return hapiTest(
-                    cryptoCreate(batchOperator).balance(ONE_HUNDRED_HBARS),
-                    newKeyNamed(adminKey1),
-                    newKeyNamed(adminKey2),
-                    tokenCreate(token1),
-                    tokenCreate(token2),
-                    uploadInitCode("CalldataSize"),
-                    contractCreate(contract1).bytecode("CalldataSize").adminKey(adminKey1),
-                    contractCreate(contract2).bytecode("CalldataSize").adminKey(adminKey2),
-                    contractCreate(contractNoKey).bytecode("CalldataSize").omitAdminKey(),
-
-                    // Verify initial setup
-                    getTokenInfo(token1).logged(),
-                    getTokenInfo(token2).logged(),
-                    getContractInfo(contract1).logged(),
-                    getContractInfo(contract2).logged(),
-                    getContractInfo(contractNoKey).logged(),
-                    atomicBatch(
-                                    // Valid associations
-                                    tokenAssociate(contract1, token1)
-                                            .via(associate1TxnId)
-                                            .batchKey(batchOperator)
-                                            .payingWith(batchOperator),
-                                    tokenAssociate(contract2, token2)
-                                            .via(associate2TxnId)
-                                            .batchKey(batchOperator)
-                                            .payingWith(batchOperator),
-
-                                    // Invalid association - contract has no admin key
-                                    tokenAssociate(contractNoKey, token1)
-                                            .via(associate3TxnId)
-                                            .batchKey(batchOperator)
-                                            .payingWith(batchOperator)
-                                            .hasKnownStatus(INVALID_SIGNATURE))
-                            .signedByPayerAnd(batchOperator, adminKey1, adminKey2)
-                            .via("complexAssocBatch")
-                            .hasKnownStatus(INNER_TRANSACTION_FAILED),
-                    getTxnRecord("complexAssocBatch"),
-
-                    // Verify the first two transactions would have succeeded but were reverted
-                    getTxnRecord(associate1TxnId).hasPriority(recordWith().status(REVERTED_SUCCESS)),
-                    getTxnRecord(associate2TxnId).hasPriority(recordWith().status(REVERTED_SUCCESS)),
-
-                    // Verify the third transaction failed as expected (causing the batch to fail)
-                    getTxnRecord(associate3TxnId).hasPriority(recordWith().status(INVALID_SIGNATURE)),
-
-                    // Verify contracts exist but associations were rolled back
-                    getContractInfo(contract1).hasNoTokenRelationship(token1),
-                    getContractInfo(contract2).hasNoTokenRelationship(token2),
-                    getContractInfo(contractNoKey).hasNoTokenRelationship(token1));
-        }
-
-        @HapiTest
-        @DisplayName("Batch with contract deletion and association attempt")
-        Stream<DynamicTest> contractDeletionAndAssociationAttempt() {
-            final var batchOperator = "batchOperator";
-            final var adminKey = "adminKey";
-            final var misc = "someToken";
-            final var contract = "CalldataSize";
-            final var deleteTxnId = "deleteTxnId";
-            final var associateTxnId = "associateTxnId";
-
-            return hapiTest(
-                    cryptoCreate(batchOperator).balance(ONE_HUNDRED_HBARS),
-                    newKeyNamed(adminKey),
-                    tokenCreate(misc),
-                    uploadInitCode(contract),
-                    contractCreate(contract).adminKey(adminKey),
-                    atomicBatch(
-                                    // First: Delete the contract
-                                    contractDelete(contract)
-                                            .via(deleteTxnId)
-                                            .batchKey(batchOperator)
-                                            .payingWith(batchOperator),
-
-                                    // Second: Try to associate token with deleted contract
-                                    tokenAssociate(contract, misc)
-                                            .via(associateTxnId)
-                                            .batchKey(batchOperator)
-                                            .payingWith(batchOperator)
-                                            .hasKnownStatus(ACCOUNT_DELETED))
-                            .signedByPayerAnd(batchOperator, adminKey)
-                            .via("deleteBatch")
-                            .hasKnownStatus(INNER_TRANSACTION_FAILED),
-
-                    // Verify the first transaction (contract deletion) would have succeeded but was reverted
-                    getTxnRecord(deleteTxnId).hasPriority(recordWith().status(REVERTED_SUCCESS)),
-
-                    // Verify the second transaction failed as expected (trying to associate with deleted contract)
-                    getTxnRecord(associateTxnId).hasPriority(recordWith().status(ACCOUNT_DELETED)),
-
-                    // Verify contract still exists due to batch rollback
-                    getContractInfo(contract).hasNoTokenRelationship(misc));
-        }
-    }
-
-    @HapiTest
-    @DisplayName("Batch with deleted token association to contract")
-    Stream<DynamicTest> deletedTokenAssociationWithContract() {
-        final var batchOperator = "batchOperator";
-        final var adminKey = "adminKey";
-        final var tokenAdminKey = "tokenAdminKey";
-        final var misc = "someToken";
-        final var contract = "CalldataSize";
-        final var deleteTokenTxnId = "deleteTokenTxnId";
-        final var associateTxnId = "associateTxnId";
-
-        return hapiTest(
-                cryptoCreate(batchOperator).balance(ONE_HUNDRED_HBARS),
-                newKeyNamed(adminKey),
-                newKeyNamed(tokenAdminKey),
-                tokenCreate(misc).adminKey(tokenAdminKey),
-                uploadInitCode(contract),
-                contractCreate(contract).adminKey(adminKey),
-                atomicBatch(
-                                // First: Delete the token
-                                tokenDelete(misc)
-                                        .via(deleteTokenTxnId)
-                                        .batchKey(batchOperator)
-                                        .payingWith(batchOperator),
-
-                                // Second: Try to associate deleted token with contract - WILL FAIL
-                                tokenAssociate(contract, misc)
-                                        .via(associateTxnId)
-                                        .batchKey(batchOperator)
-                                        .payingWith(batchOperator)
-                                        .hasKnownStatus(TOKEN_WAS_DELETED))
-                        .signedByPayerAnd(batchOperator, tokenAdminKey)
-                        .via("deletedTokenAssoc")
-                        .hasKnownStatus(INNER_TRANSACTION_FAILED),
-
-                // Verify the first transaction (token deletion) would have succeeded but was reverted
-                getTxnRecord(deleteTokenTxnId).hasPriority(recordWith().status(REVERTED_SUCCESS)),
-
-                // Verify the second transaction failed as expected (trying to associate deleted token)
-                getTxnRecord(associateTxnId).hasPriority(recordWith().status(TOKEN_WAS_DELETED)));
-    }
+    class ContractAssociationBatch {}
 
     @Nested
     @DisplayName("Token Creation Batch Tests")

@@ -6,7 +6,6 @@ import static com.hedera.node.app.hapi.utils.EthSigsUtils.recoverAddressFromPubK
 import static com.hedera.services.bdd.junit.TestTags.TOKEN;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.assertions.AccountInfoAsserts.accountWith;
-import static com.hedera.services.bdd.spec.assertions.ContractInfoAsserts.contractWith;
 import static com.hedera.services.bdd.spec.keys.TrieSigMapGenerator.uniqueWithFullPrefixesFor;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAliasedAccountInfo;
@@ -17,17 +16,13 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.movingHbar;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.movingUnique;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.assertCloseEnough;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overriding;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sourcing;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
-import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SHAPE;
@@ -40,22 +35,15 @@ import static com.hedera.services.bdd.suites.crypto.CryptoApproveAllowanceSuite.
 import static com.hedera.services.bdd.suites.crypto.CryptoDeleteSuite.TREASURY;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.validateFeesWithChild;
 import static com.hedera.services.bdd.suites.token.TokenAssociationSpecs.MULTI_KEY;
-import static com.hederahashgraph.api.proto.java.HederaFunctionality.ContractCall;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
-import static com.hederahashgraph.api.proto.java.SubType.DEFAULT;
 import static com.hederahashgraph.api.proto.java.TokenType.FUNGIBLE_COMMON;
 import static com.hederahashgraph.api.proto.java.TokenType.NON_FUNGIBLE_UNIQUE;
 
 import com.google.protobuf.ByteString;
 import com.hedera.services.bdd.junit.HapiTest;
 import com.hedera.services.bdd.junit.HapiTestLifecycle;
-import com.hedera.services.bdd.junit.LeakyHapiTest;
-import com.hedera.services.bdd.spec.dsl.annotations.Account;
-import com.hedera.services.bdd.spec.dsl.annotations.Contract;
 import com.hedera.services.bdd.spec.dsl.annotations.NonFungibleToken;
-import com.hedera.services.bdd.spec.dsl.entities.SpecAccount;
-import com.hedera.services.bdd.spec.dsl.entities.SpecContract;
 import com.hedera.services.bdd.spec.dsl.entities.SpecNonFungibleToken;
 import com.hedera.services.bdd.suites.contract.Utils;
 import com.hederahashgraph.api.proto.java.TokenID;
@@ -84,62 +72,6 @@ public class UnlimitedAutoAssociationSuite {
     private static final String BOB = "BOB";
     private static final String CAROL = "CAROL";
     private static final String DAVE = "DAVE";
-
-    @LeakyHapiTest(overrides = {"contracts.maxRefundPercentOfGasLimit"})
-    @DisplayName("auto-association through HTS system contract changes gas cost")
-    final Stream<DynamicTest> autoAssociationThroughSystemContractChangesGasCost(
-            @Contract(contract = "HTSCalls", creationGas = 4_000_000) SpecContract htsCallsContract,
-            @NonFungibleToken(numPreMints = 2) SpecNonFungibleToken token,
-            @Account SpecAccount preAssociated,
-            @Account(maxAutoAssociations = 1) SpecAccount autoAssociated) {
-        // Note we have a 20% markup on doing HAPI operations through EVM
-        final var expectedUsdAssociationFee = 0.05 * 1.2;
-        final var gasWithoutAutoAssociation = new AtomicLong();
-        final var gasWithAutoAssociation = new AtomicLong();
-        return hapiTest(
-                // To make it trivial to compare actual gas costs refund all unused gas in this test
-                overriding("contracts.maxRefundPercentOfGasLimit", "100"),
-                preAssociated.associateTokens(token),
-                token.treasury().authorizeContract(htsCallsContract),
-                // Make two calls, the first with no auto-association and the second with auto-association
-                htsCallsContract
-                        .call("transferNFTCall", token, token.treasury(), preAssociated, 1L)
-                        .andAssert(txn -> txn.via("noAutoAssociation").gas(1_000_000)),
-                htsCallsContract
-                        .call("transferNFTCall", token, token.treasury(), autoAssociated, 2L)
-                        .andAssert(txn -> txn.via("autoAssociation").gas(1_000_000)),
-                // Look up their gas used
-                getTxnRecord("noAutoAssociation")
-                        .exposingTo(txnRecord -> gasWithoutAutoAssociation.set(
-                                txnRecord.getContractCallResult().getGasUsed())),
-                getTxnRecord("autoAssociation")
-                        .exposingTo(txnRecord -> gasWithAutoAssociation.set(
-                                txnRecord.getContractCallResult().getGasUsed())),
-                // Verify that the gas difference is consistent with the expected auto-association fee
-                withOpContext((spec, opLog) -> {
-                    final var gasDiff = gasWithAutoAssociation.get() - gasWithoutAutoAssociation.get();
-                    // Convert to USD by multiplying the gas difference by the price in thousandths of a
-                    // tinycent from the fee schedule; and then dividing by 1e13 to convert to USD
-                    final var approxUsdDiff = (1.0
-                                    * gasDiff
-                                    * spec.fees()
-                                            .getCurrentOpFeeData()
-                                            .get(ContractCall)
-                                            .get(DEFAULT)
-                                            .getServicedata()
-                                            .getGas()
-                                    / 1000
-                                    / TINY_PARTS_PER_WHOLE)
-                            / 100.0;
-                    assertCloseEnough(
-                            expectedUsdAssociationFee,
-                            approxUsdDiff,
-                            // Allow at most one percent deviation from expected
-                            1.0,
-                            "USD value of gas difference",
-                            "auto-association fee");
-                }));
-    }
 
     @HapiTest
     @DisplayName("Auto-associate tokens do not require a child dispatch")
@@ -212,27 +144,6 @@ public class UnlimitedAutoAssociationSuite {
                         .hasKnownStatus(INSUFFICIENT_PAYER_BALANCE),
                 token.serialNo(1L).assertOwnerIs(token.treasury()),
                 token.serialNo(2L).assertOwnerIs(token.treasury()));
-    }
-
-    @HapiTest
-    @DisplayName("auto-association through HTS system contract does not charge dispatch payer")
-    final Stream<DynamicTest> autoAssociationThroughSystemContractDoesNotChargeDispatchPayer(
-            @Contract(contract = "HTSCalls", creationGas = 4_000_000) SpecContract htsCallsContract,
-            @NonFungibleToken(numPreMints = 1) SpecNonFungibleToken token,
-            @Account(maxAutoAssociations = 1) SpecAccount autoAssociated) {
-        return hapiTest(
-                token.treasury().authorizeContract(htsCallsContract),
-                cryptoTransfer(tinyBarsFromTo(GENESIS, htsCallsContract.name(), ONE_HUNDRED_HBARS)),
-                htsCallsContract
-                        .getInfo()
-                        .andAssert(query -> query.has(contractWith().balance(ONE_HUNDRED_HBARS))),
-                htsCallsContract
-                        .call("transferNFTCall", token, token.treasury(), autoAssociated, 1L)
-                        .andAssert(txn -> txn.via("autoAssociation").gas(1_000_000)),
-                getTxnRecord("autoAssociation").andAllChildRecords().logged(),
-                htsCallsContract
-                        .getInfo()
-                        .andAssert(query -> query.has(contractWith().balance(ONE_HUNDRED_HBARS))));
     }
 
     @DisplayName("Hollow account creation has correct auto associations")

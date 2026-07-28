@@ -3,14 +3,12 @@ package com.hedera.services.bdd.suites.regression.system;
 
 import static com.hedera.services.bdd.junit.hedera.MarkerFile.EXEC_IMMEDIATE_MF;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getScheduleInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenNftInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getVersionInfo;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCustomCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -18,7 +16,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.blockingOrder;
@@ -283,22 +280,18 @@ public interface LifecycleTest {
             final var account = "ledgerAccount" + uniqueSuffix;
             final var file = "ledgerFile" + uniqueSuffix;
             final var topic = "ledgerTopic" + uniqueSuffix;
-            final var contract = "CreateTrivial" + uniqueSuffix;
             final var fungibleToken = "ledgerFt" + uniqueSuffix;
             final var nftToken = "ledgerNft" + uniqueSuffix;
             final var nftSupplyKey = "ledgerSupplyKey" + uniqueSuffix;
             final var schedule = "ledgerSchedule" + uniqueSuffix;
             allRunFor(
                     spec,
-                    uploadInitCode("CreateTrivial"),
                     cryptoCreate(account),
                     getAccountInfo(account).payingWith(GENESIS).hasEncodedLedgerId(expectedLedgerId),
                     fileCreate(file).contents("externalized-ledger-id"),
                     getFileInfo(file).payingWith(GENESIS).hasEncodedLedgerId(expectedLedgerId),
                     createTopic(topic),
                     getTopicInfo(topic).payingWith(GENESIS).hasEncodedLedgerId(expectedLedgerId),
-                    contractCustomCreate("CreateTrivial", uniqueSuffix).gas(300_000L),
-                    getContractInfo(contract).payingWith(GENESIS).hasEncodedLedgerId(expectedLedgerId),
                     tokenCreate(fungibleToken)
                             .treasury(account)
                             .initialSupply(1L)

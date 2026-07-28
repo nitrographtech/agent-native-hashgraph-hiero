@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "wave": "P07-11B",
+  "title": "Contract setup removal from retained native HAPI suites",
+  "recorded_at": "2026-07-27T15:50:20Z",
+  "repository": "https://github.com/nitrographtech/agent-native-hashgraph-hiero",
+  "branch": "p07/remove-contract-setup-from-native-suites",
+  "pull_request": {
+    "number": 30,
+    "url": "https://github.com/nitrographtech/agent-native-hashgraph-hiero/pull/30",
+    "state_at_source_validation": "OPEN",
+    "draft_at_source_validation": true,
+    "mergeable_at_source_validation": true
+  },
+  "commits": {
+    "implementation_start": "2bcf3835767d53a9aa0bae4ad687373b6a0d4843",
+    "final_source": "c8f27ae774b8e14c4486d08415dd7ee37d88967e",
+    "ledger_commit": "2bcf3835767d53a9aa0bae4ad687373b6a0d4843",
+    "ledger_path": "docs/nitrograph/P07_11B_METHOD_LEVEL_CLASSIFICATION.md",
+    "ledger_sha256": "e2ef19685585ff61023d152ba0802510ac9fb5a8bb10712399bca582f243c9b1"
+  },
+  "implementation": {
+    "source_implementation_complete": true,
+    "files_modified": 36,
+    "files_deleted": 0,
+    "insertions": 49,
+    "deletions": 3557,
+    "registered_or_external_roots_removed": 70,
+    "providers_or_factories_removed": 10,
+    "construction_bearing_helpers_removed": 5,
+    "conditional_branches_removed": 1,
+    "split_required_roots_completed": 22,
+    "split_required_providers_completed": 8,
+    "remaining_remove_p07_11b_roots": 0,
+    "remaining_remove_p07_11b_providers": 0,
+    "incomplete_split_required_closures": 0,
+    "new_executable_constructions": 0,
+    "production_source_changed": false,
+    "core_hapi_operation_implementations_changed": false
+  },
+  "steady_state_throttling": {
+    "file": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/throttling/SteadyStateThrottlingTest.java",
+    "removed": [
+      "checkContractCallsTps",
+      "scCallOps",
+      "scCallOps.suggestedInitializers anonymous executable implementation",
+      "scCallOps.get anonymous executable implementation",
+      "ContractCalls branch in competingClientFor"
+    ],
+    "retained": [
+      "checkTps",
+      "checkCustomNetworkTps",
+      "native transfer throughput support",
+      "native mint throughput support",
+      "native account-create throughput support"
+    ]
+  },
+  "protected_owners": {
+    "comparison_base": "2bcf3835767d53a9aa0bae4ad687373b6a0d4843",
+    "verified_unchanged": true,
+    "files": [
+      {
+        "path": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/contract/hapi/ContractUpdateSuite.java",
+        "base_blob": "24eaacfb5bf3001c7ae7a123d3323415395f8c55",
+        "final_blob": "24eaacfb5bf3001c7ae7a123d3323415395f8c55"
+      },
+      {
+        "path": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/contract/records/ContractRecordsSanityCheckSuite.java",
+        "base_blob": "ed6c7fe30d82f534c7e675c72bc0845a39c0ec04",
+        "final_blob": "ed6c7fe30d82f534c7e675c72bc0845a39c0ec04"
+      }
+    ]
+  },
+  "executable_census": {
+    "before": {
+      "contract_create": 141,
+      "contract_call": 64,
+      "ethereum": 9,
+      "local_query": 11,
+      "total": 225
+    },
+    "removed_by_p07_11b": {
+      "contract_create": 109,
+      "contract_call": 52,
+      "ethereum": 9,
+      "local_query": 7,
+      "total": 177
+    },
+    "remaining": {
+      "contract_create": 32,
+      "contract_call": 12,
+      "ethereum": 0,
+      "local_query": 4,
+      "total": 48
+    },
+    "remaining_partition": {
+      "protected_shared_owners": {
+        "contract_create": 26,
+        "contract_call": 10,
+        "ethereum": 0,
+        "local_query": 1,
+        "total": 37
+      },
+      "explicit_query_or_rejection_boundaries": {
+        "contract_create": 6,
+        "contract_call": 2,
+        "ethereum": 0,
+        "local_query": 3,
+        "total": 11
+      }
+    },
+    "remaining_subtypes": {
+      "ordinary_contract_create": 30,
+      "contract_custom_create": 1,
+      "contract_create_default": 1,
+      "ordinary_contract_call": 9,
+      "contract_call_with_function_abi": 1,
+      "contract_call_with_send_record_sanity_checks": 1,
+      "contract_call_with_tuple": 1,
+      "ordinary_executable_local_query": 4
+    },
+    "closure_assertions": {
+      "remove_p07_11b_constructions_remaining": 0,
+      "removable_registered_roots_remaining": 0,
+      "removable_providers_or_factories_remaining": 0,
+      "incomplete_split_required_branches": 0,
+      "unclassified_constructions": 0,
+      "new_constructions": 0
+    }
+  },
+  "remaining_operation_inventory": [
+    {
+      "file": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/contract/hapi/ContractUpdateSuite.java",
+      "ownership": "P07_11C_PROTECTED_SHARED_OWNER",
+      "counts": {
+        "contract_create": 21,
+        "contract_call": 7,
+        "local_query": 1
+      },
+      "subtypes": [
+        "ordinary contractCreate",
+        "contractCustomCreate",
+        "ordinary contractCall",
+        "contractCallLocal"
+      ],
+      "enclosing_methods": [
+        "updateMaxAutomaticAssociationsAndRequireKey",
+        "idVariantsTreatedAsExpected",
+        "updateStakingFieldsWorks",
+        "eip1014AddressAlwaysHasPriority",
+        "updateWithBothMemoSettersWorks",
+        "updatingExpiryWorks",
+        "rejectsExpiryTooFarInTheFuture",
+        "updateAutoRenewWorks",
+        "updateAutoRenewAccountWorks",
+        "updateAdminKeyWorks",
+        "immutableContractKeyFormIsStandard",
+        "canMakeContractImmutableWithEmptyKeyList",
+        "givenAdminKeyMustBeValid",
+        "fridayThe13thSpec",
+        "updateDoesNotChangeBytecode",
+        "tryContractUpdateWithMaxAutoAssociations",
+        "playGame",
+        "cannotUpdateImmutableContractExceptExpiry",
+        "cannotUpdateContractExceptExpiryWithWrongKey"
+      ],
+      "reason": "Protected deterministic rejection and contract-update boundary reserved for P07-11C.",
+      "intentionally_preserved": true
+    },
+    {
+      "file": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/contract/records/ContractRecordsSanityCheckSuite.java",
+      "ownership": "P07_11C_PROTECTED_SHARED_OWNER",
+      "counts": {
+        "contract_create": 5,
+        "contract_call": 3,
+        "local_query": 0
+      },
+      "subtypes": [
+        "ordinary contractCreate",
+        "contractCreateDefault",
+        "ordinary contractCall",
+        "contractCallWithFunctionAbi",
+        "contractCallWithSendRecordSanityChecks",
+        "contractCallWithTuple"
+      ],
+      "enclosing_methods": [
+        "contractDeleteRecordSanityChecks",
+        "contractCreateRecordSanityChecks",
+        "contractCallWithSendRecordSanityChecks",
+        "circularTransfersRecordSanityChecks",
+        "contractUpdateRecordSanityChecks"
+      ],
+      "reason": "Protected historical record, result, log, action, sidecar, and mirror interpretation owner reserved for P07-11C.",
+      "intentionally_preserved": true
+    },
+    {
+      "file": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/file/FileUpdateSuite.java",
+      "enclosing_method": "gasLimitOverMaxGasLimitFailsPrecheck",
+      "ownership": "P07_11C_REJECTION_BOUNDARY",
+      "counts": {
+        "contract_create": 1,
+        "contract_call": 0,
+        "local_query": 1
+      },
+      "subtypes": [
+        "ordinary contractCreate",
+        "ordinary contractCallLocal"
+      ],
+      "reason": "Explicit legacy gas-limit precheck rejection boundary.",
+      "intentionally_preserved": true
+    },
+    {
+      "file": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/queries/AsNodeOperatorQueriesTestEmbedded.java",
+      "enclosing_methods": [
+        "getSmartContractQuerySigNotRequired",
+        "getContractBytecodeQueryNoSigRequired"
+      ],
+      "ownership": "P07_11C_QUERY_BOUNDARY",
+      "counts": {
+        "contract_create": 2,
+        "contract_call": 0,
+        "local_query": 0
+      },
+      "subtypes": [
+        "ordinary contractCreate"
+      ],
+      "reason": "Contract-query authorization and charging boundary reserved for executable-query retirement.",
+      "intentionally_preserved": true
+    },
+    {
+      "file": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/queries/DisabledNodeOperatorTest.java",
+      "enclosing_methods": [
+        "nodeOperatorQueryPortNotAccessibleForContractCall",
+        "nodeOperatorQueryPortNotAccessibleForContractBytecode"
+      ],
+      "ownership": "P07_11C_QUERY_BOUNDARY",
+      "counts": {
+        "contract_create": 2,
+        "contract_call": 2,
+        "local_query": 2
+      },
+      "subtypes": [
+        "ordinary contractCreate",
+        "ordinary contractCall",
+        "ordinary contractCallLocal"
+      ],
+      "reason": "Node-operator executable-query accessibility boundary reserved for P07-11C.",
+      "intentionally_preserved": true
+    },
+    {
+      "file": "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/queries/RepeatableOperatorQueryTests.java",
+      "enclosing_method": "getSmartContractQueryNodeOperatorNotCharged",
+      "ownership": "P07_11C_QUERY_BOUNDARY",
+      "counts": {
+        "contract_create": 1,
+        "contract_call": 0,
+        "local_query": 0
+      },
+      "subtypes": [
+        "ordinary contractCreate"
+      ],
+      "reason": "Contract-query node-operator charging boundary reserved for P07-11C.",
+      "intentionally_preserved": true
+    }
+  ],
+  "ownership_census_after": {
+    "registered_or_external_roots": {
+      "total": 113,
+      "retained_or_completed_split": 83,
+      "defer_p07_11c": 30,
+      "remove_p07_11b": 0,
+      "incomplete_split": 0
+    },
+    "providers_or_factories": {
+      "total": 9,
+      "retained_or_completed_split": 9,
+      "remove_p07_11b": 0,
+      "incomplete_split": 0
+    },
+    "intermediate_callers": {
+      "total": 2,
+      "retained": 2
+    },
+    "construction_bearing_helpers": {
+      "total": 2,
+      "retained_after_split": 2,
+      "remove_p07_11b": 0
+    },
+    "explicit_removable_branches": {
+      "total": 0
+    }
+  },
+  "validation": {
+    "environment": {
+      "date": "2026-07-27",
+      "timezone": "America/Vancouver",
+      "java": "Eclipse Temurin 25.0.2",
+      "java_home": "/tmp/p07-jdk25"
+    },
+    "commands": [
+      {
+        "command": "./gradlew :test-clients:compileJava :test-clients:compileTestJava --console=plain",
+        "result": "PASS",
+        "summary": "BUILD SUCCESSFUL; 223 actionable tasks up-to-date"
+      },
+      {
+        "command": "git diff --check",
+        "result": "PASS"
+      },
+      {
+        "command": "./gradlew :test-clients:test --tests 'com.hedera.services.bdd.suites.integration.RepeatableIntegrationTests' --console=plain",
+        "result": "FAIL_EXPECTED_RETAINED_DRIFT",
+        "summary": "1 test executed; initializationError in beforeAll due managed ContractCreate expecting OK and receiving INVALID_TRANSACTION_BODY"
+      },
+      {
+        "command": "./gradlew :test-clients:test --console=plain",
+        "result": "FAIL_RETAINED_EXPECTATION_DRIFT",
+        "summary": "140 tests completed: 137 passing, 1 skipped, 2 failing; both failures are pre-existing managed ContractCreate setup outside the P07-11B diff"
+      },
+      {
+        "command": "./gradlew :test-clients:spotlessJavaCheck --console=plain",
+        "result": "FAIL_PRE_EXISTING_REPOSITORY_FORMAT_DRIFT",
+        "summary": "34 files require formatting at final source commit; all 34 also required formatting at implementation start; intersection with the 36-file P07-11B diff is empty"
+      }
+    ],
+    "targeted_validation": {
+      "local_repeatable_integration_probe": "Reproduced the known retained setup failure without modifying source.",
+      "exact_head_ci_focused_service_composition": "PASS",
+      "isolated_suite_targets": "No additional isolated HAPI integration targets were treated as passing because their shared managed execution setup is part of the retained P07-11C drift."
+    },
+    "full_test_failures": [
+      {
+        "class": "com.hedera.services.bdd.suites.integration.RepeatableIntegrationTests",
+        "location": "beforeAll:78",
+        "expected": "OK",
+        "actual": "INVALID_TRANSACTION_BODY",
+        "operation": "DSL-managed HapiContractCreate for @Contract HRC755Contract, triggered by SIGNING_CONTRACT.getInfo()",
+        "changed_by_p07_11b": false,
+        "present_at_implementation_start": true,
+        "classification": "RETAINED_P07_11C_EXECUTABLE_SETUP_EXPECTATION_DRIFT",
+        "dependent_roots": [
+          "burnAtStakePeriodBoundaryHasExpectedRecord",
+          "senderSignatureValidatedInQueries",
+          "gasThrottleMimicsThroughputThrottleCongestionStatus",
+          "classifiableTakesPriorityOverUnclassifiable",
+          "controllingContractCanTriggerExecutionViaSystemContract",
+          "contractCanTriggerExecutionForItsOwnAssets",
+          "contractSignatureIsNoopIfNotControlling"
+        ],
+        "attribution": "The @Contract field and beforeAll provisioning are identical at 2bcf3835767d53a9aa0bae4ad687373b6a0d4843 and c8f27ae774b8e14c4486d08415dd7ee37d88967e. P07-11B removed classified schedule-signing closures later in the class but did not authorize or modify this retained setup."
+      },
+      {
+        "class": "com.hedera.services.bdd.suites.integration.hip1195.Hip1195EnabledTest",
+        "location": "beforeAll:139",
+        "expected": "OK",
+        "actual": "INVALID_TRANSACTION_BODY",
+        "operation": "DSL-managed HapiContractCreate for hook contract fields, first observed while provisioning FALSE_ALLOWANCE_HOOK.getInfo()",
+        "changed_by_p07_11b": false,
+        "present_at_implementation_start": true,
+        "classification": "RETAINED_POST_P07_11B_EXECUTABLE_SETUP_EXPECTATION_DRIFT",
+        "attribution": "The entire source file, its @Contract fields, and beforeAll provisioning are unchanged from the implementation start. Its hook-execution closure was outside the committed P07-11B source diff and remains later de-execution work."
+      }
+    ],
+    "failures_attributable_to_p07_11b": [],
+    "formatting": {
+      "spotless_java_check": "FAIL",
+      "attribution": "PRE_EXISTING_REPOSITORY_DRIFT",
+      "final_source_files_reported": 34,
+      "implementation_start_files_reported": 38,
+      "final_source_only_files": 0,
+      "p07_11b_diff_overlap": 0,
+      "note": "Four files that failed formatting at the start were corrected incidentally by the authorized P07-11B deletions; no final formatting violation is in the P07-11B diff. No formatter-generated unrelated changes were committed.",
+      "files": [
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/fixtures/p06a/P06aPublicFixtureIdentity.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/junit/TestBase.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/junit/hedera/TssKeyMaterial.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/junit/hedera/subprocess/StatusLookupAttempt.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/junit/support/translators/inputs/BlockTransactionalUnit.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/junit/support/translators/inputs/TransactionParts.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/assertions/matchers/FieldByFieldMatcher.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/assertions/matchers/TransactionSidecarRecordMatcher.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/dsl/operations/transactions/ApproveAllowanceOperation.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/dsl/operations/transactions/AuthorizeContractOperation.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/dsl/operations/transactions/TransferTokensOperation.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/infrastructure/SpecStateObserver.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/infrastructure/meta/InitialAccountIdentifiers.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/utilops/mod/ExpectedAnswer.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/utilops/mod/ExpectedResponse.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/utilops/mod/QueryModification.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/utilops/mod/TxnModification.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/utilops/streams/assertions/VisibleItems.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/spec/verification/Condition.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/crypto/CryptoApproveAllowanceSuite.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/crypto/HollowAccountFinalizationSuite.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/fees/ScheduleServiceFeesSuite.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/fees/ScheduleServiceSimpleFeesTest.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/file/HistoricalContractExecutionRejection.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/hip1195/lambdaplex/LambdaplexVerbs.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/hip1261/ScheduleServiceSimpleFeesTest.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/hip423/ScheduleLongTermExecutionTest.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/hip551/allowance/AtomicBatchApproveAllowanceTest.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/hip904/AirdropsDisabledTest.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/hip904/TokenAirdropTest.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/integration/RepeatableHip423Tests.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/integration/RepeatableScheduleLongTermExecutionTest.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/reconnect/AuthenticatedHistoricalFixtureConsumerTest.java",
+        "hedera-node/test-clients/src/main/java/com/hedera/services/bdd/suites/token/hip540/Hip540TestScenario.java"
+      ]
+    }
+  },
+  "exact_head_ci": {
+    "run_id": 30278149890,
+    "url": "https://github.com/nitrographtech/agent-native-hashgraph-hiero/actions/runs/30278149890",
+    "tested_commit": "c8f27ae774b8e14c4486d08415dd7ee37d88967e",
+    "created_at": "2026-07-27T15:03:50Z",
+    "completed_at": "2026-07-27T15:19:58Z",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "native-agent",
+        "job_id": 90017364004,
+        "conclusion": "success",
+        "passed_steps": [
+          "Set up job",
+          "Run actions/checkout@v4",
+          "Run actions/setup-java@v5",
+          "Run gradle/actions/setup-gradle@v5",
+          "Focused service-composition tests and distributions",
+          "Verify distribution profiles",
+          "Enforce Nitrograph native runtime dependency policy",
+          "Enforce P07 source and fixture ownership policies",
+          "Enforce protected-layer boundary",
+          "Post Run gradle/actions/setup-gradle@v5",
+          "Post Run actions/setup-java@v5",
+          "Post Run actions/checkout@v4",
+          "Complete job"
+        ],
+        "failed_steps": [],
+        "cancelled_steps": [],
+        "skipped_required_steps": []
+      }
+    ]
+  },
+  "closure_status": {
+    "p07_11b_source_implementation_complete": true,
+    "p07_11b_validation_passed": true,
+    "p07_11b_validation_basis": "The implementation census reconciles exactly, compilation and exact-head CI pass, protected owners are unchanged, and no failing test or formatting issue is attributable to the P07-11B diff.",
+    "repository_wide_pr_readiness": false,
+    "repository_wide_pr_readiness_reason": "The complete test-client target retains two executable ContractCreate setup failures and repository-wide Spotless drift; lifecycle, reconnect, mirror, and later P07-11C/P07-11D closure are not part of this evidence pass.",
+    "p07_11c_work_outstanding": true,
+    "p07_11c_boundary": [
+      "ContractUpdateSuite rejection and shared update ownership",
+      "ContractRecordsSanityCheckSuite historical interpretation ownership",
+      "explicit executable query boundaries",
+      "legacy rejection boundaries",
+      "managed executable setup retained in RepeatableIntegrationTests",
+      "core contract and query operation retirement"
+    ],
+    "later_work": [
+      "Hip1195EnabledTest executable hook setup retirement",
+      "lifecycle validation",
+      "save and restart validation",
+      "real reconnect validation",
+      "official mirror regression",
+      "PR readiness and merge"
+    ]
+  }
+}

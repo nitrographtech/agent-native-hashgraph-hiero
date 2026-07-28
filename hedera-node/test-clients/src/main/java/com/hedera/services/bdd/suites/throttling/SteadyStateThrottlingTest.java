@@ -7,15 +7,12 @@ import static com.hedera.services.bdd.spec.HapiSpec.defaultHapiSpec;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.resourceAsString;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.submitMessageTo;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.SysFileOverrideOp.Target.THROTTLES;
@@ -30,9 +27,7 @@ import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_MILLION_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.TOKEN_TREASURY;
-import static com.hedera.services.bdd.suites.contract.records.ContractRecordsSanityCheckSuite.PAYABLE_CONTRACT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BUSY;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOPIC_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.RECEIPT_NOT_FOUND;
@@ -49,7 +44,6 @@ import com.hedera.services.bdd.spec.infrastructure.OpProvider;
 import com.hedera.services.bdd.spec.queries.crypto.HapiGetAccountBalance;
 import com.hedera.services.bdd.spec.utilops.SysFileOverrideOp;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -121,12 +115,6 @@ public class SteadyStateThrottlingTest {
     @Order(3)
     final Stream<DynamicTest> checkFungibleMintsTps() {
         return checkTps("FungibleMints", EXPECTED_FUNGIBLE_MINT_TPS, fungibleMintOps());
-    }
-
-    @HapiTest
-    @Order(4)
-    final Stream<DynamicTest> checkContractCallsTps() {
-        return checkTps("ContractCalls", EXPECTED_CONTRACT_CALL_TPS, scCallOps());
     }
 
     @HapiTest
@@ -204,24 +192,6 @@ public class SteadyStateThrottlingTest {
 
     private CompetingClient competingClientFor(String txn) {
         return switch (txn) {
-            case "ContractCalls" ->
-                new CompetingClient(
-                        3,
-                        blockingOrder(
-                                uploadInitCode(PAYABLE_CONTRACT),
-                                contractCreate(PAYABLE_CONTRACT),
-                                cryptoCreate("competitor").balance(ONE_MILLION_HBARS),
-                                runWithProvider(spec -> () -> Optional.of(
-                                                contractCall(PAYABLE_CONTRACT, "deposit", BigInteger.valueOf(1_000L))
-                                                        .fee(10 * ONE_HBAR)
-                                                        .deferStatusResolution()
-                                                        .hasPrecheckFrom(INVALID_SIGNATURE, BUSY, OK)
-                                                        .payingWith("competitor")
-                                                        .signedBy(GENESIS)
-                                                        .hasKnownStatusFrom(PERMITTED_STATUSES)
-                                                        .noLogging()))
-                                        .lasting(duration::get, unit::get)
-                                        .maxOpsPerSec(maxOpsPerSec::get)));
             default ->
                 new CompetingClient(
                         2,
@@ -334,31 +304,6 @@ public class SteadyStateThrottlingTest {
                         .noLogging()
                         .deferStatusResolution()
                         .payingWith(CIVILIAN)
-                        .hasPrecheckFrom(OK, BUSY);
-                return Optional.of(op);
-            }
-        };
-    }
-
-    private Function<HapiSpec, OpProvider> scCallOps() {
-        final var contract = "Multipurpose";
-        return spec -> new OpProvider() {
-            @Override
-            public List<SpecOperation> suggestedInitializers() {
-                return List.of(
-                        uploadInitCode(contract),
-                        contractCreate(contract).payingWith(GENESIS),
-                        cryptoCreate(CIVILIAN).balance(ONE_MILLION_HBARS).payingWith(GENESIS));
-            }
-
-            @Override
-            public Optional<HapiSpecOperation> get() {
-                var op = contractCall(contract)
-                        .noLogging()
-                        .deferStatusResolution()
-                        .payingWith(CIVILIAN)
-                        .sending(ONE_HBAR)
-                        .hasKnownStatusFrom(SUCCESS)
                         .hasPrecheckFrom(OK, BUSY);
                 return Optional.of(op);
             }

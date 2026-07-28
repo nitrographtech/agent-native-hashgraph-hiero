@@ -7,8 +7,6 @@ import static com.hedera.services.bdd.spec.keys.TrieSigMapGenerator.uniqueWithFu
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAliasedAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createDefaultContract;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -16,7 +14,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.deleteTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.submitMessageTo;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.updateTopic;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.doWithStartupConfig;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.exposeTargetLedgerIdTo;
@@ -32,7 +29,6 @@ import static com.hedera.services.bdd.suites.HapiSuite.NONSENSE_KEY;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SHAPE;
 import static com.hedera.services.bdd.suites.HapiSuite.flattened;
-import static com.hedera.services.bdd.suites.contract.SharedContractTestConstants.PAY_RECEIVABLE_CONTRACT;
 import static com.hedera.services.bdd.suites.crypto.AutoCreateUtils.createHollowAccountFrom;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedTopicCreateFullFeeUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.validateChargedUsdWithinWithTxnSize;
@@ -287,30 +283,17 @@ public class TopicCreateSuite {
     @HapiTest
     final Stream<DynamicTest> signingRequirementsEnforced() {
         long PAYER_BALANCE = 1_999_999_999L;
-        final var contractWithAdminKey = "nonCryptoAccount";
-
         return hapiTest(
                 newKeyNamed("adminKey"),
-                newKeyNamed("contractAdminKey"),
                 newKeyNamed("submitKey"),
                 newKeyNamed("wrongKey"),
                 cryptoCreate("payer").balance(PAYER_BALANCE),
                 cryptoCreate("autoRenewAccount"),
-                // This will have an admin key
-                createDefaultContract(contractWithAdminKey).adminKey("contractAdminKey"),
-                uploadInitCode(PAY_RECEIVABLE_CONTRACT),
-                // And this won't
-                contractCreate(PAY_RECEIVABLE_CONTRACT).omitAdminKey(),
                 createTopic("testTopic")
                         .payingWith("payer")
                         .signedBy("wrongKey")
                         .sigMapPrefixes(TrieSigMapGenerator.withNature(FULL_PREFIXES))
                         .hasPrecheck(INVALID_SIGNATURE),
-                // But contracts without admin keys will get INVALID_SIGNATURE (can't sign!)
-                createTopic("NotToBe")
-                        .autoRenewAccountId(PAY_RECEIVABLE_CONTRACT)
-                        .sigMapPrefixes(TrieSigMapGenerator.withNature(FULL_PREFIXES))
-                        .hasKnownStatusFrom(INVALID_SIGNATURE),
                 // Auto-renew account should sign if set on a topic
                 createTopic("testTopic")
                         .payingWith("payer")
@@ -347,8 +330,6 @@ public class TopicCreateSuite {
                         .signedBy("payer", "autoRenewAccount")
                         .sigMapPrefixes(uniqueWithFullPrefixesFor("payer", "autoRenewAccount"))
                         .hasKnownStatus(INVALID_SIGNATURE),
-                // In hedera-app, we'll allow contracts with admin keys to be auto-renew accounts
-                createTopic("withContractAutoRenew").adminKeyName("adminKey").autoRenewAccountId(contractWithAdminKey),
                 createTopic("noAdminKeyNoAutoRenewAccount"),
                 getTopicInfo("noAdminKeyNoAutoRenewAccount").hasNoAdminKey().logged(),
                 createTopic("explicitAdminKeyNoAutoRenewAccount").adminKeyName("adminKey"),
@@ -362,10 +343,6 @@ public class TopicCreateSuite {
                 getTopicInfo("explicitAdminKeyExplicitAutoRenewAccount")
                         .hasAdminKey("adminKey")
                         .hasAutoRenewAccount("autoRenewAccount")
-                        .logged(),
-                getTopicInfo("withContractAutoRenew")
-                        .hasAdminKey("adminKey")
-                        .hasAutoRenewAccount(contractWithAdminKey)
                         .logged());
     }
 
@@ -563,42 +540,5 @@ public class TopicCreateSuite {
                         .message("This is a test topic message")
                         .via("submitMessage"),
                 getTxnRecord("submitMessage").logged()));
-    }
-
-    // TOPIC_RENEW_22
-    @HapiTest
-    final Stream<DynamicTest> topicCreateWithContractWithAdminKeyForAutoRenewAccount() {
-        final var contractWithAdminKey = "nonCryptoAccount";
-        return hapiTest(
-                newKeyNamed("contractAdminKey"),
-                cryptoCreate("payer"),
-                createDefaultContract(contractWithAdminKey).adminKey("contractAdminKey"),
-                createTopic("noAdminKeyExplicitAutoRenewAccount")
-                        .payingWith("payer")
-                        .autoRenewAccountId(contractWithAdminKey)
-                        .signedBy("payer", contractWithAdminKey),
-                getTopicInfo("noAdminKeyExplicitAutoRenewAccount")
-                        .hasNoAdminKey()
-                        .hasAutoRenewAccount(contractWithAdminKey),
-                submitMessageTo("noAdminKeyExplicitAutoRenewAccount")
-                        .blankMemo()
-                        .payingWith("payer")
-                        .message("This is a test topic message")
-                        .via("submitMessage"),
-                getTxnRecord("submitMessage").logged());
-    }
-
-    // TOPIC_RENEW_23
-    @HapiTest
-    final Stream<DynamicTest> topicCreateWithContractWithoutAdminKeyForAutoRenewAccountFails() {
-        final var contractWithoutAdminKey = "nonCryptoAccount";
-        return hapiTest(
-                cryptoCreate("payer"),
-                createDefaultContract(contractWithoutAdminKey).omitAdminKey(),
-                createTopic("noAdminKeyExplicitAutoRenewAccount")
-                        .payingWith("payer")
-                        .autoRenewAccountId(contractWithoutAdminKey)
-                        .signedBy("payer", contractWithoutAdminKey)
-                        .hasKnownStatus(INVALID_SIGNATURE));
     }
 }

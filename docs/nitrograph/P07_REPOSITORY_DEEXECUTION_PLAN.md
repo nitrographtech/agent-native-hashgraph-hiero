@@ -290,23 +290,29 @@ and HTS-precompile methods, their zero-consumer helper owners, and 18 CREATE2 re
 retaining direct native coverage. PR #28 is frozen as the bounded test-client execution-residue
 cleanup and ownership-separation package.
 
-The remaining executable HAPI closure is measured but not implemented in PR #28. P07-11 proceeds
-linearly after that merge:
+The remaining executable HAPI closure was measured in PR #28 and then implemented
+linearly:
 
 - **P07-11A** — execution-only suites and providers;
 - **P07-11B** — contract-based setup inside retained native suites;
-- **P07-11C** — minimal rejection and historical-query boundary, then executable HAPI operation
-  deletion;
-- **P07-11D** — dead resources, signing, Gradle/JPMS dependency cleanup, and final certification.
+- **P07-11C** — corrected repository-wide non-lifecycle executable boundary;
+- **P07-11D** — lifecycle, reconnect, and authenticated historical-fixture closure;
+- **P07-11E** — official mirror validation and PR-readiness certification.
 
-P07-11A is implemented on its dedicated linear branch with an exact bounded deletion of 34
-execution-only suites and 57 suite-local helpers (91 files / 684,002 bytes). Mixed native suites,
-the historical/rejection boundary, core HAPI operations, and resource/dependency cleanup remain
-assigned to P07-11B, P07-11C, and P07-11D respectively.
+P07-11A removed 34 execution-only suites and 57 suite-local helpers (91 files /
+684,002 bytes). P07-11B removed executable setup from retained native suites.
+P07-11C removed the corrected non-lifecycle boundary. P07-11D removed successful
+contract setup from lifecycle and historical-query owners while retaining the
+immutable Fixture B reconnect boundary. The final suite-level census is eight
+intentional rejection constructions, zero successful executable setup, zero
+executable local query, and zero unclassified site.
 
-Known successful-execution expectations assigned to those waves are not globally suppressed and
-are not regressions in the focused P07-10 closure. P07 remains incomplete until all four waves and
-final certification pass.
+The earlier assignment of dead resources, signing, and Gradle/JPMS dependency
+cleanup to a phase named “P07-11D” is superseded by the authoritative P07-11D
+lifecycle manifest. Those dependency/resource concerns are not silently
+claimed complete; they require a separately authorized final dependency wave.
+P07-11E certifies mirror-facing semantics and PR #30 readiness, not total P07
+dependency closure.
 
 No Git pack-size, clone-time, or build-time reduction is claimed until a deletion branch measures it
 against this base.

@@ -7,17 +7,13 @@ import static com.hedera.services.bdd.junit.TestTags.CRYPTO;
 import static com.hedera.services.bdd.junit.hedera.embedded.EmbeddedMode.CONCURRENT;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractBytecode;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getScheduleInfo;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.inParallel;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
@@ -128,56 +124,6 @@ public class AsNodeOperatorQueriesTestEmbedded extends NodeOperatorQueriesBase {
                         .hasAnswerOnlyPrecheck(OK),
                 // But the non-node operator submitter must still sign
                 getFileInfo(filename)
-                        .payingWith(PAYER)
-                        .signedBy(someoneElse)
-                        .hasAnswerOnlyPrecheck(ResponseCodeEnum.INVALID_SIGNATURE)));
-    }
-
-    @EmbeddedHapiTest(NEEDS_STATE_ACCESS)
-    @DisplayName("Only node operators don't need to sign contract info queries")
-    final Stream<DynamicTest> getSmartContractQuerySigNotRequired() {
-        final var contract = "PretendPair"; // any contract, nothing special about this one
-        final var someoneElse = "someoneElse";
-        return hapiTest(flattened(
-                nodeOperatorAccount(),
-                payerAccount(),
-                newKeyNamed(someoneElse),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                // Sign the node operator query request with a totally unrelated key, to show that there is no
-                // signature check
-                getContractInfo(contract)
-                        .payingWith(NODE_OPERATOR)
-                        .signedBy(someoneElse)
-                        .asNodeOperator()
-                        .hasAnswerOnlyPrecheck(OK),
-                // But the non-node operator submitter must still sign
-                getContractInfo(contract)
-                        .payingWith(PAYER)
-                        .signedBy(someoneElse)
-                        .hasAnswerOnlyPrecheck(ResponseCodeEnum.INVALID_SIGNATURE)));
-    }
-
-    @EmbeddedHapiTest(NEEDS_STATE_ACCESS)
-    @DisplayName("Only node operators don't need to sign contract bytecode queries")
-    final Stream<DynamicTest> getContractBytecodeQueryNoSigRequired() {
-        final var contract = "PretendPair"; // any contract, nothing special about this one
-        final var someoneElse = "someoneElse";
-        return hapiTest(flattened(
-                nodeOperatorAccount(),
-                payerAccount(),
-                newKeyNamed(someoneElse),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                // Sign the node operator query request with a totally unrelated key, to show that there is no
-                // signature check
-                getContractBytecode(contract)
-                        .payingWith(NODE_OPERATOR)
-                        .signedBy(someoneElse)
-                        .asNodeOperator()
-                        .hasAnswerOnlyPrecheck(OK),
-                // But the non-node operator submitter must still sign
-                getContractBytecode(contract)
                         .payingWith(PAYER)
                         .signedBy(someoneElse)
                         .hasAnswerOnlyPrecheck(ResponseCodeEnum.INVALID_SIGNATURE)));

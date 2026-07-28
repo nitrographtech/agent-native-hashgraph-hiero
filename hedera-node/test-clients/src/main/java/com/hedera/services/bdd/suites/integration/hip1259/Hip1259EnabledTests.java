@@ -14,8 +14,6 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountDetails;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoApproveAllowance;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
@@ -29,8 +27,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleSign;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAirdrop;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
-import static com.hedera.services.bdd.spec.transactions.contract.HapiParserUtil.asHeadlongAddress;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedHbarFee;
 import static com.hedera.services.bdd.spec.utilops.EmbeddedVerbs.mutateSingleton;
@@ -48,8 +44,6 @@ import static com.hedera.services.bdd.suites.HapiSuite.NODE_REWARD;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HBAR;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_MILLION_HBARS;
-import static com.hedera.services.bdd.suites.contract.SharedContractTestConstants.TRANSFERRING_CONTRACT;
-import static com.hedera.services.bdd.suites.contract.Utils.asSolidityAddress;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.validateFees;
 import static com.hedera.services.bdd.suites.hip1261.utils.SimpleFeesScheduleConstantsInUsd.CRYPTO_CREATE_TOTAL_FEE;
 import static com.hedera.services.bdd.suites.hip423.ScheduleLongTermSignTest.THIRTY_MINUTES;
@@ -88,7 +82,6 @@ import com.hedera.services.bdd.spec.utilops.EmbeddedVerbs;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.TokenSupplyType;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -319,27 +312,6 @@ public class Hip1259EnabledTests {
                         .treasury(CIVILIAN_PAYER)
                         .withCustom(fixedHbarFee(1, FEE_COLLECTOR))
                         .hasKnownStatus(INVALID_CUSTOM_FEE_COLLECTOR));
-    }
-
-    /**
-     * Verifies that smart contract transfers to the fee collection account (0.0.802) are rejected.
-     * Per HIP-1259: "Reject any transaction that would send any hbar to the fee account"
-     */
-    @Order(5)
-    @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
-    final Stream<DynamicTest> evmTransferToFeeCollectionAccountFails() {
-        return hapiTest(
-                cryptoCreate(CIVILIAN_PAYER).balance(ONE_MILLION_HBARS),
-                uploadInitCode(TRANSFERRING_CONTRACT),
-                contractCreate(TRANSFERRING_CONTRACT).balance(ONE_HBAR).payingWith(CIVILIAN_PAYER),
-                // Try to transfer HBAR to fee collection account via smart contract
-                contractCall(
-                                TRANSFERRING_CONTRACT,
-                                "transferToAddress",
-                                asHeadlongAddress(asSolidityAddress(0, 0, 802L)),
-                                BigInteger.valueOf(1000))
-                        .payingWith(CIVILIAN_PAYER)
-                        .hasKnownStatus(TRANSFER_TO_FEE_COLLECTION_ACCOUNT_NOT_ALLOWED));
     }
 
     /**
@@ -577,15 +549,7 @@ public class Hip1259EnabledTests {
                         .payingWith(CIVILIAN_PAYER)
                         .via("tokenTxn"),
                 validateRecordContains("tokenTxn", FEE_COLLECTOR_ACCOUNT),
-                validateRecordNotContains("tokenTxn", UNEXPECTED_FEE_ACCOUNTS),
-                // Contract transaction
-                uploadInitCode(TRANSFERRING_CONTRACT),
-                contractCreate(TRANSFERRING_CONTRACT)
-                        .balance(ONE_HBAR)
-                        .payingWith(CIVILIAN_PAYER)
-                        .via("contractTxn"),
-                validateRecordContains("contractTxn", FEE_COLLECTOR_ACCOUNT),
-                validateRecordNotContains("contractTxn", UNEXPECTED_FEE_ACCOUNTS));
+                validateRecordNotContains("tokenTxn", UNEXPECTED_FEE_ACCOUNTS));
     }
     /**
      * Verifies that deleting an account with transfer to the fee collection account (0.0.802) fails.
@@ -730,30 +694,6 @@ public class Hip1259EnabledTests {
                             "Fee collection account balance should increase by at least the sum of transaction fees. "
                                     + "Expected at least " + totalFees + " but got " + balanceIncrease);
                 }));
-    }
-
-    /**
-     * Verifies that when a smart contract self-destructs, it cannot send its remaining funds
-     * to the fee collection account (0.0.802).
-     * Per HIP-1259: "Reject any transaction that would send any hbar to the fee account"
-     */
-    @Order(18)
-    @RepeatableHapiTest(NEEDS_VIRTUAL_TIME_FOR_FAST_EXECUTION)
-    final Stream<DynamicTest> selfDestructCannotSendFundsToFeeCollectionAccount() {
-        final var SELF_DESTRUCT_CALLABLE_CONTRACT = "SelfDestructCallable";
-        return hapiTest(
-                cryptoCreate(CIVILIAN_PAYER).balance(ONE_MILLION_HBARS),
-                uploadInitCode(SELF_DESTRUCT_CALLABLE_CONTRACT),
-                contractCreate(SELF_DESTRUCT_CALLABLE_CONTRACT)
-                        .balance(ONE_HBAR)
-                        .payingWith(CIVILIAN_PAYER),
-                // Attempt to self-destruct with fee collection account (0.0.802) as beneficiary
-                contractCall(
-                                SELF_DESTRUCT_CALLABLE_CONTRACT,
-                                "destroyExplicitBeneficiary",
-                                asHeadlongAddress(asSolidityAddress(0, 0, 802L)))
-                        .payingWith(CIVILIAN_PAYER)
-                        .hasKnownStatus(TRANSFER_TO_FEE_COLLECTION_ACCOUNT_NOT_ALLOWED));
     }
 
     /**

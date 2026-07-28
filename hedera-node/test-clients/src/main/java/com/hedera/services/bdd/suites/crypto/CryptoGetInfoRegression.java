@@ -28,7 +28,6 @@ import static org.hiero.base.utility.CommonUtils.unhex;
 import com.google.protobuf.ByteString;
 import com.hedera.services.bdd.junit.HapiTest;
 import com.hedera.services.bdd.junit.LeakyEmbeddedHapiTest;
-import com.hedera.services.bdd.junit.LeakyHapiTest;
 import com.hedera.services.bdd.spec.SpecOperation;
 import com.hedera.services.bdd.spec.keys.KeyShape;
 import com.hedera.services.bdd.spec.utilops.mod.QueryMutation;
@@ -275,39 +274,5 @@ public class CryptoGetInfoRegression {
                 cryptoCreate("toBeDeleted"),
                 cryptoDelete("toBeDeleted").transfer(GENESIS),
                 getAccountInfo("toBeDeleted").hasCostAnswerPrecheck(ACCOUNT_DELETED));
-    }
-
-    @LeakyHapiTest(
-            requirement = {PROPERTY_OVERRIDES, THROTTLE_OVERRIDES},
-            overrides = {"tokens.countingGetBalanceThrottleEnabled"},
-            throttles = "testSystemFiles/tiny-get-balance-throttle.json")
-    public Stream<DynamicTest> cryptoGetContractBalanceQueryAssociationThrottles() {
-        final var contract = "targetContract";
-        final var account = "targetAccount";
-        final List<String> tokenNames = new ArrayList<>();
-        for (int i = 0; i < NUM_ASSOCIATIONS; i++) {
-            tokenNames.add("ct" + i);
-        }
-        final var ops = new ArrayList<SpecOperation>();
-        ops.add(overridingAllOf(Map.of("tokens.countingGetBalanceThrottleEnabled", "true")));
-
-        // Create entities
-        ops.add(cryptoCreate(account));
-        ops.add(createDefaultContract(contract));
-
-        // Create and associate NUM_ASSOCIATIONS tokens to both account and contract
-        tokenNames.forEach(t -> {
-            ops.add(tokenCreate(t));
-            ops.add(tokenAssociate(account, t));
-            ops.add(tokenAssociate(contract, t));
-        });
-
-        // accountID-based balance query should be BUSY
-        ops.add(getAccountBalance(account).hasAnswerOnlyPrecheck(BUSY));
-
-        // contractID-based balance query should be BUSY
-        ops.add(getAccountBalance(contract, true).hasAnswerOnlyPrecheck(BUSY));
-
-        return hapiTest(ops.toArray(new SpecOperation[0]));
     }
 }

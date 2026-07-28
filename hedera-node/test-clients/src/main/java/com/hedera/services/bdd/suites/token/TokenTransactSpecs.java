@@ -15,12 +15,10 @@ import static com.hedera.services.bdd.spec.assertions.SomeFungibleTransfers.chan
 import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.recordWith;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTokenNftInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.crypto.ExpectedTokenRel.relationshipWith;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createDefaultContract;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -501,14 +499,12 @@ public class TokenTransactSpecs {
     }
 
     @HapiTest
-    final Stream<DynamicTest> cannotGiveNftsToDissociatedContractsOrAccounts() {
-        final var theContract = "tbd";
+    final Stream<DynamicTest> cannotGiveNftsToDissociatedAccounts() {
         final var theAccount = "alsoTbd";
         final var theKey = MULTIPURPOSE;
-        return defaultHapiSpec("CannotGiveNftsToDissociatedContractsOrAccounts")
+        return defaultHapiSpec("CannotGiveNftsToDissociatedAccounts")
                 .given(
                         newKeyNamed(theKey),
-                        createDefaultContract(theContract),
                         cryptoCreate(theAccount),
                         cryptoCreate(TOKEN_TREASURY),
                         tokenCreate(A_TOKEN)
@@ -516,62 +512,42 @@ public class TokenTransactSpecs {
                                 .tokenType(TokenType.NON_FUNGIBLE_UNIQUE)
                                 .initialSupply(0L)
                                 .treasury(TOKEN_TREASURY),
-                        tokenAssociate(theContract, A_TOKEN),
                         tokenAssociate(theAccount, A_TOKEN),
                         mintToken(A_TOKEN, List.of(copyFromUtf8("dark"), copyFromUtf8("matter"))))
                 .when(
-                        getContractInfo(theContract).hasToken(relationshipWith(A_TOKEN)),
                         getAccountInfo(theAccount).hasToken(relationshipWith(A_TOKEN)),
-                        tokenDissociate(theContract, A_TOKEN),
                         tokenDissociate(theAccount, A_TOKEN),
-                        getContractInfo(theContract).hasNoTokenRelationship(A_TOKEN),
                         getAccountInfo(theAccount).hasNoTokenRelationship(A_TOKEN))
                 .then(
-                        cryptoTransfer(movingUnique(A_TOKEN, 1).between(TOKEN_TREASURY, theContract))
-                                .hasKnownStatus(TOKEN_NOT_ASSOCIATED_TO_ACCOUNT),
                         cryptoTransfer(movingUnique(A_TOKEN, 1).between(TOKEN_TREASURY, theAccount))
                                 .hasKnownStatus(TOKEN_NOT_ASSOCIATED_TO_ACCOUNT),
-                        tokenAssociate(theContract, A_TOKEN),
                         tokenAssociate(theAccount, A_TOKEN),
-                        cryptoTransfer(movingUnique(A_TOKEN, 1).between(TOKEN_TREASURY, theContract)),
-                        cryptoTransfer(movingUnique(A_TOKEN, 2).between(TOKEN_TREASURY, theAccount)),
-                        getAccountBalance(theAccount).hasTokenBalance(A_TOKEN, 1),
-                        getAccountBalance(theContract).hasTokenBalance(A_TOKEN, 1));
+                        cryptoTransfer(movingUnique(A_TOKEN, 1).between(TOKEN_TREASURY, theAccount)),
+                        getAccountBalance(theAccount).hasTokenBalance(A_TOKEN, 1));
     }
 
     @HapiTest
-    final Stream<DynamicTest> cannotSendFungibleToDissociatedContractsOrAccounts() {
-        final var theContract = "tbd";
+    final Stream<DynamicTest> cannotSendFungibleToDissociatedAccounts() {
         final var theAccount = "alsoTbd";
-        return defaultHapiSpec("CannotSendFungibleToDissociatedContractsOrAccounts")
+        return defaultHapiSpec("CannotSendFungibleToDissociatedAccounts")
                 .given(
-                        createDefaultContract(theContract),
                         cryptoCreate(theAccount),
                         cryptoCreate(TOKEN_TREASURY),
                         tokenCreate(A_TOKEN)
                                 .tokenType(TokenType.FUNGIBLE_COMMON)
                                 .initialSupply(1_234_567L)
                                 .treasury(TOKEN_TREASURY),
-                        tokenAssociate(theContract, A_TOKEN),
                         tokenAssociate(theAccount, A_TOKEN))
                 .when(
-                        getContractInfo(theContract).hasToken(relationshipWith(A_TOKEN)),
                         getAccountInfo(theAccount).hasToken(relationshipWith(A_TOKEN)),
-                        tokenDissociate(theContract, A_TOKEN),
                         tokenDissociate(theAccount, A_TOKEN),
-                        getContractInfo(theContract).hasNoTokenRelationship(A_TOKEN),
                         getAccountInfo(theAccount).hasNoTokenRelationship(A_TOKEN))
                 .then(
-                        cryptoTransfer(moving(1, A_TOKEN).between(TOKEN_TREASURY, theContract))
-                                .hasKnownStatus(TOKEN_NOT_ASSOCIATED_TO_ACCOUNT),
                         cryptoTransfer(moving(1, A_TOKEN).between(TOKEN_TREASURY, theAccount))
                                 .hasKnownStatus(TOKEN_NOT_ASSOCIATED_TO_ACCOUNT),
-                        tokenAssociate(theContract, A_TOKEN),
                         tokenAssociate(theAccount, A_TOKEN),
-                        cryptoTransfer(moving(1, A_TOKEN).between(TOKEN_TREASURY, theContract)),
                         cryptoTransfer(moving(1, A_TOKEN).between(TOKEN_TREASURY, theAccount)),
-                        getAccountBalance(theAccount).hasTokenBalance(A_TOKEN, 1L),
-                        getAccountBalance(theContract).hasTokenBalance(A_TOKEN, 1L));
+                        getAccountBalance(theAccount).hasTokenBalance(A_TOKEN, 1L));
     }
 
     @HapiTest

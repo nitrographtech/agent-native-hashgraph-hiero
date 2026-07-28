@@ -5,24 +5,16 @@ import static com.hedera.services.bdd.junit.ContextRequirement.PERMISSION_OVERRI
 import static com.hedera.services.bdd.junit.ContextRequirement.UPGRADE_FILE_CONTENT;
 import static com.hedera.services.bdd.junit.EmbeddedReason.NEEDS_STATE_ACCESS;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
-import static com.hedera.services.bdd.spec.assertions.ContractFnResultAsserts.resultWith;
-import static com.hedera.services.bdd.spec.assertions.ContractInfoAsserts.contractWith;
-import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.recordWith;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.contractCallLocal;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.crypto.ExpectedTokenRel.relationshipWith;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.BYTES_4K;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.randomUtf8Bytes;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.ethereumCall;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
@@ -30,24 +22,16 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.submitMessageTo
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenDissociate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uncheckedSubmit;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
-import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromAccountToAlias;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedHbarFee;
 import static com.hedera.services.bdd.spec.transactions.token.CustomFeeSpecs.fixedHtsFee;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.doSeveralWithStartupConfig;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.doWithStartupConfig;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overriding;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overridingAllOf;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overridingTwo;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sleepFor;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.specOps;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.submitModified;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.updateSpecialFile;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.usableTxnIdNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hedera.services.bdd.spec.utilops.mod.ModificationUtils.withSuccessivelyVariedBodyIds;
 import static com.hedera.services.bdd.suites.HapiSuite.ADDRESS_BOOK_CONTROL;
@@ -56,21 +40,14 @@ import static com.hedera.services.bdd.suites.HapiSuite.DEFAULT_PAYER;
 import static com.hedera.services.bdd.suites.HapiSuite.FUNDING;
 import static com.hedera.services.bdd.suites.HapiSuite.GENESIS;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_HUNDRED_HBARS;
-import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SHAPE;
-import static com.hedera.services.bdd.suites.HapiSuite.SECP_256K1_SOURCE_KEY;
 import static com.hedera.services.bdd.suites.HapiSuite.ZERO_BYTE_MEMO;
 import static com.hedera.services.bdd.suites.HapiSuite.flattened;
-import static com.hedera.services.bdd.suites.utils.contracts.SimpleBytesResult.bigIntResult;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.AUTORENEW_DURATION_NOT_IN_RANGE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BUSY;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.CONSENSUS_GAS_EXHAUSTED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.CUSTOM_FEES_LIST_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ZERO_BYTE_IN_STRING;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MAX_CONTRACT_STORAGE_EXCEEDED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MAX_ENTITIES_IN_PRICE_REGIME_HAVE_BEEN_CREATED;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MAX_GAS_LIMIT_EXCEEDED;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MAX_STORAGE_IN_PRICE_REGIME_HAS_BEEN_USED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MESSAGE_SIZE_TOO_LARGE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.NOT_SUPPORTED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
@@ -84,8 +61,6 @@ import static com.hederahashgraph.api.proto.java.TokenFreezeStatus.Unfrozen;
 import static com.hederahashgraph.api.proto.java.TokenKycStatus.KycNotApplicable;
 import static com.hederahashgraph.api.proto.java.TokenKycStatus.Revoked;
 import static java.lang.Long.parseLong;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.ByteString;
 import com.hedera.services.bdd.junit.HapiTest;
@@ -93,7 +68,6 @@ import com.hedera.services.bdd.junit.LeakyEmbeddedHapiTest;
 import com.hedera.services.bdd.spec.keys.SigControl;
 import com.hedera.services.bdd.spec.transactions.TxnUtils;
 import com.hedera.services.bdd.suites.token.TokenAssociationSpecs;
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -287,194 +261,6 @@ public class FileUpdateSuite {
 
     @LeakyEmbeddedHapiTest(
             reason = NEEDS_STATE_ACCESS,
-            overrides = {"contracts.maxRefundPercentOfGasLimit"})
-    final Stream<DynamicTest> maxRefundIsEnforced() {
-        return hapiTest(
-                overriding("contracts.maxRefundPercentOfGasLimit", "5"),
-                uploadInitCode(CONTRACT),
-                contractCreate(CONTRACT),
-                contractCall(CONTRACT, CREATE_TXN).gas(1000000L),
-                contractCallLocal(CONTRACT, INDIRECT_GET_ABI)
-                        .gas(300000L)
-                        .has(resultWith().gasUsed(285000L)));
-    }
-
-    // C.f. https://github.com/hashgraph/hedera-services/pull/8908
-    //    @LeakyHapiTest(overrides = {"contracts.maxRefundPercentOfGasLimit"})
-    @LeakyEmbeddedHapiTest(
-            reason = NEEDS_STATE_ACCESS,
-            overrides = {"contracts.maxRefundPercentOfGasLimit"})
-    final Stream<DynamicTest> allUnusedGasIsRefundedIfSoConfigured() {
-        return hapiTest(
-                overriding("contracts.maxRefundPercentOfGasLimit", "100"),
-                uploadInitCode(CONTRACT),
-                contractCreate(CONTRACT).gas(600_000L),
-                contractCall(CONTRACT, CREATE_TXN).gas(1_000_000L),
-                contractCallLocal(CONTRACT, INDIRECT_GET_ABI)
-                        .gas(300_000L)
-                        .has(resultWith().gasUsed(26_515)));
-    }
-
-    @LeakyEmbeddedHapiTest(
-            reason = NEEDS_STATE_ACCESS,
-            overrides = {"contracts.maxGasPerSec"})
-    final Stream<DynamicTest> gasLimitOverMaxGasLimitFailsPrecheck() {
-        return hapiTest(
-                uploadInitCode(CONTRACT),
-                contractCreate(CONTRACT).gas(1_000_000L),
-                overriding("contracts.maxGasPerSec", "100"),
-                contractCallLocal(CONTRACT, INDIRECT_GET_ABI)
-                        .gas(101L)
-                        // for some reason BUSY is returned in CI
-                        .hasCostAnswerPrecheckFrom(MAX_GAS_LIMIT_EXCEEDED, BUSY));
-    }
-
-    @LeakyEmbeddedHapiTest(
-            reason = NEEDS_STATE_ACCESS,
-            overrides = {"contracts.maxKvPairs.individual", "contracts.maxKvPairs.aggregate"})
-    final Stream<DynamicTest> kvLimitsEnforced() {
-        final var contract = "User";
-        final var gasToOffer = 1_000_000;
-        return hapiTest(
-                uploadInitCode(contract),
-                /* This contract has 0 key/value mappings at creation */
-                contractCreate(contract),
-                /* Now we update the per-contract limit to 10 mappings */
-                overriding("contracts.maxKvPairs.individual", "10"),
-                /* The first call to insert adds 5 mappings */
-                contractCall(contract, INSERT_ABI, BigInteger.ONE, BigInteger.ONE)
-                        .payingWith(GENESIS)
-                        .gas(gasToOffer),
-                /* Each subsequent call to adds 3 mappings; so 8 total after this */
-                contractCall(contract, INSERT_ABI, BigInteger.TWO, BigInteger.valueOf(4))
-                        .payingWith(GENESIS)
-                        .gas(gasToOffer),
-                /* And this one fails because 8 + 3 = 11 > 10 */
-                contractCall(contract, INSERT_ABI, BigInteger.valueOf(3), BigInteger.valueOf(9))
-                        .payingWith(GENESIS)
-                        .hasKnownStatus(MAX_CONTRACT_STORAGE_EXCEEDED)
-                        .gas(gasToOffer),
-                /* Confirm the storage size didn't change */
-                getContractInfo(contract).has(contractWith().numKvPairs(8)),
-                /* Now we update the per-contract limit to 1B mappings, but the aggregate limit to just 1 */
-                overridingTwo(
-                        "contracts.maxKvPairs.individual", "1000000000",
-                        "contracts.maxKvPairs.aggregate", "1"),
-                contractCall(contract, INSERT_ABI, BigInteger.valueOf(3), BigInteger.valueOf(9))
-                        .payingWith(GENESIS)
-                        .hasKnownStatus(MAX_STORAGE_IN_PRICE_REGIME_HAS_BEEN_USED)
-                        .gas(gasToOffer),
-                getContractInfo(contract).has(contractWith().numKvPairs(8)),
-                /* Now raise the limits and confirm we can use more storage */
-                overridingTwo(
-                        "contracts.maxKvPairs.individual", "1000000000",
-                        "contracts.maxKvPairs.aggregate", "10000000000"),
-                contractCall(contract, INSERT_ABI, BigInteger.valueOf(3), BigInteger.valueOf(9))
-                        .payingWith(GENESIS)
-                        .gas(gasToOffer),
-                contractCall(contract, INSERT_ABI, BigInteger.valueOf(4), BigInteger.valueOf(16))
-                        .payingWith(GENESIS)
-                        .gas(gasToOffer),
-                getContractInfo(contract).has(contractWith().numKvPairs(14)));
-    }
-
-    @SuppressWarnings("java:S5960")
-    @LeakyEmbeddedHapiTest(
-            reason = NEEDS_STATE_ACCESS,
-            overrides = {"contracts.maxGasPerSec"})
-    final Stream<DynamicTest> serviceFeeRefundedIfConsGasExhausted() {
-        final var contract = "User";
-        final var gasToOffer = 15_000_000;
-        final var civilian = "payer";
-        final var unrefundedTxn = "unrefundedTxn";
-        final var refundedTxn = "refundedTxn";
-
-        return hapiTest(
-                overriding("contracts.maxGasPerSec", gasToOffer + ""),
-                newKeyNamed(SECP_256K1_SOURCE_KEY).shape(SECP_256K1_SHAPE),
-                cryptoTransfer(tinyBarsFromAccountToAlias(GENESIS, SECP_256K1_SOURCE_KEY, ONE_HUNDRED_HBARS)),
-                cryptoCreate(civilian).balance(ONE_HUNDRED_HBARS),
-                uploadInitCode(contract),
-                contractCreate(contract),
-                ethereumCall(contract, INSERT_ABI, BigInteger.ONE, BigInteger.valueOf(4))
-                        .gasLimit(gasToOffer)
-                        .signingWith(SECP_256K1_SOURCE_KEY)
-                        .payingWith(civilian)
-                        .via(unrefundedTxn),
-                usableTxnIdNamed(refundedTxn).payerId(civilian),
-                contractCall(contract, INSERT_ABI, BigInteger.TWO, BigInteger.valueOf(4))
-                        .payingWith(GENESIS)
-                        .gas(gasToOffer)
-                        .hasAnyStatusAtAll()
-                        .deferStatusResolution(),
-                uncheckedSubmit(ethereumCall(contract, INSERT_ABI, BigInteger.valueOf(3), BigInteger.valueOf(4))
-                                .gasLimit(gasToOffer)
-                                .signingWith(SECP_256K1_SOURCE_KEY)
-                                .payingWith(civilian)
-                                .txnId(refundedTxn))
-                        .payingWith(GENESIS),
-                sleepFor(6_000L),
-                withOpContext((spec, opLog) -> {
-                    final var unrefundedOp = getTxnRecord(unrefundedTxn);
-                    final var refundedOp = getTxnRecord(refundedTxn).assertingNothingAboutHashes();
-                    allRunFor(spec, refundedOp, unrefundedOp);
-                    final var status =
-                            refundedOp.getResponseRecord().getReceipt().getStatus();
-                    if (status == SUCCESS) {
-                        log.info("Latency allowed gas throttle bucket to drain" + " completely");
-                    } else {
-                        assertEquals(CONSENSUS_GAS_EXHAUSTED, status);
-                        final var hash = refundedOp.getResponseRecord().getEthereumHash();
-                        assertEquals(32, hash.size(), "Expected a 32-byte hash");
-                        final var origFee = unrefundedOp.getResponseRecord().getTransactionFee();
-                        final var feeSansRefund = refundedOp.getResponseRecord().getTransactionFee();
-                        assertTrue(
-                                feeSansRefund < origFee,
-                                "Expected service fee to be refunded, but sans fee "
-                                        + feeSansRefund
-                                        + " was not less than "
-                                        + origFee);
-                    }
-                }));
-    }
-
-    @LeakyEmbeddedHapiTest(
-            reason = NEEDS_STATE_ACCESS,
-            overrides = {"contracts.chainId"})
-    final Stream<DynamicTest> chainIdChangesDynamically() {
-        final var chainIdUser = "ChainIdUser";
-        final var otherChainId = 0xABCDL;
-        final var firstCallTxn = "firstCallTxn";
-        final var secondCallTxn = "secondCallTxn";
-        return hapiTest(
-                uploadInitCode(chainIdUser),
-                contractCreate(chainIdUser),
-                contractCall(chainIdUser, CHAIN_ID_GET_ABI).via(firstCallTxn),
-                doSeveralWithStartupConfig("contracts.chainId", chainId -> {
-                    final var expectedChainId = bigIntResult(parseLong(chainId));
-                    return specOps(
-                            contractCallLocal(chainIdUser, CHAIN_ID_GET_ABI)
-                                    .has(resultWith().contractCallResult(expectedChainId)),
-                            getTxnRecord(firstCallTxn)
-                                    .hasPriority(recordWith()
-                                            .contractCallResult(resultWith().contractCallResult(expectedChainId))),
-                            contractCallLocal(chainIdUser, "getSavedChainID")
-                                    .has(resultWith().contractCallResult(expectedChainId)));
-                }),
-                overriding("contracts.chainId", "" + otherChainId),
-                contractCreate(chainIdUser),
-                contractCall(chainIdUser, CHAIN_ID_GET_ABI).via(secondCallTxn),
-                contractCallLocal(chainIdUser, CHAIN_ID_GET_ABI)
-                        .has(resultWith().contractCallResult(bigIntResult(otherChainId))),
-                getTxnRecord(secondCallTxn)
-                        .hasPriority(recordWith()
-                                .contractCallResult(resultWith().contractCallResult(bigIntResult(otherChainId)))),
-                contractCallLocal(chainIdUser, "getSavedChainID")
-                        .has(resultWith().contractCallResult(bigIntResult(otherChainId))));
-    }
-
-    @LeakyEmbeddedHapiTest(
-            reason = NEEDS_STATE_ACCESS,
             overrides = {
                 "accounts.maxNumber",
                 "contracts.maxNumber",
@@ -486,7 +272,6 @@ public class FileUpdateSuite {
     final Stream<DynamicTest> entitiesNotCreatableAfterUsageLimitsReached() {
         final var notToBe = "ne'erToBe";
         return hapiTest(
-                uploadInitCode("Multipurpose"),
                 overridingAllOf(Map.of(
                         "accounts.maxNumber", "0",
                         "contracts.maxNumber", "0",
@@ -495,7 +280,6 @@ public class FileUpdateSuite {
                         "tokens.maxNumber", "0",
                         "topics.maxNumber", "0")),
                 cryptoCreate(notToBe).hasKnownStatus(MAX_ENTITIES_IN_PRICE_REGIME_HAVE_BEEN_CREATED),
-                contractCreate("Multipurpose").hasKnownStatus(MAX_ENTITIES_IN_PRICE_REGIME_HAVE_BEEN_CREATED),
                 fileCreate(notToBe).contents("NOPE").hasKnownStatus(MAX_ENTITIES_IN_PRICE_REGIME_HAVE_BEEN_CREATED),
                 scheduleCreate(notToBe, cryptoTransfer(tinyBarsFromTo(DEFAULT_PAYER, FUNDING, 1)))
                         .hasKnownStatus(MAX_ENTITIES_IN_PRICE_REGIME_HAVE_BEEN_CREATED),

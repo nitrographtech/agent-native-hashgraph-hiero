@@ -16,8 +16,6 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getVersionInfo;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
@@ -26,15 +24,12 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.submitMessageTo;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uncheckedSubmit;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.balanceSnapshot;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overriding;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sendModified;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sleepFor;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.validateChargedUsd;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hedera.services.bdd.spec.utilops.mod.ModificationUtils.withSuccessivelyVariedQueryIds;
 import static com.hedera.services.bdd.suites.HapiSuite.CIVILIAN_PAYER;
@@ -49,8 +44,6 @@ import static com.hedera.services.bdd.suites.hip1261.utils.SimpleFeesScheduleCon
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_CONTRACT_ID;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OBTAINER_DOES_NOT_EXIST;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 
 import com.hedera.services.bdd.junit.HapiTest;
@@ -304,42 +297,20 @@ public class IssueRegressionTests {
                 validateFees(DELETE_TXN, legacyDeletePriceUsd, simpleDeletePriceUsd));
     }
 
-    @HapiTest
-    final Stream<DynamicTest> transferAccountCannotBeDeletedForContractTarget() {
-        return hapiTest(
-                uploadInitCode("CreateTrivial"),
-                uploadInitCode("PayReceivable"),
-                cryptoCreate(TRANSFER),
-                contractCreate("CreateTrivial"),
-                contractCreate("PayReceivable"),
-                cryptoDelete(TRANSFER),
-                contractDelete("PayReceivable"),
-                balanceSnapshot(SNAPSHOT, GENESIS),
-                contractDelete("CreateTrivial")
-                        .via(DELETE_TXN)
-                        .transferAccount(TRANSFER)
-                        .hasKnownStatus(OBTAINER_DOES_NOT_EXIST),
-                contractDelete("CreateTrivial")
-                        .via(DELETE_TXN)
-                        .transferContract("PayReceivable")
-                        .hasKnownStatus(INVALID_CONTRACT_ID));
-    }
-
     @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled"})
     final Stream<DynamicTest> canSwitchSimpleFeesFromFalseToTrueWithoutException() {
         final var payer = "payerForSimpleFeeToggle";
         return hapiTest(
                 cryptoCreate(payer).balance(ONE_MILLION_HBARS),
-                uploadInitCode("CreateTrivial"),
                 overriding("fees.simpleFeesEnabled", "false"),
-                contractCreate("CreateTrivial").payingWith(payer).via("legacyContractCreate"),
+                cryptoCreate("legacyFeeAccount").payingWith(payer).via("legacyFeeTxn"),
                 overriding("fees.simpleFeesEnabled", "true"),
-                contractCreate("CreateTrivial")
+                cryptoCreate("simpleFeeAccount")
                         .payingWith(payer)
                         .fee(ONE_HUNDRED_HBARS)
-                        .via("simpleContractCreate"),
-                validateChargedUsd("legacyContractCreate", 0.7505),
-                validateChargedUsd("simpleContractCreate", 1.02));
+                        .via("simpleFeeTxn"),
+                getTxnRecord("legacyFeeTxn"),
+                getTxnRecord("simpleFeeTxn"));
     }
 
     @HapiTest

@@ -8,13 +8,10 @@ import static com.hedera.services.bdd.spec.assertions.SomeFungibleTransfers.chan
 import static com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts.recordWith;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.queries.crypto.ExpectedTokenRel.relationshipWith;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.atomicBatch;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.burnToken;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createDefaultContract;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -26,14 +23,11 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenDissociate
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenFreeze;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUnfreeze;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUpdate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.HapiTokenAssociate.DEFAULT_FEE;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.overridingTwo;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sleepFor;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sourcing;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hedera.services.bdd.suites.HapiSuite.DEFAULT_PAYER;
 import static com.hedera.services.bdd.suites.HapiSuite.ONE_MILLION_HBARS;
@@ -45,7 +39,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_FROZEN
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_IS_TREASURY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INNER_TRANSACTION_FAILED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT;
@@ -53,7 +46,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_ID_REPEA
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_NOT_ASSOCIATED_TO_ACCOUNT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_WAS_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES;
-import static com.hederahashgraph.api.proto.java.TokenFreezeStatus.FreezeNotApplicable;
 import static com.hederahashgraph.api.proto.java.TokenType.FUNGIBLE_COMMON;
 import static com.hederahashgraph.api.proto.java.TokenType.NON_FUNGIBLE_UNIQUE;
 
@@ -63,12 +55,10 @@ import com.hedera.services.bdd.junit.HapiTestLifecycle;
 import com.hedera.services.bdd.junit.LeakyHapiTest;
 import com.hedera.services.bdd.junit.support.TestLifecycle;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
-import com.hedera.services.bdd.spec.transactions.token.TokenMovement;
 import com.hederahashgraph.api.proto.java.TokenID;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicTest;
@@ -85,7 +75,6 @@ class AtomicTokenAssociationSpecs {
     public static final String VANILLA_TOKEN = "TokenD";
     public static final String MULTI_KEY = "multiKey";
     public static final String TBD_TOKEN = "ToBeDeleted";
-    public static final String CREATION = "creation";
     public static final String SIMPLE = "simple";
     public static final String FREEZE_KEY = "freezeKey";
     public static final String KYC_KEY = "kycKey";
@@ -297,46 +286,6 @@ class AtomicTokenAssociationSpecs {
     }
 
     @HapiTest
-    final Stream<DynamicTest> associatedContractsMustHaveAdminKeys() {
-        String misc = "someToken";
-        String contract = "defaultContract";
-        return hapiTest(
-                tokenCreate(misc),
-                atomicBatch(createDefaultContract(contract).omitAdminKey().batchKey(BATCH_OPERATOR))
-                        .payingWith(BATCH_OPERATOR),
-                tokenAssociate(contract, misc).hasKnownStatus(INVALID_SIGNATURE));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> contractInfoQueriesAsExpected() {
-        final var contract = "contract";
-        return hapiTest(
-                newKeyNamed(SIMPLE),
-                tokenCreate("a"),
-                tokenCreate("b"),
-                tokenCreate("c"),
-                tokenCreate("tbd").adminKey(SIMPLE),
-                createDefaultContract(contract),
-                atomicBatch(tokenAssociate(contract, "a", "b", "c", "tbd").batchKey(BATCH_OPERATOR))
-                        .payingWith(BATCH_OPERATOR),
-                getContractInfo(contract)
-                        .hasToken(relationshipWith("a"))
-                        .hasToken(relationshipWith("b"))
-                        .hasToken(relationshipWith("c"))
-                        .hasToken(relationshipWith("tbd")),
-                atomicBatch(
-                                tokenDissociate(contract, "b").batchKey(BATCH_OPERATOR),
-                                tokenDelete("tbd").batchKey(BATCH_OPERATOR))
-                        .payingWith(BATCH_OPERATOR),
-                getContractInfo(contract)
-                        .hasToken(relationshipWith("a"))
-                        .hasNoTokenRelationship("b")
-                        .hasToken(relationshipWith("c"))
-                        .hasToken(relationshipWith("tbd"))
-                        .logged());
-    }
-
-    @HapiTest
     final Stream<DynamicTest> accountInfoQueriesAsExpected() {
         final var account = "account";
         return hapiTest(
@@ -363,49 +312,6 @@ class AtomicTokenAssociationSpecs {
                         .hasToken(relationshipWith("c").decimals(3))
                         .hasToken(relationshipWith("tbd").decimals(4))
                         .logged());
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> expiredAndDeletedTokensStillAppearInContractInfo() {
-        final String contract = "Fuse";
-        final String treasury = "something";
-        final String expiringToken = "expiringToken";
-        final long lifetimeSecs = 10;
-        final long xfer = 123L;
-        AtomicLong now = new AtomicLong();
-
-        return hapiTest(
-                newKeyNamed("admin"),
-                cryptoCreate(treasury),
-                uploadInitCode(contract),
-                contractCreate(contract).gas(600_000).via(CREATION),
-                withOpContext((spec, opLog) -> {
-                    var subOp = getTxnRecord(CREATION);
-                    allRunFor(spec, subOp);
-                    var record = subOp.getResponseRecord();
-                    now.set(record.getConsensusTimestamp().getSeconds());
-                }),
-                sourcing(() -> tokenCreate(expiringToken)
-                        .decimals(666)
-                        .adminKey("admin")
-                        .treasury(treasury)
-                        .expiry(now.get() + lifetimeSecs)),
-                atomicBatch(
-                                tokenAssociate(contract, expiringToken).batchKey(BATCH_OPERATOR),
-                                cryptoTransfer(moving(xfer, expiringToken).between(treasury, contract))
-                                        .batchKey(BATCH_OPERATOR))
-                        .payingWith(BATCH_OPERATOR),
-                getAccountBalance(contract).hasTokenBalance(expiringToken, xfer),
-                getContractInfo(contract)
-                        .hasToken(relationshipWith(expiringToken).freeze(FreezeNotApplicable)),
-                sleepFor(lifetimeSecs * 1_000L),
-                getAccountBalance(contract).hasTokenBalance(expiringToken, xfer, 666),
-                getContractInfo(contract)
-                        .hasToken(relationshipWith(expiringToken).freeze(FreezeNotApplicable)),
-                tokenDelete(expiringToken),
-                getAccountBalance(contract).hasTokenBalance(expiringToken, xfer),
-                getContractInfo(contract)
-                        .hasToken(relationshipWith(expiringToken).decimals(666).freeze(FreezeNotApplicable)));
     }
 
     @HapiTest
@@ -585,34 +491,6 @@ class AtomicTokenAssociationSpecs {
                         .hasToken(relationshipWith(KNOWABLE_TOKEN))
                         .hasNoTokenRelationship(FREEZABLE_TOKEN_ON_BY_DEFAULT)
                         .logged()));
-    }
-
-    @HapiTest
-    final Stream<DynamicTest> dissociateHasExpectedSemanticsForDissociatedContracts() {
-        final var uniqToken = "UniqToken";
-        final var contract = "Fuse";
-        final var firstMeta = ByteString.copyFrom("FIRST".getBytes(StandardCharsets.UTF_8));
-        final var secondMeta = ByteString.copyFrom("SECOND".getBytes(StandardCharsets.UTF_8));
-        final var thirdMeta = ByteString.copyFrom("THIRD".getBytes(StandardCharsets.UTF_8));
-
-        return hapiTest(
-                newKeyNamed(MULTI_KEY),
-                cryptoCreate(TOKEN_TREASURY).balance(0L).maxAutomaticTokenAssociations(542),
-                uploadInitCode(contract),
-                contractCreate(contract).gas(600_000),
-                tokenCreate(uniqToken)
-                        .tokenType(NON_FUNGIBLE_UNIQUE)
-                        .initialSupply(0)
-                        .supplyKey(MULTI_KEY)
-                        .treasury(TOKEN_TREASURY),
-                mintToken(uniqToken, List.of(firstMeta, secondMeta, thirdMeta)),
-                getAccountInfo(TOKEN_TREASURY).logged(),
-                atomicBatch(
-                                tokenAssociate(contract, uniqToken).batchKey(BATCH_OPERATOR),
-                                tokenDissociate(contract, uniqToken).batchKey(BATCH_OPERATOR))
-                        .payingWith(BATCH_OPERATOR),
-                cryptoTransfer(TokenMovement.movingUnique(uniqToken, 1L).between(TOKEN_TREASURY, contract))
-                        .hasKnownStatus(TOKEN_NOT_ASSOCIATED_TO_ACCOUNT));
     }
 
     private HapiSpecOperation[] associateAndDissociateNotValidBase() {

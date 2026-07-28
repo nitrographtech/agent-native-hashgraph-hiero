@@ -13,14 +13,11 @@ import static com.hedera.services.bdd.spec.keys.SigControl.OFF;
 import static com.hedera.services.bdd.spec.keys.SigControl.ON;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getScheduleInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCall;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.scheduleSign;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.movingHbar;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.usableTxnIdNamed;
@@ -39,7 +36,6 @@ import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.exp
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedScheduleSignFullFeeUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.expectedScheduleSignNetworkFeeOnlyUsd;
 import static com.hedera.services.bdd.suites.hip1261.utils.FeesChargingUtils.validateChargedUsdWithinWithTxnSize;
-import static com.hedera.services.bdd.suites.schedule.ScheduleUtils.SIMPLE_UPDATE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TX_FEE;
@@ -201,26 +197,6 @@ public class ScheduleServiceSimpleFeesTest {
                     validateChargedAccount(scheduleCreateTxn, PAYER));
         }
 
-        @HapiTest
-        @DisplayName("ScheduleCreate - scheduled contract call charges SCHEDULE_CREATE_CONTRACT_CALL_BASE extra")
-        final Stream<DynamicTest> scheduleCreateContractCallExtraFee() {
-            return hapiTest(
-                    cryptoCreate(PAYER).balance(ONE_HUNDRED_HBARS),
-                    uploadInitCode(SIMPLE_UPDATE),
-                    contractCreate(SIMPLE_UPDATE).gas(300_000L),
-                    scheduleCreate(SCHEDULE, contractCall(SIMPLE_UPDATE))
-                            .payingWith(PAYER)
-                            .signedBy(PAYER)
-                            .via(scheduleCreateTxn),
-                    validateChargedUsdWithinWithTxnSize(
-                            scheduleCreateTxn,
-                            txnSize -> expectedScheduleCreateContractCallFullFeeUsd(Map.of(
-                                    SIGNATURES, 1L,
-                                    KEYS, 0L,
-                                    PROCESSING_BYTES, (long) txnSize)),
-                            0.1),
-                    validateChargedAccount(scheduleCreateTxn, PAYER));
-        }
     }
 
     @Nested

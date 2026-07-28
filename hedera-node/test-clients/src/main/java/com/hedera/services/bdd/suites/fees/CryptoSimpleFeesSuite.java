@@ -3,8 +3,6 @@ package com.hedera.services.bdd.suites.fees;
 
 import static com.hedera.services.bdd.junit.TestTags.SIMPLE_FEES;
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
-import static com.hedera.services.bdd.spec.transactions.TxnUtils.accountAllowanceHook;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoApproveAllowance;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
@@ -12,7 +10,6 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDeleteAll
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.mintToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.uploadInitCode;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.*;
 import static com.hedera.services.bdd.suites.HapiSuite.*;
@@ -25,7 +22,6 @@ import static com.hedera.services.bdd.suites.hip1261.utils.SimpleFeesScheduleCon
 import static com.hedera.services.bdd.suites.hip1261.utils.SimpleFeesScheduleConstantsInUsd.NODE_BASE_FEE_USD;
 import static com.hedera.services.bdd.suites.hip1261.utils.SimpleFeesScheduleConstantsInUsd.SIGNATURE_FEE_AFTER_MULTIPLIER;
 import static com.hedera.services.bdd.suites.hip1261.utils.SimpleFeesScheduleConstantsInUsd.SIGNATURE_FEE_USD;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static com.hederahashgraph.api.proto.java.TokenType.NON_FUNGIBLE_UNIQUE;
 import static java.util.List.*;
 
@@ -216,220 +212,6 @@ public class CryptoSimpleFeesSuite {
                             validateChargedSimpleFees("Simple Fees", "updateAccountCombinedTxn", expectedFee, 1.0));
                 }),
                 overriding("fees.simpleFeesEnabled", "false"));
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto create with single hook")
-    final Stream<DynamicTest> cryptoCreateWithSingleHook() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        cryptoCreate(PAYER).balance(ONE_HUNDRED_HBARS),
-                        cryptoCreate("accountWithHook")
-                                .balance(0L)
-                                .payingWith(PAYER)
-                                .withHooks(accountAllowanceHook(1L, HOOK_CONTRACT))
-                                .via("createWithHookTxn")
-                                .hasKnownStatus(SUCCESS)),
-                "createWithHookTxn",
-                1.05,
-                1.0,
-                1.05,
-                1.0);
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto create with two hooks")
-    final Stream<DynamicTest> cryptoCreateWithTwoHooks() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        cryptoCreate(PAYER).balance(ONE_HUNDRED_HBARS),
-                        cryptoCreate("accountWith2Hooks")
-                                .payingWith(PAYER)
-                                .withHooks(
-                                        accountAllowanceHook(10L, HOOK_CONTRACT),
-                                        accountAllowanceHook(11L, HOOK_CONTRACT))
-                                .via("createWith2HooksTxn")
-                                .hasKnownStatus(SUCCESS)),
-                "createWith2HooksTxn",
-                2.05,
-                1.0,
-                2.05,
-                1.0);
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto create with five hooks")
-    final Stream<DynamicTest> cryptoCreateWithFiveHooks() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        cryptoCreate(PAYER).balance(THOUSAND_HBAR),
-                        cryptoCreate("accountWith5Hooks")
-                                .balance(ONE_HUNDRED_HBARS)
-                                .payingWith(PAYER)
-                                .withHooks(
-                                        accountAllowanceHook(20L, HOOK_CONTRACT),
-                                        accountAllowanceHook(21L, HOOK_CONTRACT),
-                                        accountAllowanceHook(22L, HOOK_CONTRACT),
-                                        accountAllowanceHook(23L, HOOK_CONTRACT),
-                                        accountAllowanceHook(24L, HOOK_CONTRACT))
-                                .via("createWith5HooksTxn")
-                                .hasKnownStatus(SUCCESS)),
-                "createWith5HooksTxn",
-                5.05,
-                1.0,
-                5.05,
-                1.0);
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto create with hooks and key")
-    final Stream<DynamicTest> cryptoCreateWithHooksAndKeys() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        newKeyNamed("accountKey"),
-                        cryptoCreate(PAYER).balance(THOUSAND_HBAR),
-                        cryptoCreate("accountWithHooksKeys")
-                                .key("accountKey")
-                                .payingWith(PAYER)
-                                .withHooks(
-                                        accountAllowanceHook(30L, HOOK_CONTRACT),
-                                        accountAllowanceHook(31L, HOOK_CONTRACT))
-                                .via("createWithHooksKeysTxn")
-                                .hasKnownStatus(SUCCESS)),
-                "createWithHooksKeysTxn",
-                2.05,
-                1.0,
-                2.05,
-                1.0);
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto update with single hook creation")
-    final Stream<DynamicTest> cryptoUpdateWithSingleHook() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        cryptoCreate(PAYER).balance(THOUSAND_HBAR),
-                        cryptoCreate("accountToUpdate").payingWith(PAYER),
-                        cryptoUpdate("accountToUpdate")
-                                .payingWith("accountToUpdate")
-                                .signedBy("accountToUpdate")
-                                .withHooks(accountAllowanceHook(100L, HOOK_CONTRACT))
-                                .via("updateWithHookTxn")
-                                .fee(ONE_HUNDRED_HBARS)
-                                .hasKnownStatus(SUCCESS)),
-                "updateWithHookTxn",
-                1.00022,
-                1.0,
-                1.00022,
-                1.0);
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto update with multiple hook")
-    final Stream<DynamicTest> cryptoUpdateWithMultipleHooks() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        cryptoCreate("accountToUpdate").balance(THOUSAND_HBAR),
-                        cryptoUpdate("accountToUpdate")
-                                .payingWith("accountToUpdate")
-                                .signedBy("accountToUpdate")
-                                .fee(ONE_HUNDRED_HBARS)
-                                .withHooks(
-                                        accountAllowanceHook(101L, HOOK_CONTRACT),
-                                        accountAllowanceHook(102L, HOOK_CONTRACT))
-                                .via("updateWith2HooksTxn")
-                                .hasKnownStatus(SUCCESS)),
-                "updateWith2HooksTxn",
-                2.00022,
-                1.0,
-                2.00022,
-                1.0);
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto update with hook deletion")
-    final Stream<DynamicTest> cryptoUpdateWithHookDeletion() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        cryptoCreate(PAYER).balance(THOUSAND_HBAR),
-                        cryptoCreate("accountWithHook")
-                                .payingWith(PAYER)
-                                .withHooks(accountAllowanceHook(103L, HOOK_CONTRACT)),
-                        cryptoUpdate("accountWithHook")
-                                .payingWith("accountWithHook")
-                                .signedBy("accountWithHook")
-                                .removingHooks(103L)
-                                .via("updateDeleteHookTxn")
-                                .fee(ONE_HUNDRED_HBARS)
-                                .hasKnownStatus(SUCCESS)),
-                "updateDeleteHookTxn",
-                1.00022,
-                1.0,
-                1.00022,
-                1.0);
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto update with hook creation and deletion")
-    final Stream<DynamicTest> cryptoUpdateWithHookCreationAndDeletion() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        cryptoCreate("accountWithHook")
-                                .balance(THOUSAND_HBAR)
-                                .withHooks(accountAllowanceHook(104L, HOOK_CONTRACT)),
-                        cryptoUpdate("accountWithHook")
-                                .payingWith("accountWithHook")
-                                .signedBy("accountWithHook")
-                                .withHooks(accountAllowanceHook(105L, HOOK_CONTRACT))
-                                .removingHooks(104L)
-                                .fee(ONE_HUNDRED_HBARS)
-                                .via("updateCreateDeleteHookTxn")
-                                .hasKnownStatus(SUCCESS)),
-                "updateCreateDeleteHookTxn",
-                2.00022,
-                1.0,
-                2.00022,
-                1.0);
-    }
-
-    @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled", "hooks.hooksEnabled"})
-    @DisplayName("crypto update with hook and key change")
-    final Stream<DynamicTest> cryptoUpdateWithHookAndKey() {
-        return compareSimpleToOld(
-                () -> Arrays.asList(
-                        uploadInitCode(HOOK_CONTRACT),
-                        contractCreate(HOOK_CONTRACT).gas(5_000_000),
-                        newKeyNamed("newKey"),
-                        cryptoCreate("accountToUpdate").balance(THOUSAND_HBAR),
-                        cryptoUpdate("accountToUpdate")
-                                .key("newKey")
-                                .payingWith("accountToUpdate")
-                                .signedBy("accountToUpdate", "newKey")
-                                .withHooks(accountAllowanceHook(106L, HOOK_CONTRACT))
-                                .via("updateHookAndKeyTxn")
-                                .fee(ONE_HUNDRED_HBARS)
-                                .hasKnownStatus(SUCCESS)),
-                "updateHookAndKeyTxn",
-                1.00122,
-                1.0,
-                1.00122,
-                1.0);
     }
 
     @LeakyHapiTest(overrides = {"fees.simpleFeesEnabled"})
