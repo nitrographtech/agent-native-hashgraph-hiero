@@ -1,5 +1,10 @@
 # P07-11C Executable Boundary Manifest
 
+> Historical phase manifest. Its eighteen-site post-P07-11C boundary was
+> superseded by P07-11D: ten lifecycle/query sites were removed and eight
+> intentional rejection constructions remain. See
+> `P07_11D_LIFECYCLE_RECONNECT_MANIFEST.md`.
+
 ## Authority and scope
 
 This manifest is the implementation authority for P07-11C. It begins at

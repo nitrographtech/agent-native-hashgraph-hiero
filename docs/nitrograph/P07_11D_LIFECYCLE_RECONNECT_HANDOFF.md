@@ -1,5 +1,9 @@
 # P07-11D Lifecycle and Reconnect Handoff
 
+> Completed handoff. Final dispositions and the eight-site rejection boundary
+> are recorded in `P07_11D_LIFECYCLE_RECONNECT_MANIFEST.md`; the obsolete
+> `P06aHistoricalStateReconnectTest` producer no longer exists.
+
 ## Boundary
 
 P07-11C deliberately leaves the lifecycle, reconnect, restart, saved-state,

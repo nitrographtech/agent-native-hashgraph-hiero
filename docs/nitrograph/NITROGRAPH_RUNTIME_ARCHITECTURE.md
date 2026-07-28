@@ -119,3 +119,18 @@ multi-node reconnect fixture or mutated to supply a four-node roster. The additi
 in `app-service-contract` with unchanged `com.hedera.node.app.service.contract.impl.schemas`
 FQNs. Their neutral parent schemas continue owning persisted state definitions. Test-client EVM
 conversion helpers remain tooling-only; neither Besu nor Tuweni enters the neutral contract API.
+
+## P07-11 test-client execution boundary
+
+P07-11A through P07-11D remove successful executable contract and Ethereum
+ownership from registered HAPI suites, including contract setup embedded in
+native suites and lifecycle tests. Lifecycle and reconnect validation use
+retained native operations plus immutable authenticated Fixture B; historical
+contract-shaped records and state remain parser inputs, never live setup.
+
+The suite-level boundary is eight intentional negative-path constructors:
+seven fail at `INVALID_TRANSACTION_BODY` before execution and one produces an
+`INVALID_CONTRACT_ID` record with explicit fee and transfer validation. There
+are zero successful executable suite sites, zero executable local queries, and
+zero unclassified sites. Historical contract translators and PBJ/protobuf
+types remain compatibility readers and do not restore runtime execution.
