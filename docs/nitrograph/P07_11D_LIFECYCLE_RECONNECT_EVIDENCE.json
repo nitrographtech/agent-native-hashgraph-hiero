@@ -1,0 +1,160 @@
+{
+  "phase": "P07-11D",
+  "status": "CLOSED_PENDING_EXACT_HEAD_CI",
+  "starting_commit": "c32d6b5ce7041f809a31c761b6d497c1f14bfbdf",
+  "manifest_commit": "f150c02e0429cee97e9f7bb521c8420e543864c2",
+  "source_commit": "3793c077802d67081a6e6ff11f6c57adfba3818d",
+  "evidence_commit": null,
+  "pull_request": 30,
+  "checksums": {
+    "handoff_sha256": "db74b854cb03864ba22305e1cc28510f79141ce34a4eb785a3a9175bc2287d0e",
+    "manifest_sha256_before_completion_note": "507f16c0d00d5c70eaa3c793a8dabe9cb6806a7e68900d3a28483312173afaa1",
+    "completed_manifest_sha256": "d86fb87432dc108f4ce9e20627a3eda2a3c3d6505a9a36634f1af1262b53c88f",
+    "p07_11c_evidence_sha256": "be0542ae64b44880ed6b1c4cca15c428e1ab8f3c55a99b4da1bdaf69274f4936",
+    "fixture_b_archive_sha256": "0fd75fd4da408787ddef6b5a73300ce8018e330eb2f3a8e98d11ef9fbceceaa3",
+    "fixture_b_manifest_sha256": "967798ff82aad71ac7b9f6b4464279479f4e2a201098a02995cfd6cd70e30439",
+    "protected_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+  },
+  "implementation": {
+    "initial_sites": 12,
+    "files_modified": 3,
+    "files_deleted": 1,
+    "documentation_files_modified_before_evidence": 2,
+    "insertions_before_evidence": 123,
+    "deletions_before_evidence": 171,
+    "dispositions": {
+      "LifecycleTest_contract_branch": "SPLIT_REQUIRED_COMPLETED",
+      "P06aHistoricalStateReconnectTest_successful_setup_sites": "REPLACED_WITH_IMMUTABLE_FIXTURE",
+      "P06aHistoricalStateReconnectTest_duplicate_rejection_sites": "REMOVE_OBSOLETE_LIFECYCLE_ROOT_COMPLETED",
+      "AuthenticatedHistoricalFixtureConsumerTest_sites": "PRESERVE_MINIMAL_REJECTION_UNCHANGED",
+      "DiverseStateValidation_local_query": "REWRITE_HISTORICAL_QUERY_ASSERTION_COMPLETED"
+    },
+    "lifecycle_invariants": {
+      "retained_callers": [
+        "TssCutoverTest",
+        "WrapsHandoffsTest"
+      ],
+      "retained_state_categories": [
+        "account",
+        "file",
+        "topic",
+        "fungible token",
+        "NFT",
+        "schedule"
+      ],
+      "removed_state_categories": [
+        "live contract creation",
+        "contract info",
+        "contract local execution",
+        "contract bytecode query"
+      ]
+    }
+  },
+  "fixture_b": {
+    "release": "p07-four-node-postwrite-v065-storage424242-v1",
+    "source_commit": "64da043f766da29d0fd3e20e3f51051fdd31f5a1",
+    "state_round": 2143,
+    "state_root": "0c3b973439f127093ad1d64bd9777d9a365a6d18522e6e46c6bd0fa41fa9f4e8eba8b4eac33b0cda2bfa82cf175a0894",
+    "files": 394,
+    "four_node_equal_weight_roster": true,
+    "private_material": 0,
+    "storage_cardinality": 1,
+    "storage_decoded_value": 424242,
+    "bytecode_cardinality": 2,
+    "evm_hook_states_cardinality": 1,
+    "lambda_storage_cardinality": 1,
+    "local_archive_and_manifest_verification": "PASS",
+    "governance_policy": "PASS",
+    "governance_intentional_failure_controls": "PASS"
+  },
+  "reconnect_certification": {
+    "result": "PASS_BY_EXACT_ARTIFACT_INPUT_AND_HARNESS_EQUIVALENCE",
+    "basis": "P07-11D changes test-client lifecycle ownership only. Production source, the distribution artifact, immutable Fixture B, and the external installer/orchestrator reconnect harness are unchanged.",
+    "authoritative_prior_evidence": "docs/nitrograph/P07_10_PR28_FINAL_VALIDATION_EVIDENCE.json",
+    "learner": 2,
+    "teacher": 1,
+    "old_learner_round": 4975,
+    "transferred_round": 6233,
+    "behind_timestamp": "2026-07-25T13:38:34.985-07:00",
+    "teacher_selected_timestamp": "2026-07-25T13:38:35.020-07:00",
+    "transfer_complete_timestamp": "2026-07-25T13:38:36.085-07:00",
+    "state_validated_timestamp": "2026-07-25T13:38:36.087-07:00",
+    "learner_active_timestamp": "2026-07-25T13:38:39.320-07:00",
+    "state_synchronization": "PASS",
+    "post_reconnect_native_operations": "PASS",
+    "protected_maps": "PASS",
+    "learner_log_sha256": "6eccedc47144f5ab0c390ffe1c5d30a9c5683c911575b2a629446332de42bc8c"
+  },
+  "executable_census": {
+    "before": {
+      "successful_lifecycle_setup": 4,
+      "duplicate_lifecycle_rejection": 5,
+      "authenticated_fixture_rejection": 2,
+      "local_query": 1,
+      "p07_11c_minimal_rejection": 6,
+      "total": 18
+    },
+    "removed": 10,
+    "after": {
+      "successful_lifecycle_setup": 0,
+      "local_query": 0,
+      "authenticated_fixture_rejection": 2,
+      "p07_11c_minimal_rejection": 6,
+      "total": 8,
+      "unclassified": 0
+    },
+    "remaining_owners": {
+      "AuthenticatedHistoricalFixtureConsumerTest": 2,
+      "HistoricalContractExecutionRejection": 5,
+      "Issue1765Suite": 1
+    },
+    "new_wrappers": 0
+  },
+  "validation": {
+    "environment": {
+      "jdk": "Eclipse Temurin 25.0.2",
+      "gradle": "9.5.0",
+      "date": "2026-07-27"
+    },
+    "compileJava": "PASS",
+    "compileTestJava": "PASS",
+    "git_diff_check": "PASS",
+    "targeted_fixture_checksum": "PASS",
+    "targeted_fixture_governance": "PASS",
+    "targeted_fixture_corruption_and_policy_controls": "PASS",
+    "targeted_lifecycle_and_reconnect": "PASS_BY_EXACT_ARTIFACT_INPUT_AND_HARNESS_EQUIVALENCE",
+    "full_test": {
+      "command": "./gradlew :test-clients:cleanTest :test-clients:test --no-daemon",
+      "tests_completed": 142,
+      "passed": 140,
+      "skipped": 1,
+      "failed": 1,
+      "p07_11d_attributable_failures": 0,
+      "sole_failure": "StreamValidationTest.streamsAreValid",
+      "account": "0.0.801",
+      "expected": 3207432793891461,
+      "observed": 1958552273434530,
+      "classification": "DOCUMENTED_PRE_EXISTING_TERMINAL_RECORD_STREAM_RECONCILIATION_DEFECT",
+      "test_xml_sha256": "6dd340bd3d88239f65a9c1f9513e352ac0768470ce426674f511a70a35c7d16f"
+    },
+    "spotlessJavaCheck": {
+      "result": "FAIL_PRE_EXISTING_UNRELATED",
+      "reported_files": 34,
+      "p07_11d_modified_file_violations": 0,
+      "unrelated_files_reformatted": 0
+    }
+  },
+  "exact_head_ci": {
+    "run_id": null,
+    "tested_commit": null,
+    "status": "PENDING"
+  },
+  "scope_guards": {
+    "production_source_changed": false,
+    "core_hapi_operations_changed": false,
+    "p07_11b_or_p07_11c_source_restored": false,
+    "stream_validation_weakened": false,
+    "mirror_validation_started": false,
+    "pr_readiness_or_merge_started": false
+  }
+}

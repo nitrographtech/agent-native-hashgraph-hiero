@@ -107,3 +107,21 @@ contract maps are validated through authenticated fixture inventory instead.
 The eight remaining constructions are all intentional rejection probes with no
 successful executable setup. There is no remaining successful lifecycle,
 reconnect, or historical-query construction.
+
+## Implementation result
+
+Implemented at `3793c07780`:
+
+- `LifecycleTest` retains its real lifecycle callers and native account, file,
+  topic, token, NFT, and schedule assertions; its contract branch is gone.
+- `P06aHistoricalStateReconnectTest` is deleted. Its live generator is replaced
+  by authenticated Fixture B, while the unchanged external harness remains the
+  owner of genuine teacher/learner reconnect certification.
+- `AuthenticatedHistoricalFixtureConsumerTest` is unchanged and retains its
+  two setup-independent rejection probes.
+- `DiverseStateValidation` retains broad file-state validation but no longer
+  performs contract bytecode or local-execution queries.
+
+The post-change scan has eight sites, all intentional rejection constructions:
+two in `AuthenticatedHistoricalFixtureConsumerTest`, five in
+`HistoricalContractExecutionRejection`, and one in `Issue1765Suite`.
