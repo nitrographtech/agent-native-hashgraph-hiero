@@ -1,10 +1,10 @@
 {
   "phase": "P07-11D",
-  "status": "CLOSED_PENDING_EXACT_HEAD_CI",
+  "status": "CLOSED",
   "starting_commit": "c32d6b5ce7041f809a31c761b6d497c1f14bfbdf",
   "manifest_commit": "f150c02e0429cee97e9f7bb521c8420e543864c2",
   "source_commit": "3793c077802d67081a6e6ff11f6c57adfba3818d",
-  "evidence_commit": null,
+  "evidence_commit": "2024ee47786e9d8d0fe46eff6f3899729048bbfd",
   "pull_request": 30,
   "checksums": {
     "handoff_sha256": "db74b854cb03864ba22305e1cc28510f79141ce34a4eb785a3a9175bc2287d0e",
@@ -145,9 +145,12 @@
     }
   },
   "exact_head_ci": {
-    "run_id": null,
-    "tested_commit": null,
-    "status": "PENDING"
+    "run_id": 30318718353,
+    "tested_commit": "2024ee47786e9d8d0fe46eff6f3899729048bbfd",
+    "status": "PASS",
+    "completed_at": "2026-07-28T01:07:47Z",
+    "required_job": "native-agent",
+    "required_job_result": "PASS"
   },
   "scope_guards": {
     "production_source_changed": false,
