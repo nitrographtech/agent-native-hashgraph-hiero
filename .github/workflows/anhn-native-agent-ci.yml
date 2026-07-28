@@ -67,6 +67,11 @@ jobs:
           tools/p07/verify-authenticated-fixture-governance.sh
           tools/p07/test-authenticated-fixture-governance-policy.sh
 
+      - name: Enforce P07 final executable HAPI boundary
+        run: |
+          tools/p07/verify-execution-only-hapi-suites-removed.sh
+          tools/p07/test-execution-only-hapi-suite-policy.sh
+
       - name: Enforce protected-layer boundary
         run: |
           test -z "$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- platform-sdk)"
