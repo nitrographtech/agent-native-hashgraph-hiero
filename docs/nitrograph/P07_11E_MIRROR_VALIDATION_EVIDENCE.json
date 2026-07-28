@@ -6,26 +6,59 @@
   "manifest_commit": "db4a7153e7b320cf46f85cd1f1bfba23402dcd3b",
   "documentation_reconciliation_commit": "61e21590318cd4bf3a114dce09df2d85635b7fad",
   "evidence_commit": "9c920c1b3545f3d84659782a248096b7c4d76e06",
-  "final_certification_head": "recorded by the certification-only commit containing this update",
+  "final_certification_head": "e3cb283947ec2ee77ef5eb6df4a4787a2aaf38c8",
   "pull_request": 30,
+  "pre_merge_correction": {
+    "starting_commit": "340996ebaa021d43057ca9606b2873957f4380bd",
+    "verifier_commit": "9c5b93702ccc2d0ef12721259e3affd132b6e7d8",
+    "committed_importer_harness_commit": "c697f826cbcb199f479951f3b59fb4bee3ddfa39",
+    "harness_hardening_commit": "689e32ac70db7484fc43b7dbac178c4ffbb710df",
+    "immutable_native_corpus_commit": "e3cb283947ec2ee77ef5eb6df4a4787a2aaf38c8",
+    "historical_native_counts": {
+      "record_files": 3698,
+      "transactions": 8968,
+      "classification": "SUPERSEDED_NONDETERMINISTIC_LOCAL_OBSERVATION",
+      "ci_run_30322277799_generated_or_retained_corpus": false,
+      "ci_artifacts": 0
+    },
+    "replacement_contract": {
+      "release": "p07-native-corpus-689e32ac-v1",
+      "asset": "p07-native-corpus-689e32ac-v1.tar.gz",
+      "asset_id": 492796338,
+      "source_commit": "689e32ac70db7484fc43b7dbac178c4ffbb710df",
+      "archive_sha256": "f33b98c822a6f32e6c783fd338337df7bd31ca030b4c780369a01e848a4850e0",
+      "manifest_path": "tools/p07/mirror/native-corpus/MANIFEST.sha256.tsv",
+      "manifest_sha256": "e6b231fc858ba8d3dd510c1a360874df07f7630091b4ffe4e980a8a5196bf1ef",
+      "feature_inventory_path": "tools/p07/mirror/native-corpus/feature-inventory.tsv",
+      "feature_inventory_sha256": "6f0afb0b895e1966e7af81e9a7159e2f0bd194b661254df1f092cb80024aac51",
+      "retrieval_command": "tools/p07/retrieve-native-mirror-corpus.sh EMPTY_OUTPUT_DIRECTORY",
+      "import_command": "P07_MIRROR_CORPORA=native MIRROR_IMPORTER_DIR=PINNED_CHECKOUT P07_NATIVE_RECORDS=EXTRACTED_ROOT/recordStreams tools/p07/run-pinned-mirror-importer-regression.sh",
+      "independent_retrievals_with_identical_archive_and_manifest": 2,
+      "missing_file_control": "PASS_EXPECTED_FAILURE",
+      "prohibited_sidecar_control": "PASS_EXPECTED_FAILURE"
+    }
+  },
   "checksums": {
     "p07_11d_manifest_sha256": "d86fb87432dc108f4ce9e20627a3eda2a3c3d6505a9a36634f1af1262b53c88f",
     "p07_11d_evidence_sha256": "3663761e79d222b2598ebc1fc6a450cadd6a9b878b910c9e5cc65d40f896ad54",
     "p07_11e_manifest_sha256": "61a6223a131911f2e9af1aba3c4e3861fc3b0fdc8142f0b2edeea1071c3f964d",
-    "official_importer_harness_sha256": "cef901903071a5e61155df31d74ff4aa64e5b1ba0ff280bd9da987db4cd134ee",
+    "official_importer_harness_sha256": "5cd7e47b5578aebac33efefed27a040c865c1995b0a01eee7db5a4f6cb1e5da0",
+    "mirror_runner_sha256": "25af4b89a6d88b83dc9472f6d7e1d79cc7d5468cc1f18d911bbeabbf9e388d59",
+    "p07_11a_verifier_sha256": "134e814905aaf1d29a2a65663a65ddbf4730a744988a834967d0794f572981d5",
     "fixture_b_archive_sha256": "0fd75fd4da408787ddef6b5a73300ce8018e330eb2f3a8e98d11ef9fbceceaa3",
     "fixture_b_manifest_sha256": "967798ff82aad71ac7b9f6b4464279479f4e2a201098a02995cfd6cd70e30439",
     "fixture_b_protected_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
   },
   "scope": {
     "production_source_changed": false,
-    "test_source_changed": false,
+    "test_source_changed": true,
+    "test_source_change": "committed pinned mirror importer regression harness only; no chain test source changed",
     "schemas_or_serializers_changed": false,
     "fixtures_changed": false,
     "reconnect_harness_changed": false,
     "intentional_rejection_probes_changed": false,
     "stream_validation_changed": false,
-    "documentation_only": true
+    "documentation_only": false
   },
   "executable_census": {
     "successful_contract_create": 0,
@@ -92,7 +125,7 @@
       "attached_sidecar_records": 5,
       "semantic_sidecars_from_certified_corpus": 7,
       "complete_blocks": 139,
-      "fresh_test_xml_sha256": "90a8d6bae888035de6c48036dd2665d12bd29546b8724bbac9b1f670c237b167"
+      "fresh_test_xml_sha256": "0805949ec4ad6fe1cd4bcebd7cfd96916287d6242b7e1e494e11a51587ca435e"
     },
     "fixture_b": {
       "result": "PASS",
@@ -103,9 +136,9 @@
       "contract_actions": 0,
       "sidecars": 4,
       "complete_blocks": 131,
-      "fresh_test_xml_sha256": "b88e946b2871dc34605b7dff67f5204de74ee98cf08b9d4f2999e6d8cd931ce7"
+      "fresh_test_xml_sha256": "43a85f688afa9b6ec46a2514b21d1d1341ea0c248dc5e56c8071ee815eff819f"
     },
-    "exact_head_clean_full_test_runtime": {
+    "exact_head_clean_full_test_runtime_historical_observation": {
       "result": "PASS",
       "record_files": 3698,
       "transactions": 8968,
@@ -114,7 +147,38 @@
       "contract_actions": 0,
       "execution_sidecars": 0,
       "fresh_test_xml_sha256": "4531e2ababd0a1e184f70128b9c9092760f7cff21248ef0b5955f9287388ac6e",
-      "log_classification": "RECORD_SHAPED_COMPATIBILITY_OR_NATIVE_OUTPUT_WITHOUT_CONTRACT_RESULT_ACTION_OR_SIDECAR_ENVELOPE"
+      "log_classification": "RECORD_SHAPED_COMPATIBILITY_OR_NATIVE_OUTPUT_WITHOUT_CONTRACT_RESULT_ACTION_OR_SIDECAR_ENVELOPE",
+      "certification_status": "SUPERSEDED_AS_NONDETERMINISTIC_OBSERVATION"
+    },
+    "immutable_native_runtime_corpus": {
+      "result": "PASS",
+      "record_files": 3639,
+      "transactions": 8841,
+      "contract_results": 0,
+      "contract_logs": 16,
+      "contract_actions": 0,
+      "execution_sidecars": 0,
+      "fresh_test_xml_sha256": "2982a16a0d707d8c6063b585e5f0ff1d1f70c1af16c5b1fdddb02c79df297aa4",
+      "importer_summary_sha256": "7f9536a0a5064cf2f53718415344df0a44eef74ddbbc173a51a688f9566b5083",
+      "feature_counts": {
+        "CRYPTOCREATEACCOUNT": 1010,
+        "CRYPTOTRANSFER": 6900,
+        "TOKENCREATION": 13,
+        "TOKENMINT": 5,
+        "TOKENASSOCIATE": 4,
+        "CONSENSUSCREATETOPIC": 4,
+        "CONSENSUSSUBMITMESSAGE": 1,
+        "SCHEDULECREATE": 96,
+        "SCHEDULESIGN": 65,
+        "FILEUPDATE": 94,
+        "NODEUPDATE": 72,
+        "ATOMIC_BATCH": 5,
+        "ALIASES": 2,
+        "TOKEN_TRANSFERS": 13,
+        "CUSTOM_FEES": 15,
+        "STAKING_REWARDS": 1,
+        "CHARGED_FEES": 148
+      }
     },
     "certified_runtime_block_corpus": {
       "basis": "unchanged production artifact and certified P07-10 runtime corpus",
@@ -158,6 +222,33 @@
     "compileTestJava": "PASS",
     "git_diff_check": "PASS",
     "targeted_mirror_importer": "PASS",
+    "p07_11a_final_boundary_verifier": "PASS",
+    "p07_11a_intentional_controls": {
+      "real_repository": "PASS",
+      "allowed_eight_rejection_probes": "PASS",
+      "restored_ContractUpdateSuite": "EXPECTED_FAILURE",
+      "restored_ContractRecordsSanityCheckSuite": "EXPECTED_FAILURE",
+      "restored_classic_call_package": "EXPECTED_FAILURE",
+      "contract_create_injection": "EXPECTED_FAILURE",
+      "contract_call_injection": "EXPECTED_FAILURE",
+      "ethereum_execution_injection": "EXPECTED_FAILURE",
+      "local_query_injection": "EXPECTED_FAILURE",
+      "misclassified_rejection_boundary": "EXPECTED_FAILURE"
+    },
+    "mirror_controls": {
+      "fixture_expectation_corruption": "EXPECTED_FAILURE",
+      "two_authenticated_native_retrievals": "PASS_IDENTICAL",
+      "native_missing_file": "EXPECTED_FAILURE",
+      "native_execution_sidecar_injection": "EXPECTED_FAILURE"
+    },
+    "ci_workflow": ".github/workflows/anhn-native-agent-ci.yml",
+    "ci_steps": [
+      "Enforce P07 final executable HAPI boundary",
+      "Retrieve and authenticate P07 mirror corpora",
+      "Exercise native corpus retrieval and mutation controls",
+      "Import Fixture A, Fixture B, and immutable native corpus",
+      "Exercise importer expectation corruption control"
+    ],
     "targeted_fixture_and_reconnect": "PASS",
     "full_test": {
       "command": "./gradlew :test-clients:cleanTest :test-clients:test --no-daemon",
@@ -175,7 +266,7 @@
     },
     "spotlessJavaCheck": {
       "result": "FAIL_PRE_EXISTING_UNRELATED",
-      "reported_files": 34,
+      "reported_files": 33,
       "p07_11e_modified_java_files": 0,
       "p07_11e_attributable_violations": 0,
       "unrelated_files_reformatted": 0
@@ -203,18 +294,20 @@
     "final_phase_labels_reconciled": true
   },
   "exact_head_ci": {
-    "run_id": 30321465453,
-    "tested_commit": "9c920c1b3545f3d84659782a248096b7c4d76e06",
+    "run_id": 30369247829,
+    "tested_commit": "e3cb283947ec2ee77ef5eb6df4a4787a2aaf38c8",
     "status": "PASS",
-    "required_job": "native-agent",
-    "required_job_result": "PASS",
-    "completed_at": "2026-07-28T02:08:00Z"
+    "required_jobs": {
+      "native-agent": "PASS",
+      "p07-mirror-certification": "PASS"
+    },
+    "completed_at": "2026-07-28T14:54:00Z"
   },
   "pull_request_readiness": {
     "title_and_description_reviewed": true,
     "phase_evidence_linked": true,
     "known_external_defects_disclosed": true,
-    "draft": true,
+    "draft": false,
     "mergeable": true,
     "local_remote_heads_match_at_evidence_head": true,
     "worktree_clean_at_evidence_head": true,

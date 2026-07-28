@@ -60,10 +60,20 @@ suite execution roots.
 - Fixture B proves historical results (`3`), logs (`1`), no actions, semantic
   sidecars (`4`), complete blocks (`131`), and protected state inventory remain
   ingestible after the post-write boundary.
-- The certified native runtime corpus proves zero executed contract results,
-  zero actions, zero execution sidecars, retained native records, and valid
-  blocks. P07-11E additionally uses the clean exact-head full HAPI stream run
-  for broad retained-native record validation.
+- The immutable native runtime corpus is release
+  `p07-native-corpus-689e32ac-v1`, archive SHA-256
+  `f33b98c822a6f32e6c783fd338337df7bd31ca030b4c780369a01e848a4850e0`.
+  Its committed per-file manifest proves `3639` authenticated record files;
+  the pinned importer proves `8841` transactions, zero executed contract
+  results, zero actions, zero execution sidecars, and positive account, alias,
+  token, association, custom-fee, topic, schedule, file, node, staking,
+  atomic-batch, and charged-fee coverage.
+- The earlier `3698/8968` totals are retained only as a historical local
+  observation. CI run `30322277799` did not generate or archive that corpus,
+  and two later clean runs produced different populations. The immutable
+  release supersedes incidental full-test scheduling as the certification
+  input; provenance is documented in
+  `tools/p07/mirror/native-corpus/PROVENANCE.md`.
 
 ## Readiness gates
 
