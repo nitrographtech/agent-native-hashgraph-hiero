@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.hiero.mirror.common.domain.transaction.BlockFile;
 import org.hiero.mirror.common.domain.transaction.RecordFile;
 import org.hiero.mirror.common.domain.transaction.SidecarFile;
+import org.hiero.mirror.common.domain.transaction.TransactionType;
 import org.hiero.mirror.importer.ImporterIntegrationTest;
 import org.hiero.mirror.importer.domain.StreamFileData;
 import org.hiero.mirror.importer.downloader.block.BlockFileTransformer;
@@ -65,6 +66,21 @@ class P06bFixtureRegressionTest extends ImporterIntegrationTest {
         var contractResults = count("contract_result");
         var contractLogs = count("contract_log");
         var contractActions = count("contract_action");
+        var requiredTypes = System.getenv().getOrDefault("P07_REQUIRED_TRANSACTION_TYPES", "");
+        if (!requiredTypes.isBlank()) {
+            for (var name : requiredTypes.split(",")) {
+                var type = TransactionType.valueOf(name);
+                var count = jdbcOperations.queryForObject(
+                        "select count(*) from transaction where type = ?", Long.class, type.getProtoId());
+                System.out.printf("P07_FEATURE=%s COUNT=%d%n", name, count);
+                assertThat(count).as("required native transaction type %s", name).isPositive();
+            }
+            assertPositive("ALIASES", "select count(*) from entity where alias is not null");
+            assertPositive("TOKEN_TRANSFERS", "select count(*) from token_transfer");
+            assertPositive("CUSTOM_FEES", "select count(*) from custom_fee");
+            assertPositive("STAKING_REWARDS", "select count(*) from staking_reward_transfer");
+            assertPositive("CHARGED_FEES", "select count(*) from transaction where charged_tx_fee > 0");
+        }
         System.out.printf(
                 "P07_RECORDS=%d TRANSACTIONS=%d RESULTS=%d LOGS=%d ACTIONS=%d SIDECARS=%d%n",
                 persistedRecords, transactions, contractResults, contractLogs, contractActions, sidecars);
@@ -129,6 +145,12 @@ class P06bFixtureRegressionTest extends ImporterIntegrationTest {
 
     private long count(String table) {
         return jdbcOperations.queryForObject("select count(*) from " + table, Long.class);
+    }
+
+    private void assertPositive(String feature, String query) {
+        var count = jdbcOperations.queryForObject(query, Long.class);
+        System.out.printf("P07_FEATURE=%s COUNT=%d%n", feature, count);
+        assertThat(count).as("required native feature %s", feature).isPositive();
     }
 
     private static boolean hasSignature(Path path) {

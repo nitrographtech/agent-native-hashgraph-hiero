@@ -75,3 +75,56 @@ jobs:
       - name: Enforce protected-layer boundary
         run: |
           test -z "$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- platform-sdk)"
+
+  p07-mirror-certification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Check out pinned official mirror importer
+        run: |
+          git init "$RUNNER_TEMP/hiero-mirror-node"
+          git -C "$RUNNER_TEMP/hiero-mirror-node" remote add origin https://github.com/hiero-ledger/hiero-mirror-node.git
+          git -C "$RUNNER_TEMP/hiero-mirror-node" fetch --depth=1 origin 834a7a1cb9204b02c192098c60654d08eb85bc2a
+          git -C "$RUNNER_TEMP/hiero-mirror-node" checkout --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/hiero-mirror-node" rev-parse HEAD)" = 834a7a1cb9204b02c192098c60654d08eb85bc2a
+
+      - name: Retrieve and authenticate P07 mirror corpora
+        run: |
+          mkdir "$RUNNER_TEMP/p07-fixtures" "$RUNNER_TEMP/p07-native"
+          curl --fail --location --silent --show-error \
+            https://github.com/nitrographtech/agent-native-hashgraph-hiero/releases/download/p06a-fixture-preactivation-v065-ff6490d-round4744/nitrograph-p06a-preactivation-v065-ff6490d-round4744.tar.gz \
+            --output "$RUNNER_TEMP/p07-fixtures/fixture-a.tar.gz"
+          echo "5e40a5c530d27ad77e41c06ab3a5b73df7b7be222f3829590f770e35142bffb0  $RUNNER_TEMP/p07-fixtures/fixture-a.tar.gz" | sha256sum --check
+          curl --fail --location --silent --show-error \
+            https://github.com/nitrographtech/agent-native-hashgraph-hiero/releases/download/p07-four-node-postwrite-v065-storage424242-v1/p07-four-node-postwrite-v065-storage424242-v1.tar.gz \
+            --output "$RUNNER_TEMP/p07-fixtures/fixture-b.tar.gz"
+          echo "0fd75fd4da408787ddef6b5a73300ce8018e330eb2f3a8e98d11ef9fbceceaa3  $RUNNER_TEMP/p07-fixtures/fixture-b.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/p07-fixtures/fixture-a.tar.gz" -C "$RUNNER_TEMP/p07-fixtures"
+          tar -xzf "$RUNNER_TEMP/p07-fixtures/fixture-b.tar.gz" -C "$RUNNER_TEMP/p07-fixtures"
+          tools/p07/retrieve-native-mirror-corpus.sh "$RUNNER_TEMP/p07-native"
+
+      - name: Exercise native corpus retrieval and mutation controls
+        run: tools/p07/test-native-mirror-corpus-policy.sh
+
+      - name: Import Fixture A, Fixture B, and immutable native corpus
+        env:
+          MIRROR_IMPORTER_DIR: ${{ runner.temp }}/hiero-mirror-node
+          P07_FIXTURE_A_RECORDS: ${{ runner.temp }}/p07-fixtures/nitrograph-p06a-preactivation-v065-ff6490d-round4744/data/recordStreams
+          P07_FIXTURE_A_BLOCKS: ${{ runner.temp }}/p07-fixtures/nitrograph-p06a-preactivation-v065-ff6490d-round4744/data/blockStreams
+          P07_FIXTURE_B_RECORDS: ${{ runner.temp }}/p07-fixtures/p07-four-node-postwrite-v065-storage424242-v1/records
+          P07_FIXTURE_B_BLOCKS: ${{ runner.temp }}/p07-fixtures/p07-four-node-postwrite-v065-storage424242-v1/blocks
+          P07_NATIVE_RECORDS: ${{ runner.temp }}/p07-native/p07-native-corpus-689e32ac-v1/recordStreams
+          P07_MIRROR_OUTPUT_DIR: ${{ runner.temp }}/p07-mirror-output
+        run: tools/p07/run-pinned-mirror-importer-regression.sh
+
+      - name: Exercise importer expectation corruption control
+        run: tools/p07/test-pinned-mirror-importer-regression-policy.sh

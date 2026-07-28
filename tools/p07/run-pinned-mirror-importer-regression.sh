@@ -37,6 +37,10 @@ command -v sha256sum >/dev/null 2>&1 || fail "sha256sum is required"
 
 worktree=$(mktemp -d "${TMPDIR:-/tmp}/p07-mirror-importer.XXXXXX")
 cleanup() {
+    if [ "${P07_MIRROR_KEEP_WORKTREE:-0}" = 1 ]; then
+        echo "P07 mirror importer worktree retained at $worktree" >&2
+        return
+    fi
     git -C "$importer" worktree remove --force "$worktree" >/dev/null 2>&1 || true
     rm -rf "$worktree"
 }
@@ -75,6 +79,10 @@ run_records() {
     expected_logs=$5
     expected_actions=$6
     expected_sidecars=$7
+    required_types=
+    if [ "$corpus" = exact-head-native ]; then
+        required_types=CRYPTOCREATEACCOUNT,CRYPTOTRANSFER,TOKENCREATION,TOKENMINT,TOKENASSOCIATE,CONSENSUSCREATETOPIC,CONSENSUSSUBMITMESSAGE,SCHEDULECREATE,SCHEDULESIGN,FILEUPDATE,NODEUPDATE,ATOMIC_BATCH
+    fi
 
     (
         cd "$worktree"
@@ -85,6 +93,7 @@ run_records() {
         P07_EXPECTED_LOGS="$expected_logs" \
         P07_EXPECTED_ACTIONS="$expected_actions" \
         P07_EXPECTED_SIDECARS="$expected_sidecars" \
+        P07_REQUIRED_TRANSACTION_TYPES="$required_types" \
         ./gradlew :importer:cleanTest :importer:test \
             --tests org.hiero.mirror.importer.parser.record.P06bFixtureRegressionTest.importsRecordsAndSidecars \
             --no-daemon --no-build-cache
@@ -94,6 +103,13 @@ run_records() {
     cp "$report" "$output_dir/$corpus-records.xml"
     line="P07_RECORDS=$expected_records TRANSACTIONS=$expected_transactions RESULTS=$expected_results LOGS=$expected_logs ACTIONS=$expected_actions SIDECARS=$expected_sidecars"
     grep -F "$line" "$report" >/dev/null || fail "record importer output mismatch for $corpus"
+    if [ "$corpus" = exact-head-native ]; then
+        for feature in $(printf '%s' "$required_types" | tr ',' ' ') \
+            ALIASES TOKEN_TRANSFERS CUSTOM_FEES STAKING_REWARDS CHARGED_FEES; do
+            grep -E "P07_FEATURE=$feature COUNT=[1-9][0-9]*" "$report" >/dev/null ||
+                fail "required native feature is absent: $feature"
+        done
+    fi
     printf '%s\t%s\n' "$corpus-records" "$line" >>"$summary"
 }
 

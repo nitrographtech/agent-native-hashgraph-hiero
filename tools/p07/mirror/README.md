@@ -27,17 +27,24 @@ tools/p06a/fixtures/verify-preactivation-v065.sh FIXTURE_A.tgz EMPTY_EXTRACTION_
 tools/p07/verify-four-node-postwrite-fixture.sh FIXTURE_B_DIRECTORY
 ```
 
-Generate the exact-head native corpus with the clean full test procedure
-recorded by P07-11E:
+The historical `3698/8968` native totals were a local observation, not a
+deterministic specification. CI run `30322277799` did not generate or retain
+that corpus. The authenticated replacement is release
+`p07-native-corpus-689e32ac-v1`; see `native-corpus/PROVENANCE.md`.
+
+Retrieve and verify it twice with:
 
 ```sh
-rm -rf hedera-node/test-clients/build/hapi-test
-./gradlew :test-clients:cleanTest :test-clients:test --no-daemon
+first=$(mktemp -d)
+second=$(mktemp -d)
+tools/p07/retrieve-native-mirror-corpus.sh "$first"
+tools/p07/retrieve-native-mirror-corpus.sh "$second"
+cmp "$first/p07-native-corpus-689e32ac-v1/MANIFEST.sha256.tsv" \
+    "$second/p07-native-corpus-689e32ac-v1/MANIFEST.sha256.tsv"
 ```
 
-The documented pre-existing `StreamValidationTest` balance-reconciliation
-failure does not invalidate the record corpus produced before that terminal
-validator runs.
+The archive checksum, embedded per-file manifest, exact file inventory, and
+absence of sidecars are validated before importer execution.
 
 ## Run
 
@@ -65,14 +72,16 @@ The runner verifies the committed expectations:
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Fixture A | 11 | 754 | 3 | 1 | 3 | 5 (7 semantic records in the certified corpus) | 139 |
 | Fixture B | 34 | 861 | 3 | 1 | 0 | 4 | 131 |
-| Exact-head native | 3698 | 8968 | 0 | 16 record-shaped logs | 0 | 0 execution sidecars | not re-imported |
+| Immutable native | 3639 | 8841 | 0 | 16 record-shaped logs | 0 | 0 execution sidecars | not applicable |
 
 Thus historical contract-shaped fixture content must remain readable, while
 the exact-head corpus must contain no successful removed-contract result,
 action, or execution sidecar. The positive transaction counts also prove the
 retained native record corpus remains interpretable.
 
-The generated `summary.tsv` is deterministic and the runner prints its
+For the native corpus, the importer also requires positive evidence for every
+surface in `native-corpus/feature-inventory.tsv`. The generated `summary.tsv`
+is deterministic and the runner prints its
 SHA-256. Raw JUnit XML files and their run-specific SHA-256 values may also be
 retained as execution evidence. A mismatch in any count, a missing signed
 record or complete block, a sidecar hash mismatch, an importer/schema failure,
@@ -82,7 +91,10 @@ Run the committed corruption control with:
 
 ```sh
 tools/p07/test-pinned-mirror-importer-regression-policy.sh
+tools/p07/test-native-mirror-corpus-policy.sh
 ```
 
 It first accepts the certified summary, then changes Fixture A's transaction
-expectation from `754` to `755` and requires validation to fail.
+expectation from `754` to `755` and requires validation to fail. The native
+control downloads the artifact twice, compares hashes and manifests, removes a
+required record, and injects a prohibited sidecar; both mutations must fail.
