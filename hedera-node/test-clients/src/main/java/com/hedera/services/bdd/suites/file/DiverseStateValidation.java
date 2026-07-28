@@ -2,29 +2,18 @@
 package com.hedera.services.bdd.suites.file;
 
 import static com.hedera.services.bdd.spec.HapiSpec.hapiTest;
-import static com.hedera.services.bdd.spec.assertions.ContractFnResultAsserts.isLiteralResult;
-import static com.hedera.services.bdd.spec.assertions.ContractFnResultAsserts.resultWith;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.contractCallLocal;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractBytecode;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.systemFileUndelete;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.logIt;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sourcing;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
-import static com.hedera.services.bdd.suites.contract.Utils.FunctionType.FUNCTION;
-import static com.hedera.services.bdd.suites.contract.Utils.getABIFor;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.ENTITY_NUM_KEY;
-import static com.hedera.services.bdd.suites.file.DiverseStateCreation.EXPECTED_LUCKY_NO;
-import static com.hedera.services.bdd.suites.file.DiverseStateCreation.FUSE_BYTECODE;
-import static com.hedera.services.bdd.suites.file.DiverseStateCreation.FUSE_CONTRACT;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.FUSE_INITCODE;
-import static com.hedera.services.bdd.suites.file.DiverseStateCreation.HEXED_BYTECODE_KEY;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.KEY_REPRS_KEY;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.LARGE_CONTENTS_LOC;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.LARGE_FILE;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.MEDIUM_FILE;
-import static com.hedera.services.bdd.suites.file.DiverseStateCreation.MULTI_CONTRACT;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.MULTI_INITCODE;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.SMALL_CONTENTS_LOC;
 import static com.hedera.services.bdd.suites.file.DiverseStateCreation.SMALL_FILE;
@@ -34,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.services.bdd.suites.HapiSuite;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -43,7 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hiero.base.utility.CommonUtils;
 import org.junit.jupiter.api.DynamicTest;
 
 /**
@@ -62,7 +49,6 @@ public final class DiverseStateValidation extends HapiSuite {
 
     private final AtomicReference<Map<String, Integer>> entityNums = new AtomicReference<>();
     private final AtomicReference<Map<String, String>> keyReprs = new AtomicReference<>();
-    private final AtomicReference<Map<String, String>> hexedBytecode = new AtomicReference<>();
 
     @Override
     public List<Stream<DynamicTest>> getSpecsInSuite() {
@@ -85,7 +71,6 @@ public final class DiverseStateValidation extends HapiSuite {
                             om.readValue(Files.newInputStream(Paths.get(STATE_META_JSON_LOC)), Map.class);
                     entityNums.set((Map<String, Integer>) meta.get(ENTITY_NUM_KEY));
                     keyReprs.set((Map<String, String>) meta.get(KEY_REPRS_KEY));
-                    hexedBytecode.set((Map<String, String>) meta.get(HEXED_BYTECODE_KEY));
                 }),
                 sourcing(() -> systemFileUndelete(idLiteralWith(entityNums.get().get(FUSE_INITCODE)))
                         .payingWith(GENESIS)),
@@ -113,17 +98,7 @@ public final class DiverseStateValidation extends HapiSuite {
                         .hasExpiry(() -> DiverseStateCreation.LARGE_EXPIRY_TIME)
                         .hasDeleted(false)),
                 sourcing(() -> getFileContents(idLiteralWith(entityNums.get().get(LARGE_FILE)))
-                        .hasContents(ignore -> LARGE_CONTENTS)),
-                /* Confirm contract code and behavior */
-                logIt("--- Now validating contract stuff ---"),
-                sourcing(() -> getContractBytecode(
-                                idLiteralWith(entityNums.get().get(FUSE_CONTRACT)))
-                        .hasBytecode(CommonUtils.unhex(hexedBytecode.get().get(FUSE_BYTECODE)))),
-                sourcing(() -> contractCallLocal(idLiteralWith(entityNums.get().get(MULTI_CONTRACT)), "pick")
-                        .has(resultWith()
-                                .resultThruAbi(
-                                        getABIFor(FUNCTION, "pick", MULTI_CONTRACT),
-                                        isLiteralResult(new Object[] {BigInteger.valueOf(EXPECTED_LUCKY_NO)})))));
+                        .hasContents(ignore -> LARGE_CONTENTS)));
     }
 
     private String idLiteralWith(long num) {

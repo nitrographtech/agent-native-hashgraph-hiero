@@ -5,13 +5,25 @@ Two publishable runs used clean extractions of
 at source `64da043f766da29d0fd3e20e3f51051fdd31f5a1`, Eclipse Temurin
 25.0.3+9, Gradle 9.5.0, Linux x86_64, and the guarded four-node public-fixture identity workflow.
 
-The generation command was:
+The historical generation command was:
 
 ```text
 P06A_PUBLIC_FIXTURE_NETWORK=four-node-explicitly-enabled
 P06A_PUBLIC_FIXTURE_WORKFLOW=explicitly-enabled
 ./gradlew :test-clients:testSubprocess --tests com.hedera.services.bdd.suites.reconnect.P06aHistoricalStateReconnectTest --no-daemon --stacktrace
 ```
+
+That live generator was retired in P07-11D because it depended on successful
+contract execution. It is provenance only and must not be run against the
+de-executed runtime. The published immutable fixture is now the authoritative
+input. Verify an extracted copy with:
+
+```text
+tools/p07/verify-four-node-postwrite-fixture.sh FIXTURE_DIRECTORY
+```
+
+The verifier authenticates the manifest and every listed file before any
+lifecycle or reconnect consumer starts.
 
 Run one captured round 2143 with root
 `0c3b973439f127093ad1d64bd9777d9a365a6d18522e6e46c6bd0fa41fa9f4e8eba8b4eac33b0cda2bfa82cf175a0894`.
