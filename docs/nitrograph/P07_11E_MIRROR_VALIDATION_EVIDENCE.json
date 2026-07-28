@@ -1,0 +1,235 @@
+{
+  "phase": "P07-11E",
+  "status": "CERTIFICATION_COMPLETE_PENDING_EXACT_HEAD_CI",
+  "readiness": "PENDING_EXACT_HEAD_CI",
+  "starting_commit": "9d72fe0dd79d4d3b5c5adada826509a2992f8c03",
+  "manifest_commit": "db4a7153e7b320cf46f85cd1f1bfba23402dcd3b",
+  "documentation_reconciliation_commit": "61e21590318cd4bf3a114dce09df2d85635b7fad",
+  "evidence_commit": null,
+  "final_certification_head": null,
+  "pull_request": 30,
+  "checksums": {
+    "p07_11d_manifest_sha256": "d86fb87432dc108f4ce9e20627a3eda2a3c3d6505a9a36634f1af1262b53c88f",
+    "p07_11d_evidence_sha256": "3663761e79d222b2598ebc1fc6a450cadd6a9b878b910c9e5cc65d40f896ad54",
+    "p07_11e_manifest_sha256": "61a6223a131911f2e9af1aba3c4e3861fc3b0fdc8142f0b2edeea1071c3f964d",
+    "official_importer_harness_sha256": "cef901903071a5e61155df31d74ff4aa64e5b1ba0ff280bd9da987db4cd134ee",
+    "fixture_b_archive_sha256": "0fd75fd4da408787ddef6b5a73300ce8018e330eb2f3a8e98d11ef9fbceceaa3",
+    "fixture_b_manifest_sha256": "967798ff82aad71ac7b9f6b4464279479f4e2a201098a02995cfd6cd70e30439",
+    "fixture_b_protected_inventory_sha256": "5f74ae63338dfb5510d0dc09a7afafe64f5ee00f9d0c7ed5c040cb5fe82dfa48"
+  },
+  "scope": {
+    "production_source_changed": false,
+    "test_source_changed": false,
+    "schemas_or_serializers_changed": false,
+    "fixtures_changed": false,
+    "reconnect_harness_changed": false,
+    "intentional_rejection_probes_changed": false,
+    "stream_validation_changed": false,
+    "documentation_only": true
+  },
+  "executable_census": {
+    "successful_contract_create": 0,
+    "successful_contract_call": 0,
+    "successful_ethereum_execution": 0,
+    "executable_local_contract_query": 0,
+    "unclassified": 0,
+    "intentional_rejection_sites": 8,
+    "owners": {
+      "AuthenticatedHistoricalFixtureConsumerTest": 2,
+      "HistoricalContractExecutionRejection": 5,
+      "Issue1765Suite": 1
+    },
+    "expected_statuses": {
+      "INVALID_TRANSACTION_BODY_precheck": 7,
+      "INVALID_CONTRACT_ID_consensus_record": 1
+    },
+    "successful_contract_entities_results_actions_or_sidecars": 0
+  },
+  "mirror_surfaces": {
+    "validated": [
+      "transaction bodies, hashes, consensus timestamps, statuses and identifiers",
+      "crypto accounts, aliases, hollow completion and transfers",
+      "token entities, transfers, associations, fees, NFT and airdrop effects",
+      "topics, messages and custom fees",
+      "schedules and native child relationships",
+      "files and system-file state changes",
+      "node administration and staking or reward records",
+      "atomic batches",
+      "native congestion and fee metadata",
+      "record and block stream interpretation",
+      "authenticated historical records and sidecars",
+      "post-reconnect native records",
+      "unsupported executable-body rejection output"
+    ],
+    "removed_output_absence": {
+      "successful_contract_create_records": "ABSENT",
+      "successful_contract_call_records": "ABSENT",
+      "successful_ethereum_records": "ABSENT",
+      "live_contract_bytecode_state": "ABSENT",
+      "contract_local_query_results": "ABSENT",
+      "live_contract_child_results_actions_or_sidecars": "ABSENT",
+      "lambdaplex_output": "ABSENT",
+      "managed_contract_fixture_generation": "ABSENT"
+    },
+    "compatibility_only_shapes": [
+      "immutable Fixture A and Fixture B contract-shaped history",
+      "historical parser and translator types",
+      "unregistered core constructor infrastructure pending dependency closure"
+    ]
+  },
+  "official_mirror_importer": {
+    "repository": "hiero-ledger/hiero-mirror-node",
+    "commit": "834a7a1cb9204b02c192098c60654d08eb85bc2a",
+    "postgresql": "official Testcontainers PostgreSQL",
+    "production_source_or_schema_modified": false,
+    "fixture_a": {
+      "result": "PASS",
+      "record_files": 11,
+      "transactions": 754,
+      "contract_results": 3,
+      "contract_logs": 1,
+      "contract_actions": 3,
+      "attached_sidecar_records": 5,
+      "semantic_sidecars_from_certified_corpus": 7,
+      "complete_blocks": 139,
+      "fresh_test_xml_sha256": "90a8d6bae888035de6c48036dd2665d12bd29546b8724bbac9b1f670c237b167"
+    },
+    "fixture_b": {
+      "result": "PASS",
+      "record_files": 34,
+      "transactions": 861,
+      "contract_results": 3,
+      "contract_logs": 1,
+      "contract_actions": 0,
+      "sidecars": 4,
+      "complete_blocks": 131,
+      "fresh_test_xml_sha256": "b88e946b2871dc34605b7dff67f5204de74ee98cf08b9d4f2999e6d8cd931ce7"
+    },
+    "exact_head_clean_full_test_runtime": {
+      "result": "PASS",
+      "record_files": 3698,
+      "transactions": 8968,
+      "contract_results": 0,
+      "contract_logs": 16,
+      "contract_actions": 0,
+      "execution_sidecars": 0,
+      "fresh_test_xml_sha256": "4531e2ababd0a1e184f70128b9c9092760f7cff21248ef0b5955f9287388ac6e",
+      "log_classification": "RECORD_SHAPED_COMPATIBILITY_OR_NATIVE_OUTPUT_WITHOUT_CONTRACT_RESULT_ACTION_OR_SIDECAR_ENVELOPE"
+    },
+    "certified_runtime_block_corpus": {
+      "basis": "unchanged production artifact and certified P07-10 runtime corpus",
+      "record_files": 5,
+      "transactions": 14,
+      "contract_results": 0,
+      "contract_logs": 2,
+      "contract_actions": 0,
+      "semantic_sidecars": 0,
+      "complete_blocks": 480,
+      "incomplete_blocks": 1,
+      "xml_sha256": "c1c0fcabdce495474edd8f6bcaa7ff4258e12083caa858a5ce0835e63c1a52fa",
+      "semantic_sha256": "87afbd86af6cd74aa7b1a6b9ad6e516ba3497b8bfb735102d46e059426395829"
+    }
+  },
+  "fixture_and_reconnect": {
+    "fixture_b_verifier": "PASS",
+    "fixture_governance": "PASS",
+    "fixture_governance_intentional_failure_controls": "PASS",
+    "authenticated_fixture_checks": "PASS",
+    "corruption_controls": "PASS",
+    "reconnect": {
+      "result": "PASS_BY_EXACT_ARTIFACT_INPUT_AND_HARNESS_EQUIVALENCE",
+      "learner": 2,
+      "teacher": 1,
+      "old_learner_round": 4975,
+      "transferred_round": 6233,
+      "state_synchronization": "PASS",
+      "post_reconnect_native_operations": "PASS",
+      "protected_maps": "PASS",
+      "learner_log_sha256": "6eccedc47144f5ab0c390ffe1c5d30a9c5683c911575b2a629446332de42bc8c"
+    }
+  },
+  "validation": {
+    "environment": {
+      "date": "2026-07-27",
+      "jdk": "Eclipse Temurin 25.0.2",
+      "gradle": "9.5.0"
+    },
+    "compileJava": "PASS",
+    "compileTestJava": "PASS",
+    "git_diff_check": "PASS",
+    "targeted_mirror_importer": "PASS",
+    "targeted_fixture_and_reconnect": "PASS",
+    "full_test": {
+      "command": "./gradlew :test-clients:cleanTest :test-clients:test --no-daemon",
+      "tests_completed": 142,
+      "passed": 140,
+      "skipped": 1,
+      "failed": 1,
+      "p07_11e_attributable_failures": 0,
+      "sole_failure": "StreamValidationTest.streamsAreValid",
+      "account": "0.0.801",
+      "expected": 3207204483389181,
+      "observed": 1958552273434530,
+      "additional_account_or_mirror_failures": 0,
+      "classification": "DOCUMENTED_PRE_EXISTING_TERMINAL_RECORD_STREAM_RECONCILIATION_DEFECT"
+    },
+    "spotlessJavaCheck": {
+      "result": "FAIL_PRE_EXISTING_UNRELATED",
+      "reported_files": 34,
+      "p07_11e_modified_java_files": 0,
+      "p07_11e_attributable_violations": 0,
+      "unrelated_files_reformatted": 0
+    }
+  },
+  "repository_scans": {
+    "live_executable_hits": 8,
+    "classified_intentional_rejection": 8,
+    "unclassified_live_hits": 0,
+    "stale_execution_assertion_imports_without_call_sites": 5,
+    "stale_import_classification": "DEAD_OR_UNREACHABLE_IMPORT_FALSE_POSITIVE",
+    "removed_owner_hits": 0,
+    "obsolete_lambdaplex_execution_hits": 0,
+    "historical_types_and_fixture_hits": "CLASSIFIED_COMPATIBILITY_ONLY"
+  },
+  "documentation": {
+    "corrected_files": [
+      "docs/nitrograph/P07_REPOSITORY_DEEXECUTION_PLAN.md",
+      "docs/nitrograph/NITROGRAPH_RUNTIME_ARCHITECTURE.md",
+      "docs/nitrograph/P07_11C_EXECUTABLE_BOUNDARY_MANIFEST.md",
+      "docs/nitrograph/P07_11D_LIFECYCLE_RECONNECT_HANDOFF.md"
+    ],
+    "historical_evidence_rewritten": false,
+    "superseded_counts_marked": true,
+    "final_phase_labels_reconciled": true
+  },
+  "exact_head_ci": {
+    "run_id": null,
+    "tested_commit": null,
+    "status": "PENDING",
+    "required_job": "native-agent",
+    "required_job_result": "PENDING"
+  },
+  "pull_request_readiness": {
+    "title_and_description_reviewed": false,
+    "phase_evidence_linked": false,
+    "known_external_defects_disclosed": false,
+    "draft": true,
+    "mergeable": true,
+    "local_remote_heads_match": false,
+    "worktree_clean": false,
+    "classification": "PENDING_EXACT_HEAD_CI"
+  },
+  "remaining_work": {
+    "p07_11e": [
+      "commit and push this evidence",
+      "update PR title and description",
+      "run and pass exact-head CI",
+      "issue final readiness classification"
+    ],
+    "outside_p07_11e": [
+      "separately authorized dead dependency and resource closure",
+      "pre-existing StreamValidationTest terminal account reconciliation defect",
+      "pre-existing unrelated Spotless drift"
+    ]
+  }
+}
