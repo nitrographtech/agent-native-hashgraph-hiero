@@ -6,7 +6,31 @@
   "manifest_commit": "db4a7153e7b320cf46f85cd1f1bfba23402dcd3b",
   "documentation_reconciliation_commit": "61e21590318cd4bf3a114dce09df2d85635b7fad",
   "evidence_commit": "9c920c1b3545f3d84659782a248096b7c4d76e06",
-  "final_certification_head": "e3cb283947ec2ee77ef5eb6df4a4787a2aaf38c8",
+  "certified_content": {
+    "head": "e3cb283947ec2ee77ef5eb6df4a4787a2aaf38c8",
+    "ci": {
+      "run_id": 30369247829,
+      "tested_commit": "e3cb283947ec2ee77ef5eb6df4a4787a2aaf38c8",
+      "result": "passed",
+      "required_jobs": {
+        "native-agent": "passed",
+        "p07-mirror-certification": "passed"
+      },
+      "completed_at": "2026-07-28T14:54:00Z"
+    },
+    "meaning": "The source, verifier, corpus provenance, committed harness, and mirror certification content validated before the final documentation-only evidence commit."
+  },
+  "external_pr_head_verification": {
+    "source_of_truth": "GitHub pull request head and GitHub Actions checks",
+    "self_certified_by_this_file": false,
+    "policy": "The final PR head and its exact-head CI run are recorded in the PR description after CI completes because embedding them in this committed file would create a new commit and invalidate the embedded head.",
+    "previous_external_pr_verification": {
+      "reviewed_head_before_metadata_correction": "884bb7d4b121c647b933f678c397a8a7b2738bf7",
+      "run_id": 30370711223,
+      "result": "passed",
+      "observed_at": "2026-07-28T15:09:51Z"
+    }
+  },
   "pull_request": 30,
   "pre_merge_correction": {
     "starting_commit": "340996ebaa021d43057ca9606b2873957f4380bd",
@@ -41,7 +65,7 @@
   "checksums": {
     "p07_11d_manifest_sha256": "d86fb87432dc108f4ce9e20627a3eda2a3c3d6505a9a36634f1af1262b53c88f",
     "p07_11d_evidence_sha256": "3663761e79d222b2598ebc1fc6a450cadd6a9b878b910c9e5cc65d40f896ad54",
-    "p07_11e_manifest_sha256": "61a6223a131911f2e9af1aba3c4e3861fc3b0fdc8142f0b2edeea1071c3f964d",
+    "p07_11e_manifest_sha256": "bc9d200887106dc86c1fa00fef9359a62394780c74005766d5fc56e928f12bfb",
     "official_importer_harness_sha256": "5cd7e47b5578aebac33efefed27a040c865c1995b0a01eee7db5a4f6cb1e5da0",
     "mirror_runner_sha256": "25af4b89a6d88b83dc9472f6d7e1d79cc7d5468cc1f18d911bbeabbf9e388d59",
     "p07_11a_verifier_sha256": "134e814905aaf1d29a2a65663a65ddbf4730a744988a834967d0794f572981d5",
@@ -293,22 +317,16 @@
     "superseded_counts_marked": true,
     "final_phase_labels_reconciled": true
   },
-  "exact_head_ci": {
-    "run_id": 30369247829,
-    "tested_commit": "e3cb283947ec2ee77ef5eb6df4a4787a2aaf38c8",
-    "status": "PASS",
-    "required_jobs": {
-      "native-agent": "PASS",
-      "p07-mirror-certification": "PASS"
-    },
-    "completed_at": "2026-07-28T14:54:00Z"
-  },
   "pull_request_readiness": {
     "title_and_description_reviewed": true,
     "phase_evidence_linked": true,
     "known_external_defects_disclosed": true,
+    "state": "OPEN",
     "draft": false,
+    "ready_for_review": true,
     "mergeable": true,
+    "merged": false,
+    "final_post_commit_head_and_ci_source_of_truth": "GitHub pull request description and GitHub Actions checks",
     "local_remote_heads_match_at_evidence_head": true,
     "worktree_clean_at_evidence_head": true,
     "classification": "READY_FOR_REVIEW"
